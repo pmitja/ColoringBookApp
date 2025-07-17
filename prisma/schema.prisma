@@ -6,13 +6,20 @@ generator client {
 }
 
 datasource db {
-  provider     = "postgresql"
-  url          = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 enum UserRole {
   ADMIN
   USER
+}
+
+enum JobStatus {
+  QUEUED
+  PROCESSING
+  DONE
+  FAILED
 }
 
 model Account {
@@ -59,8 +66,13 @@ model User {
   updatedAt     DateTime  @default(now()) @map(name: "updated_at")
   role          UserRole  @default(USER)
 
-  accounts Account[]
-  sessions Session[]
+  accounts  Account[]
+  sessions  Session[]
+  imageJobs ImageJob[]
+
+  // Credits system
+  creditsUsed      Int @default(0)
+  creditsAllocated Int @default(3) // Free tier gets 3 credits per month
 
   stripeCustomerId       String?   @unique @map(name: "stripe_customer_id")
   stripeSubscriptionId   String?   @unique @map(name: "stripe_subscription_id")
@@ -68,6 +80,24 @@ model User {
   stripeCurrentPeriodEnd DateTime? @map(name: "stripe_current_period_end")
 
   @@map(name: "users")
+}
+
+model ImageJob {
+  id            String    @id @default(cuid())
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String
+  inputFileName String // Original filename for display
+  inputUrl      String? // URL to the uploaded input image
+  cartoonUrl    String? // URL to cartoon version
+  lineartUrl    String? // URL to line art version
+  status        JobStatus @default(QUEUED)
+  errorMessage  String? // Store error details if failed
+  createdAt     DateTime  @default(now()) @map(name: "created_at")
+  updatedAt     DateTime  @updatedAt @map(name: "updated_at")
+
+  @@index([userId])
+  @@index([status])
+  @@map(name: "image_jobs")
 }
 
 model VerificationToken {

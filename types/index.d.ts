@@ -1,5 +1,4 @@
 import { User } from "@prisma/client";
-import type { Icon } from "lucide-react";
 
 import { Icons } from "@/components/shared/icons";
 
@@ -36,11 +35,6 @@ export type SidebarNavItem = {
   items: NavItem[];
   authorizeOnly?: UserRole;
   icon?: keyof typeof Icons;
-};
-
-export type DocsConfig = {
-  mainNav: MainNavItem[];
-  sidebarNav: SidebarNavItem[];
 };
 
 // subcriptions

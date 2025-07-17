@@ -28,26 +28,6 @@ const defaultComputedFields: ComputedFields = {
   },
 };
 
-export const Doc = defineDocumentType(() => ({
-  name: "Doc",
-  filePathPattern: `docs/**/*.mdx`,
-  contentType: "mdx",
-  fields: {
-    title: {
-      type: "string",
-      required: true,
-    },
-    description: {
-      type: "string",
-    },
-    published: {
-      type: "boolean",
-      default: true,
-    },
-  },
-  computedFields: defaultComputedFields,
-}));
-
 export const Guide = defineDocumentType(() => ({
   name: "Guide",
   filePathPattern: `guides/**/*.mdx`,

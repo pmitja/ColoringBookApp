@@ -1,4 +1,4 @@
-import { COLORING_BOOK_PROMPT, PIXAR_PROMPT } from '@/config/prompts'
+import { INTO_LINEART, INTO_PIXAR } from '@/config/prompts'
 import { prisma } from '@/lib/db'
 import { getCurrentUser } from '@/lib/session'
 import { fal } from '@fal-ai/client'
@@ -34,9 +34,9 @@ async function processJob(jobId: string, originalImageBuffer: Buffer, fileType: 
     const dataUrl = `data:${fileType};base64,${base64Image}`
 
     // 1. Call FAL.AI for cartoon using the original image
-    const cartoonResult = await fal.subscribe('fal-ai/flux-pro/kontext', {
+    const cartoonResult = await fal.subscribe('fal-ai/flux-kontext/dev', {
       input: {
-        prompt: PIXAR_PROMPT,
+        prompt: INTO_PIXAR,
         image_url: dataUrl,
       } as any,
       logs: true,
@@ -51,9 +51,9 @@ async function processJob(jobId: string, originalImageBuffer: Buffer, fileType: 
     if (!cartoonImageUrl) throw new Error('No cartoon image returned from FAL.AI')
 
     // 2. Call FAL.AI for lineart using the cartoon as base
-    const lineartResult = await fal.subscribe('fal-ai/flux-pro/kontext', {
+    const lineartResult = await fal.subscribe('fal-ai/flux-kontext/dev', {
       input: {
-        prompt: COLORING_BOOK_PROMPT,
+        prompt: INTO_LINEART,
         image_url: cartoonImageUrl,
       } as any,
       logs: true,

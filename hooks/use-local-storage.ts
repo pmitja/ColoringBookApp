@@ -8,9 +8,25 @@ const useLocalStorage = <T>(
 
   useEffect(() => {
     // Retrieve from localStorage
-    const item = window.localStorage.getItem(key);
-    if (item) {
-      setStoredValue(JSON.parse(item));
+    try {
+      const item = window.localStorage.getItem(key);
+      if (!item) return;
+      // Guard against strings like "undefined" or malformed JSON
+      if (item === 'undefined' || item === 'null') {
+        window.localStorage.removeItem(key);
+        return;
+      }
+      const parsed = JSON.parse(item);
+      if (parsed === undefined) {
+        window.localStorage.removeItem(key);
+        return;
+      }
+      setStoredValue(parsed);
+    } catch (err) {
+      // If parsing fails, remove the bad entry and keep initialValue
+      try {
+        window.localStorage.removeItem(key);
+      } catch {}
     }
   }, [key]);
 

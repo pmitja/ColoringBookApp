@@ -7,6 +7,7 @@ export const sidebarLinks: SidebarNavItem[] = [
       { href: "/dashboard", icon: "dashboard", title: "Dashboard" },
       { href: "/upload", icon: "media", title: "Upload Photo" },
       { href: "/creations", icon: "bookOpen", title: "My Creations" },
+      { href: "/dashboard/book-editor", icon: "bookOpen", title: "Book Editor" },
     ],
   },
   {

@@ -1,42 +1,65 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const useLocalStorage = <T>(
   key: string,
   initialValue: T,
 ): [T, (value: T) => void] => {
-  const [storedValue, setStoredValue] = useState(initialValue);
+  const isBrowser = typeof window !== 'undefined'
 
-  useEffect(() => {
-    // Retrieve from localStorage
+  const readStored = (): T => {
+    if (!isBrowser) return initialValue
     try {
-      const item = window.localStorage.getItem(key);
-      if (!item) return;
-      // Guard against strings like "undefined" or malformed JSON
-      if (item === 'undefined' || item === 'null') {
-        window.localStorage.removeItem(key);
-        return;
+      const item = window.localStorage.getItem(key)
+      if (!item || item === 'undefined' || item === 'null') {
+        return initialValue
       }
-      const parsed = JSON.parse(item);
-      if (parsed === undefined) {
-        window.localStorage.removeItem(key);
-        return;
-      }
-      setStoredValue(parsed);
-    } catch (err) {
-      // If parsing fails, remove the bad entry and keep initialValue
+      const parsed = JSON.parse(item)
+      return parsed ?? initialValue
+    } catch {
+      return initialValue
+    }
+  }
+
+  // Synchronous hydration from localStorage to avoid overwriting saved data
+  const [storedValue, setStoredValue] = useState<T>(readStored)
+  const prevKeyRef = useRef(key)
+
+  // If the key changes, re-read from storage
+  useEffect(() => {
+    if (prevKeyRef.current !== key) {
+      prevKeyRef.current = key
+      setStoredValue(readStored())
+    }
+  }, [key])
+
+  // Sync updates to localStorage
+  const setValue = (value: T) => {
+    setStoredValue(value)
+    if (!isBrowser) return
+    try {
+      window.localStorage.setItem(key, JSON.stringify(value))
+    } catch {}
+  }
+
+  // Keep state in sync when the value changes in other tabs
+  useEffect(() => {
+    if (!isBrowser) return
+    const onStorage = (e: StorageEvent) => {
+      if (e.storageArea !== window.localStorage || e.key !== key) return
       try {
-        window.localStorage.removeItem(key);
+        if (e.newValue === null) {
+          setStoredValue(initialValue)
+          return
+        }
+        const parsed = JSON.parse(e.newValue)
+        setStoredValue(parsed ?? initialValue)
       } catch {}
     }
-  }, [key]);
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [key, initialValue])
 
-  const setValue = (value: T) => {
-    // Save state
-    setStoredValue(value);
-    // Save to localStorage
-    window.localStorage.setItem(key, JSON.stringify(value));
-  };
-  return [storedValue, setValue];
-};
+  return [storedValue, setValue]
+}
 
 export default useLocalStorage;

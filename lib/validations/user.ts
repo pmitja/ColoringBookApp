@@ -8,3 +8,10 @@ export const userNameSchema = z.object({
 export const userRoleSchema = z.object({
   role: z.nativeEnum(UserRole),
 });
+
+// Book payload validation
+export const bookSchema = z.object({
+  title: z.string().min(1).max(120),
+  // JSON payload for editor state
+  data: z.any(),
+})

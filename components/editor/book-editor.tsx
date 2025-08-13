@@ -5,6 +5,7 @@ import React, { useCallback, useMemo, useRef, useState } from "react";
 import Draggable from "react-draggable";
 
 import useLocalStorage from "@/hooks/use-local-storage";
+import { useMounted } from "@/hooks/use-mounted";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -69,6 +70,7 @@ function generateId(prefix: string) {
 }
 
 export default function BookEditor({ assets }: BookEditorProps) {
+  const mounted = useMounted();
   const [book, setBook] = useLocalStorage<BookState>("book-editor:v1", {
     title: "My Coloring Book",
     pages: [
@@ -76,6 +78,10 @@ export default function BookEditor({ assets }: BookEditorProps) {
       { id: generateId("page"), elements: [] },
     ],
   });
+  const [bookId, setBookId] = useLocalStorage<string | null>(
+    "book-editor:book-id",
+    null,
+  );
 
   const [selectedPageId, setSelectedPageId] = useState(book.pages[0]?.id);
   const [selectedElementId, setSelectedElementId] = useState<string | null>(
@@ -83,16 +89,21 @@ export default function BookEditor({ assets }: BookEditorProps) {
   );
   const [editingElementId, setEditingElementId] = useState<string | null>(null);
 
-  const [pageFormat, setPageFormat] = useState<"A3" | "A4" | "A5">("A3");
-  const [pageOrientation, setPageOrientation] = useState<
+  const [pageFormat, setPageFormat] = useLocalStorage<"A3" | "A4" | "A5">(
+    "book-editor:page-format",
+    "A3",
+  );
+  const [pageOrientation, setPageOrientation] = useLocalStorage<
     "portrait" | "landscape"
-  >("landscape");
-  const [workAreaPaddingEnabled, setWorkAreaPaddingEnabled] = useState(true);
+  >("book-editor:orientation", "landscape");
+  const [workAreaPaddingEnabled, setWorkAreaPaddingEnabled] =
+    useLocalStorage<boolean>("book-editor:work-padding", true);
   const bookRef = useRef<SimpleFlipBookHandle | null>(null);
   const stageRef = useRef<HTMLDivElement | null>(null);
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const [containerWidth, setContainerWidth] = useState<number>(420);
-  const [zoom, setZoom] = useState<number>(0.8);
+  const [hasMeasured, setHasMeasured] = useState<boolean>(false);
+  const [zoom, setZoom] = useLocalStorage<number>("book-editor:zoom", 1.0);
 
   const selectedPage = useMemo(
     () => book.pages.find((p) => p.id === selectedPageId) ?? book.pages[0],
@@ -119,7 +130,7 @@ export default function BookEditor({ assets }: BookEditorProps) {
       pageOrientation === "landscape" ? { w: base.h, h: base.w } : base;
     // Scale width relative to A3 so formats differ in size (A4<A3)
     const BASE_W = MM.A3.w; // 297mm (portrait width baseline)
-    const baseWidth = Math.max(280, Math.min(containerWidth, 720));
+    const baseWidth = Math.max(280, Math.min(containerWidth, 1200));
     const width = baseWidth * (mm.w / BASE_W);
     const height = width * (mm.h / mm.w);
     return { pageWidth: Math.round(width), pageHeight: Math.round(height) };
@@ -128,7 +139,10 @@ export default function BookEditor({ assets }: BookEditorProps) {
   React.useEffect(() => {
     const el = viewportRef.current;
     if (!el) return;
-    const resize = () => setContainerWidth(el.clientWidth);
+    const resize = () => {
+      setContainerWidth(el.clientWidth);
+      setHasMeasured(true);
+    };
     resize();
     const ro = new ResizeObserver(resize);
     ro.observe(el);
@@ -150,6 +164,7 @@ export default function BookEditor({ assets }: BookEditorProps) {
   );
 
   // Work area sizes in logical page units (independent of zoom)
+  // Convert fixed pixel padding into page units based on zoom
   const padUnits = useMemo(
     () => workAreaPadding / Math.max(zoom, 0.0001),
     [workAreaPadding, zoom],
@@ -373,6 +388,7 @@ export default function BookEditor({ assets }: BookEditorProps) {
 
   // Re-clamp all elements when content area changes (zoom, padding, format)
   React.useEffect(() => {
+    if (!hasMeasured) return;
     const prev = book;
     let changed = false;
     const pages = prev.pages.map((p) => {
@@ -435,7 +451,7 @@ export default function BookEditor({ assets }: BookEditorProps) {
     if (changed) {
       setBook({ ...prev, pages });
     }
-  }, [book, contentPageWidth, contentPageHeight, setBook]);
+  }, [book, contentPageWidth, contentPageHeight, setBook, hasMeasured]);
 
   const removeElement = useCallback(
     (elementId: string) => {
@@ -476,6 +492,22 @@ export default function BookEditor({ assets }: BookEditorProps) {
     [book.pages],
   );
 
+  if (!mounted) {
+    return (
+      <div className="grid gap-4">
+        <div>
+          <Card>
+            <CardContent className="space-y-4 p-4">
+              <div className="h-6 w-40 animate-pulse rounded bg-muted" />
+              <div className="h-8 w-full animate-pulse rounded bg-muted" />
+            </CardContent>
+          </Card>
+        </div>
+        <div className="h-[60vh] w-full animate-pulse rounded bg-muted" />
+      </div>
+    );
+  }
+
   return (
     <div className="grid gap-4">
       <div>
@@ -498,6 +530,56 @@ export default function BookEditor({ assets }: BookEditorProps) {
                       setBook({ ...book, title: e.target.value })
                     }
                   />
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="secondary"
+                    onClick={async () => {
+                      try {
+                        const res = await fetch(
+                          "/api/books" + (bookId ? `/${bookId}` : ""),
+                          {
+                            method: bookId ? "PUT" : "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              title: book.title,
+                              data: book,
+                            }),
+                          },
+                        );
+                        if (!res.ok) throw new Error("Failed to save");
+                        const json = await res.json();
+                        if (!bookId && json?.id) setBookId(json.id);
+                      } catch {}
+                    }}
+                  >
+                    {bookId ? "Save" : "Save as New"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={async () => {
+                      try {
+                        const res = await fetch("/api/books", {
+                          method: "GET",
+                        });
+                        if (!res.ok) throw new Error("Failed to load");
+                        const list: Array<{ id: string; title: string }> =
+                          await res.json();
+                        if (list.length === 0) return;
+                        const first = list[0];
+                        const res2 = await fetch(`/api/books/${first.id}`);
+                        if (!res2.ok) throw new Error("Failed to load book");
+                        const full = await res2.json();
+                        if (full?.data) {
+                          setBook(full.data);
+                          setBookId(first.id);
+                        }
+                      } catch {}
+                    }}
+                  >
+                    Load Latest
+                  </Button>
                 </div>
 
                 <div className="flex items-center gap-2">

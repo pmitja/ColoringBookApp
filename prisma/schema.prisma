@@ -69,6 +69,7 @@ model User {
   accounts  Account[]
   sessions  Session[]
   imageJobs ImageJob[]
+  books     Book[]
 
   // Credits system
   creditsUsed      Int @default(0)
@@ -98,6 +99,19 @@ model ImageJob {
   @@index([userId])
   @@index([status])
   @@map(name: "image_jobs")
+}
+
+model Book {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  data      Json
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@index([userId])
+  @@map(name: "books")
 }
 
 model VerificationToken {

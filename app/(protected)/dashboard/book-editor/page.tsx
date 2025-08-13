@@ -1,8 +1,13 @@
+import dynamic from "next/dynamic";
+
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { constructMetadata } from "@/lib/utils";
 import { DashboardHeader } from "@/components/dashboard/header";
-import BookEditor from "@/components/editor/book-editor";
+
+const BookEditor = dynamic(() => import("@/components/editor/book-editor"), {
+  ssr: false,
+});
 
 export const metadata = constructMetadata({
   title: "Book Editor – Coloring Book Creator",

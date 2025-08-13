@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 // Custom lightweight flip viewer
 import Draggable from "react-draggable";
 import { toast } from "sonner";
@@ -737,10 +738,12 @@ export default function BookEditor({
                           onClick={() => addImage(a.id)}
                           title={a.name || "Add image to page"}
                         >
-                          <img
+                          <Image
                             alt={a.name || "asset"}
                             src={a.url}
-                            className="h-full w-full object-cover transition group-hover:scale-105"
+                            fill
+                            sizes="100px"
+                            className="object-cover transition group-hover:scale-105"
                           />
                         </button>
                       ))
@@ -753,20 +756,19 @@ export default function BookEditor({
                 <ScrollArea className="h-[320px] pr-2">
                   <div className="space-y-2">
                     {book.pages.map((p, idx) => (
-                      <button
+                      <Button
                         key={p.id}
-                        className={`w-full rounded border p-2 text-left text-sm transition ${
-                          p.id === selectedPageId
-                            ? "border-primary bg-primary/5"
-                            : "hover:bg-muted"
-                        }`}
+                        variant={
+                          p.id === selectedPageId ? "secondary" : "ghost"
+                        }
+                        className="w-full justify-start text-left"
                         onClick={() => {
                           setSelectedPageId(p.id);
                           flipToIndex(idx);
                         }}
                       >
                         Page {idx + 1}
-                      </button>
+                      </Button>
                     ))}
                   </div>
                 </ScrollArea>
@@ -929,16 +931,18 @@ export default function BookEditor({
                                 />
                               </div>
                             </div>
-                            <button
+                            <Button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 e.preventDefault();
                                 removeElement(el.data.id);
                               }}
-                              className="absolute right-1 top-1 hidden rounded bg-white/80 p-1 text-xs shadow group-hover:block"
+                              variant="secondary"
+                              size="icon"
+                              className="absolute right-1 top-1 hidden h-6 w-6 p-0 group-hover:flex"
                             >
-                              ✕
-                            </button>
+                              <Icons.close className="h-3 w-3" />
+                            </Button>
                           </div>
                         </Draggable>
                       );

@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import { prisma } from "@/lib/db";
@@ -107,12 +108,14 @@ export default async function BookChooserPage() {
                   className="flex items-center justify-between rounded border p-3"
                 >
                   <div className="flex min-w-0 items-center gap-3">
-                    <div className="h-24 w-32 overflow-hidden rounded border bg-muted">
+                    <div className="relative h-24 w-32 overflow-hidden rounded border bg-muted">
                       {b.thumbUrl ? (
-                        <img
+                        <Image
                           src={b.thumbUrl}
                           alt={b.title}
-                          className="h-full w-full object-cover"
+                          fill
+                          sizes="128px"
+                          className="object-cover"
                         />
                       ) : (
                         <div className="flex h-full w-full items-center justify-center text-[10px] text-muted-foreground">

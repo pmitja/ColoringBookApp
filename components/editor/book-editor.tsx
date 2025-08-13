@@ -3,6 +3,7 @@
 import React, { useCallback, useMemo, useRef, useState } from "react";
 // Custom lightweight flip viewer
 import Draggable from "react-draggable";
+import { toast } from "sonner";
 
 import useLocalStorage from "@/hooks/use-local-storage";
 import { useMounted } from "@/hooks/use-mounted";
@@ -23,6 +24,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Icons } from "@/components/shared/icons";
 
+import { exportBookAsPdf } from "./pdf-export";
 import SimpleFlipBook, { SimpleFlipBookHandle } from "./simple-flip-book";
 import TextBox from "./text-box";
 import type { EditorTextBox } from "./types";
@@ -63,13 +65,19 @@ interface BookState {
 
 interface BookEditorProps {
   assets: AssetItem[];
+  initialBookId?: string | null;
+  initialBook?: BookState | null;
 }
 
 function generateId(prefix: string) {
   return `${prefix}_${Math.random().toString(36).slice(2, 9)}`;
 }
 
-export default function BookEditor({ assets }: BookEditorProps) {
+export default function BookEditor({
+  assets,
+  initialBookId = null,
+  initialBook = null,
+}: BookEditorProps) {
   const mounted = useMounted();
   const [book, setBook] = useLocalStorage<BookState>("book-editor:v1", {
     title: "My Coloring Book",
@@ -82,6 +90,36 @@ export default function BookEditor({ assets }: BookEditorProps) {
     "book-editor:book-id",
     null,
   );
+
+  const createDefaultBook = useCallback(
+    (): BookState => ({
+      title: "My Coloring Book",
+      pages: [
+        { id: generateId("page"), elements: [] },
+        { id: generateId("page"), elements: [] },
+      ],
+    }),
+    [],
+  );
+
+  React.useEffect(() => {
+    if (!mounted) return;
+    if (initialBookId && initialBook) {
+      if (bookId !== initialBookId) {
+        setBook(initialBook);
+        setBookId(initialBookId);
+        if (initialBook.pages[0]?.id) {
+          setSelectedPageId(initialBook.pages[0].id);
+        }
+      }
+    } else if (initialBookId === null && initialBook === null) {
+      const fresh = createDefaultBook();
+      setBook(fresh);
+      setBookId(null);
+      setSelectedPageId(fresh.pages[0].id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mounted, initialBookId, initialBook]);
 
   const [selectedPageId, setSelectedPageId] = useState(book.pages[0]?.id);
   const [selectedElementId, setSelectedElementId] = useState<string | null>(
@@ -177,6 +215,31 @@ export default function BookEditor({ assets }: BookEditorProps) {
     () => Math.max(0, pageHeight - 2 * padUnits),
     [pageHeight, padUnits],
   );
+
+  const exportToPdf = useCallback(async () => {
+    try {
+      toast.info("Generating PDF...");
+      await exportBookAsPdf({
+        book,
+        assets,
+        pageFormat,
+        orientation: pageOrientation,
+        contentPageWidth,
+        contentPageHeight,
+        fileName: book.title,
+      });
+      toast.success("PDF saved");
+    } catch (e) {
+      toast.error("Failed to export PDF");
+    }
+  }, [
+    assets,
+    book,
+    contentPageHeight,
+    contentPageWidth,
+    pageFormat,
+    pageOrientation,
+  ]);
 
   const addPage = useCallback(() => {
     setBook({
@@ -551,7 +614,10 @@ export default function BookEditor({ assets }: BookEditorProps) {
                         if (!res.ok) throw new Error("Failed to save");
                         const json = await res.json();
                         if (!bookId && json?.id) setBookId(json.id);
-                      } catch {}
+                        toast.success(bookId ? "Book saved" : "Book created");
+                      } catch (e) {
+                        toast.error("Failed to save book");
+                      }
                     }}
                   >
                     {bookId ? "Save" : "Save as New"}
@@ -588,6 +654,9 @@ export default function BookEditor({ assets }: BookEditorProps) {
                   </Button>
                   <Button variant="outline" onClick={addPage}>
                     <Icons.add className="mr-2 h-4 w-4" /> Add page
+                  </Button>
+                  <Button variant="outline" onClick={exportToPdf}>
+                    <Icons.download className="mr-2 h-4 w-4" /> Export PDF
                   </Button>
                 </div>
 

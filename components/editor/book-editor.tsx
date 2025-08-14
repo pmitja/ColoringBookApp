@@ -1,17 +1,36 @@
 "use client";
 
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 // Custom lightweight flip viewer
 import Draggable from "react-draggable";
 import { toast } from "sonner";
 
 import useLocalStorage from "@/hooks/use-local-storage";
+import { useMediaQuery } from "@/hooks/use-media-query";
 import { useMounted } from "@/hooks/use-mounted";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Select,
@@ -20,9 +39,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Icons } from "@/components/shared/icons";
 
 import { exportBookAsPdf } from "./pdf-export";
@@ -103,7 +135,7 @@ export default function BookEditor({
     [],
   );
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!mounted) return;
     if (initialBookId && initialBook) {
       if (bookId !== initialBookId) {
@@ -127,6 +159,7 @@ export default function BookEditor({
     null,
   );
   const [editingElementId, setEditingElementId] = useState<string | null>(null);
+  const [propertiesOpen, setPropertiesOpen] = useState<boolean>(false);
 
   const [pageFormat, setPageFormat] = useLocalStorage<"A3" | "A4" | "A5">(
     "book-editor:page-format",
@@ -143,6 +176,8 @@ export default function BookEditor({
   const [containerWidth, setContainerWidth] = useState<number>(420);
   const [hasMeasured, setHasMeasured] = useState<boolean>(false);
   const [zoom, setZoom] = useLocalStorage<number>("book-editor:zoom", 1.0);
+  const [assetQuery, setAssetQuery] = useState<string>("");
+  const [settingsOpen, setSettingsOpen] = useState<boolean>(false);
 
   const selectedPage = useMemo(
     () => book.pages.find((p) => p.id === selectedPageId) ?? book.pages[0],
@@ -175,7 +210,7 @@ export default function BookEditor({
     return { pageWidth: Math.round(width), pageHeight: Math.round(height) };
   }, [pageFormat, pageOrientation, containerWidth]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const el = viewportRef.current;
     if (!el) return;
     const resize = () => {
@@ -188,13 +223,25 @@ export default function BookEditor({
     return () => ro.disconnect();
   }, []);
 
+  // Responsive: single page on small screens (based on window width) and auto-fit zoom
+  const { width: windowWidth } = useMediaQuery();
+  const isSmallScreen = useMemo(
+    () => (windowWidth ?? Number.POSITIVE_INFINITY) < 762,
+    [windowWidth],
+  );
+  const renderZoom = useMemo(() => {
+    if (!isSmallScreen) return zoom;
+    const fit = pageWidth > 0 ? (containerWidth - 16) / pageWidth : zoom;
+    return Math.min(zoom, Math.max(0.1, fit));
+  }, [isSmallScreen, containerWidth, pageWidth, zoom]);
+
   const displayWidth = useMemo(
-    () => Math.round(pageWidth * zoom),
-    [pageWidth, zoom],
+    () => Math.round(pageWidth * renderZoom),
+    [pageWidth, renderZoom],
   );
   const displayHeight = useMemo(
-    () => Math.round(pageHeight * zoom),
-    [pageHeight, zoom],
+    () => Math.round(pageHeight * renderZoom),
+    [pageHeight, renderZoom],
   );
 
   const workAreaPadding = useMemo(
@@ -205,8 +252,8 @@ export default function BookEditor({
   // Work area sizes in logical page units (independent of zoom)
   // Convert fixed pixel padding into page units based on zoom
   const padUnits = useMemo(
-    () => workAreaPadding / Math.max(zoom, 0.0001),
-    [workAreaPadding, zoom],
+    () => workAreaPadding / Math.max(renderZoom, 0.0001),
+    [workAreaPadding, renderZoom],
   );
   const contentPageWidth = useMemo(
     () => Math.max(0, pageWidth - 2 * padUnits),
@@ -241,6 +288,42 @@ export default function BookEditor({
     pageFormat,
     pageOrientation,
   ]);
+
+  const saveBook = useCallback(async () => {
+    try {
+      const res = await fetch("/api/books" + (bookId ? `/${bookId}` : ""), {
+        method: bookId ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: book.title, data: book }),
+      });
+      if (!res.ok) throw new Error("Failed to save");
+      const json = await res.json();
+      if (!bookId && json?.id) setBookId(json.id);
+      toast.success(bookId ? "Book saved" : "Book created");
+    } catch (e) {
+      toast.error("Failed to save book");
+    }
+  }, [book, bookId, setBookId]);
+
+  const loadLatest = useCallback(async () => {
+    try {
+      const res = await fetch("/api/books", { method: "GET" });
+      if (!res.ok) throw new Error("Failed to load");
+      const list: Array<{ id: string; title: string }> = await res.json();
+      if (list.length === 0) return;
+      const first = list[0];
+      const res2 = await fetch(`/api/books/${first.id}`);
+      if (!res2.ok) throw new Error("Failed to load book");
+      const full = await res2.json();
+      if (full?.data) {
+        setBook(full.data);
+        setBookId(first.id);
+      }
+      toast.success("Loaded latest book");
+    } catch {
+      toast.error("Failed to load book");
+    }
+  }, [setBook, setBookId]);
 
   const addPage = useCallback(() => {
     setBook({
@@ -451,7 +534,7 @@ export default function BookEditor({
   );
 
   // Re-clamp all elements when content area changes (zoom, padding, format)
-  React.useEffect(() => {
+  useEffect(() => {
     if (!hasMeasured) return;
     const prev = book;
     let changed = false;
@@ -536,6 +619,75 @@ export default function BookEditor({
     [book, selectedPage, setBook, selectedElementId],
   );
 
+  // Auto-open properties when an element is selected
+  useEffect(() => {
+    setPropertiesOpen(!!selectedElementId);
+  }, [selectedElementId]);
+
+  const duplicateSelected = useCallback(() => {
+    if (!selectedPage || !selectedElement) return;
+    const newId = generateId("dup");
+    const cloned = {
+      ...selectedElement,
+      data: {
+        ...selectedElement.data,
+        id: newId,
+        x: Math.min(selectedElement.data.x + 10, contentPageWidth - 20),
+        y: Math.min(selectedElement.data.y + 10, contentPageHeight - 20),
+      },
+    } as PageElement;
+    const newPages = book.pages.map((p) =>
+      p.id === selectedPage.id
+        ? { ...p, elements: [...p.elements, cloned] }
+        : p,
+    );
+    setBook({ ...book, pages: newPages });
+    setSelectedElementId(newId);
+  }, [
+    book,
+    selectedElement,
+    selectedPage,
+    setBook,
+    contentPageWidth,
+    contentPageHeight,
+  ]);
+
+  const bringToFront = useCallback(() => {
+    if (!selectedPage || !selectedElementId) return;
+    const newPages = book.pages.map((p) => {
+      if (p.id !== selectedPage.id) return p;
+      const idx = p.elements.findIndex((el) =>
+        el.type === "text"
+          ? el.data.id === selectedElementId
+          : (el as any).data.id === selectedElementId,
+      );
+      if (idx === -1) return p;
+      const copy = [...p.elements];
+      const [el] = copy.splice(idx, 1);
+      copy.push(el);
+      return { ...p, elements: copy };
+    });
+    setBook({ ...book, pages: newPages });
+  }, [book, selectedPage, selectedElementId, setBook]);
+
+  const sendToBack = useCallback(() => {
+    if (!selectedPage || !selectedElementId) return;
+    const newPages = book.pages.map((p) => {
+      if (p.id !== selectedPage.id) return p;
+      const idx = p.elements.findIndex((el) =>
+        el.type === "text"
+          ? el.data.id === selectedElementId
+          : (el as any).data.id === selectedElementId,
+      );
+      if (idx === -1) return p;
+      const copy = [...p.elements];
+      const [el] = copy.splice(idx, 1);
+      copy.unshift(el);
+      return { ...p, elements: copy };
+    });
+    setBook({ ...book, pages: newPages });
+  }, [book, selectedPage, selectedElementId, setBook]);
+
   // Using react-draggable; native DnD removed
 
   const currentPageIndex = useMemo(
@@ -556,6 +708,55 @@ export default function BookEditor({
     [book.pages],
   );
 
+  // Asset thumbnail with big preview tooltip and loading spinner
+  function AssetTile({
+    asset,
+    onClick,
+    side = "right",
+  }: {
+    asset: AssetItem;
+    onClick: () => void;
+    side?: "top" | "right" | "bottom" | "left";
+  }) {
+    const [loaded, setLoaded] = useState(false);
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <button
+            className="group relative aspect-square overflow-hidden rounded border"
+            onClick={onClick}
+            title={asset.name || "Add image to page"}
+          >
+            <Image
+              alt={asset.name || "asset"}
+              src={asset.url}
+              fill
+              sizes="100px"
+              className="object-cover transition group-hover:scale-105"
+            />
+          </button>
+        </TooltipTrigger>
+        <TooltipContent side={side} align="center" className="p-1">
+          <div className="relative h-[40vw] max-h-[480px] w-[40vw] max-w-[480px] bg-background">
+            {!loaded ? (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Icons.spinner className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : null}
+            <Image
+              alt={asset.name || "asset preview"}
+              src={asset.url}
+              fill
+              sizes="(max-width: 768px) 60vw, 40vw"
+              className="rounded object-contain"
+              onLoadingComplete={() => setLoaded(true)}
+            />
+          </div>
+        </TooltipContent>
+      </Tooltip>
+    );
+  }
+
   if (!mounted) {
     return (
       <div className="grid gap-4">
@@ -574,187 +775,68 @@ export default function BookEditor({
 
   return (
     <div className="grid gap-4">
-      <div>
-        <Card>
-          <CardContent className="space-y-4 p-4">
-            <Tabs defaultValue="settings">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="settings">Settings</TabsTrigger>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[280px_1fr]">
+        {/* Left sidebar */}
+        <Card className="hidden lg:block">
+          <CardContent className="p-3">
+            <Tabs defaultValue="assets" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="assets">Assets</TabsTrigger>
                 <TabsTrigger value="pages">Pages</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="settings" className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="book-title">Book title</Label>
-                  <Input
-                    id="book-title"
-                    value={book.title}
-                    onChange={(e) =>
-                      setBook({ ...book, title: e.target.value })
-                    }
-                  />
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="secondary"
-                    onClick={async () => {
-                      try {
-                        const res = await fetch(
-                          "/api/books" + (bookId ? `/${bookId}` : ""),
-                          {
-                            method: bookId ? "PUT" : "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({
-                              title: book.title,
-                              data: book,
-                            }),
-                          },
-                        );
-                        if (!res.ok) throw new Error("Failed to save");
-                        const json = await res.json();
-                        if (!bookId && json?.id) setBookId(json.id);
-                        toast.success(bookId ? "Book saved" : "Book created");
-                      } catch (e) {
-                        toast.error("Failed to save book");
-                      }
-                    }}
-                  >
-                    {bookId ? "Save" : "Save as New"}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={async () => {
-                      try {
-                        const res = await fetch("/api/books", {
-                          method: "GET",
-                        });
-                        if (!res.ok) throw new Error("Failed to load");
-                        const list: Array<{ id: string; title: string }> =
-                          await res.json();
-                        if (list.length === 0) return;
-                        const first = list[0];
-                        const res2 = await fetch(`/api/books/${first.id}`);
-                        if (!res2.ok) throw new Error("Failed to load book");
-                        const full = await res2.json();
-                        if (full?.data) {
-                          setBook(full.data);
-                          setBookId(first.id);
-                        }
-                      } catch {}
-                    }}
-                  >
-                    Load Latest
-                  </Button>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <Button variant="secondary" onClick={addTextBox}>
-                    <Icons.post className="mr-2 h-4 w-4" /> Add text box
-                  </Button>
-                  <Button variant="outline" onClick={addPage}>
-                    <Icons.add className="mr-2 h-4 w-4" /> Add page
-                  </Button>
-                  <Button variant="outline" onClick={exportToPdf}>
-                    <Icons.download className="mr-2 h-4 w-4" /> Export PDF
-                  </Button>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Format</Label>
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      variant={pageFormat === "A3" ? "secondary" : "outline"}
-                      onClick={() => setPageFormat("A3")}
-                    >
-                      A3
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant={pageFormat === "A4" ? "secondary" : "outline"}
-                      onClick={() => setPageFormat("A4")}
-                    >
-                      A4
-                    </Button>
-                  </div>
-                  <div className="mt-2 space-y-1">
-                    <Label>Orientation</Label>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant={
-                          pageOrientation === "portrait"
-                            ? "secondary"
-                            : "outline"
-                        }
-                        onClick={() => setPageOrientation("portrait")}
-                      >
-                        Portrait
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant={
-                          pageOrientation === "landscape"
-                            ? "secondary"
-                            : "outline"
-                        }
-                        onClick={() => setPageOrientation("landscape")}
-                      >
-                        Landscape
-                      </Button>
+              <TabsContent value="assets" className="mt-3 space-y-2">
+                <Input
+                  placeholder="Search assets..."
+                  value={assetQuery}
+                  onChange={(e) => setAssetQuery(e.target.value)}
+                />
+                <ScrollArea className="h-[520px] pr-2">
+                  <TooltipProvider>
+                    <div className="grid grid-cols-2 gap-2">
+                      {assets.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">
+                          No creations yet. Generate images first.
+                        </p>
+                      ) : (
+                        assets
+                          .filter((a) =>
+                            (a.name || a.id)
+                              .toLowerCase()
+                              .includes(assetQuery.toLowerCase()),
+                          )
+                          .map((a) => (
+                            <AssetTile
+                              key={a.id}
+                              asset={a}
+                              onClick={() => addImage(a.id)}
+                              side="right"
+                            />
+                          ))
+                      )}
                     </div>
-                  </div>
-
-                  <div className="mt-2 space-y-1">
-                    <Label htmlFor="work-padding">Work area padding</Label>
-                    <div className="flex items-center gap-2">
-                      <Switch
-                        id="work-padding"
-                        checked={workAreaPaddingEnabled}
-                        onCheckedChange={setWorkAreaPaddingEnabled}
-                      />
-                      <span className="text-sm text-muted-foreground">
-                        {workAreaPaddingEnabled ? "24px enabled" : "disabled"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="assets">
-                <ScrollArea className="h-[320px] pr-2">
-                  <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-5">
-                    {assets.length === 0 ? (
-                      <p className="text-sm text-muted-foreground">
-                        No creations yet. Generate images first.
-                      </p>
-                    ) : (
-                      assets.map((a) => (
-                        <button
-                          key={a.id}
-                          className="group relative aspect-square overflow-hidden rounded border"
-                          onClick={() => addImage(a.id)}
-                          title={a.name || "Add image to page"}
-                        >
-                          <Image
-                            alt={a.name || "asset"}
-                            src={a.url}
-                            fill
-                            sizes="100px"
-                            className="object-cover transition group-hover:scale-105"
-                          />
-                        </button>
-                      ))
-                    )}
-                  </div>
+                  </TooltipProvider>
                 </ScrollArea>
               </TabsContent>
 
-              <TabsContent value="pages">
-                <ScrollArea className="h-[320px] pr-2">
-                  <div className="space-y-2">
+              <TabsContent value="pages" className="mt-3">
+                <div className="flex items-center justify-between gap-2">
+                  <Label>Pages</Label>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={addPage}>
+                      <Icons.add className="mr-2 h-4 w-4" /> Add
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={removePage}
+                    >
+                      <Icons.trash className="mr-2 h-4 w-4" /> Remove
+                    </Button>
+                  </div>
+                </div>
+                <ScrollArea className="mt-2 h-[520px] pr-2">
+                  <div className="space-y-1">
                     {book.pages.map((p, idx) => (
                       <Button
                         key={p.id}
@@ -772,853 +854,1050 @@ export default function BookEditor({
                     ))}
                   </div>
                 </ScrollArea>
-                <div className="pt-2">
-                  <Button variant="destructive" onClick={removePage}>
-                    <Icons.trash className="mr-2 h-4 w-4" /> Remove page
-                  </Button>
-                </div>
               </TabsContent>
             </Tabs>
           </CardContent>
         </Card>
-      </div>
 
-      <div>
-        <div ref={viewportRef} className="flex justify-center">
-          <SimpleFlipBook
-            ref={bookRef as any}
-            width={displayWidth}
-            height={displayHeight}
-            disableFlipByClick
-            mode="spread"
-            cover
-            onPageChange={(idx) => {
-              const leftId = book.pages[idx]?.id;
-              const rightId = book.pages[idx + 1]?.id;
-              // Only sync selection if current selection is not visible
-              if (selectedPageId !== leftId && selectedPageId !== rightId) {
-                if (leftId) setSelectedPageId(leftId);
-                else if (rightId) setSelectedPageId(rightId);
-              }
-            }}
-            className="shadow-xl"
-          >
-            {book.pages.map((page, pageIndex) => (
-              <div key={page.id} className="bg-white">
-                <div
-                  ref={stageRef}
-                  className="relative overflow-hidden rounded-md border bg-white shadow-sm"
-                  style={{
-                    height: displayHeight,
-                    width: displayWidth,
-                    padding: 0,
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedPageId(page.id);
-                  }}
-                >
-                  {page.id === selectedPageId ? (
-                    <div
-                      className="pointer-events-none absolute inset-0 rounded-md border-2 border-dashed border-red-500"
-                      style={{
-                        top: workAreaPadding,
-                        left: workAreaPadding,
-                        right: workAreaPadding,
-                        bottom: workAreaPadding,
-                      }}
-                    />
-                  ) : null}
-                  {/* Page number badge */}
-                  <div
-                    className={`pointer-events-none absolute bottom-1 ${
-                      (pageIndex + 1) % 2 === 0 ? "left-2" : "right-2"
-                    } rounded bg-white/70 px-1.5 py-0.5 text-[10px] font-medium text-neutral-700 shadow-sm`}
-                    style={{
-                      bottom: workAreaPadding + 2,
-                      left:
-                        (pageIndex + 1) % 2 === 0
-                          ? workAreaPadding + 8
-                          : undefined,
-                      right:
-                        (pageIndex + 1) % 2 !== 0
-                          ? workAreaPadding + 8
-                          : undefined,
+        {/* Center area */}
+        <div className="flex flex-col gap-3">
+          {/* Top toolbar */}
+          <Card>
+            <CardContent className="flex flex-wrap items-center gap-2 p-3">
+              <Input
+                className="w-[240px]"
+                value={book.title}
+                onChange={(e) => setBook({ ...book, title: e.target.value })}
+                placeholder="Book title"
+              />
+              <Separator
+                orientation="vertical"
+                className="mx-1 hidden h-6 lg:block"
+              />
+              <TooltipProvider>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button variant="secondary" onClick={addTextBox}>
+                        <Icons.post className="mr-2 h-4 w-4" /> Add text
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Add a text box</TooltipContent>
+                  </Tooltip>
+
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline">
+                        <Icons.media className="mr-2 h-4 w-4" /> Add image
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[360px]">
+                      <div className="space-y-2">
+                        <Input
+                          placeholder="Search assets..."
+                          value={assetQuery}
+                          onChange={(e) => setAssetQuery(e.target.value)}
+                        />
+                        <ScrollArea className="h-[280px] pr-2">
+                          <TooltipProvider>
+                            <div className="grid grid-cols-3 gap-2">
+                              {assets
+                                .filter((a) =>
+                                  (a.name || a.id)
+                                    .toLowerCase()
+                                    .includes(assetQuery.toLowerCase()),
+                                )
+                                .map((a) => (
+                                  <AssetTile
+                                    key={a.id}
+                                    asset={a}
+                                    onClick={() => addImage(a.id)}
+                                    side="top"
+                                  />
+                                ))}
+                            </div>
+                          </TooltipProvider>
+                        </ScrollArea>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+
+                  <Separator
+                    orientation="vertical"
+                    className="mx-1 hidden h-6 lg:block"
+                  />
+
+                  <Button
+                    variant="outline"
+                    onClick={() => bookRef.current?.flipPrev()}
+                  >
+                    <Icons.chevronLeft className="mr-2 h-4 w-4" /> Prev
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      const current = bookRef.current?.getCurrentPage() ?? 0;
+                      let delta = 1;
+                      delta = current === 0 ? 1 : 2;
+                      const next = current + delta;
+                      const lastIndex = book.pages.length - 1;
+                      if (next > lastIndex) {
+                        const newId = generateId("page");
+                        setBook({
+                          ...book,
+                          pages: [...book.pages, { id: newId, elements: [] }],
+                        });
+                        setSelectedPageId(newId);
+                        setTimeout(() => bookRef.current?.flipNext(), 0);
+                      } else {
+                        bookRef.current?.flipNext();
+                      }
                     }}
                   >
-                    {pageIndex + 1}
+                    Next <Icons.arrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+
+                  <div className="ml-2 flex items-center gap-2">
+                    <Label className="text-xs">Zoom</Label>
+                    <div className="w-40">
+                      <Slider
+                        value={[Math.round(renderZoom * 100)]}
+                        min={50}
+                        max={120}
+                        step={5}
+                        onValueChange={([val]) => setZoom(val / 100)}
+                      />
+                    </div>
+                    <span className="text-xs text-muted-foreground">
+                      {Math.round(renderZoom * 100)}%
+                    </span>
                   </div>
-                  {page.elements.map((el) => {
-                    if (el.type === "image") {
-                      const asset = assets.find(
-                        (a) => a.id === el.data.assetId,
-                      );
-                      if (!asset) return null;
-                      const rotation =
-                        ((el.data as EditorImage).rotation || 0) % 360;
-                      const isQuarterTurn = Math.abs(rotation) % 180 !== 0;
-                      const containerW = Math.floor(
-                        (isQuarterTurn ? el.data.height : el.data.width) * zoom,
-                      );
-                      const containerH = Math.floor(
-                        (isQuarterTurn ? el.data.width : el.data.height) * zoom,
-                      );
-                      const leftPx = Math.floor(
-                        workAreaPadding + el.data.x * zoom,
-                      );
-                      const topPx = Math.floor(
-                        workAreaPadding + el.data.y * zoom,
-                      );
-                      return (
-                        <Draggable
-                          key={el.data.id}
-                          position={{ x: leftPx, y: topPx }}
-                          bounds="parent"
-                          onStart={() => {
-                            setSelectedPageId(page.id);
-                            setSelectedElementId(el.data.id);
-                          }}
-                          onDrag={(e, data) => {
-                            const xPage = (data.x - workAreaPadding) / zoom;
-                            const yPage = (data.y - workAreaPadding) / zoom;
-                            updateElementPosition(el.data.id, xPage, yPage);
-                          }}
-                        >
-                          <div
-                            onMouseDown={(e) => e.stopPropagation()}
-                            onTouchStart={(e) => e.stopPropagation()}
-                            onClick={() => {
+
+                  <Separator
+                    orientation="vertical"
+                    className="mx-1 hidden h-6 lg:block"
+                  />
+
+                  <Button variant="secondary" onClick={saveBook}>
+                    <Icons.check className="mr-2 h-4 w-4" />{" "}
+                    {bookId ? "Save" : "Save as New"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setPropertiesOpen(true)}
+                  >
+                    <Icons.settings className="mr-2 h-4 w-4" /> Properties
+                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline">
+                        <Icons.ellipsis className="mr-2 h-4 w-4" /> More
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={loadLatest}>
+                        <Icons.download className="mr-2 h-4 w-4" /> Load latest
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={exportToPdf}>
+                        <Icons.download className="mr-2 h-4 w-4" /> Export PDF
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
+                  <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="ghost">
+                        <Icons.settings className="mr-2 h-4 w-4" /> Settings
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Document settings</DialogTitle>
+                      </DialogHeader>
+                      <div className="mt-2 grid gap-4">
+                        <div className="space-y-2">
+                          <Label>Format</Label>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant={
+                                pageFormat === "A3" ? "secondary" : "outline"
+                              }
+                              onClick={() => setPageFormat("A3")}
+                            >
+                              A3
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant={
+                                pageFormat === "A4" ? "secondary" : "outline"
+                              }
+                              onClick={() => setPageFormat("A4")}
+                            >
+                              A4
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant={
+                                pageFormat === "A5" ? "secondary" : "outline"
+                              }
+                              onClick={() => setPageFormat("A5")}
+                            >
+                              A5
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Orientation</Label>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant={
+                                pageOrientation === "portrait"
+                                  ? "secondary"
+                                  : "outline"
+                              }
+                              onClick={() => setPageOrientation("portrait")}
+                            >
+                              Portrait
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant={
+                                pageOrientation === "landscape"
+                                  ? "secondary"
+                                  : "outline"
+                              }
+                              onClick={() => setPageOrientation("landscape")}
+                            >
+                              Landscape
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="work-padding">
+                            Work area padding
+                          </Label>
+                          <div className="flex items-center gap-2">
+                            <Switch
+                              id="work-padding"
+                              checked={workAreaPaddingEnabled}
+                              onCheckedChange={setWorkAreaPaddingEnabled}
+                            />
+                            <span className="text-sm text-muted-foreground">
+                              {workAreaPaddingEnabled
+                                ? "24px enabled"
+                                : "disabled"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </TooltipProvider>
+            </CardContent>
+          </Card>
+
+          {/* Canvas */}
+          <div ref={viewportRef} className="flex justify-center">
+            <SimpleFlipBook
+              ref={bookRef as any}
+              width={displayWidth}
+              height={displayHeight}
+              disableFlipByClick
+              mode={isSmallScreen ? "single" : "spread"}
+              cover
+              onPageChange={(idx) => {
+                const leftId = book.pages[idx]?.id;
+                const rightId = book.pages[idx + 1]?.id;
+                // Only sync selection if current selection is not visible
+                if (selectedPageId !== leftId && selectedPageId !== rightId) {
+                  if (leftId) setSelectedPageId(leftId);
+                  else if (rightId) setSelectedPageId(rightId);
+                }
+              }}
+              className="shadow-xl"
+            >
+              {book.pages.map((page, pageIndex) => (
+                <div key={page.id} className="bg-white">
+                  <div
+                    ref={stageRef}
+                    className="relative overflow-hidden rounded-md border bg-white shadow-sm"
+                    style={{
+                      height: displayHeight,
+                      width: displayWidth,
+                      padding: 0,
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedPageId(page.id);
+                    }}
+                  >
+                    {page.id === selectedPageId ? (
+                      <div
+                        className="pointer-events-none absolute inset-0 rounded-md border-2 border-dashed border-red-500"
+                        style={{
+                          top: workAreaPadding,
+                          left: workAreaPadding,
+                          right: workAreaPadding,
+                          bottom: workAreaPadding,
+                        }}
+                      />
+                    ) : null}
+                    {/* Page number badge */}
+                    <div
+                      className={`pointer-events-none absolute bottom-1 ${
+                        (pageIndex + 1) % 2 === 0 ? "left-2" : "right-2"
+                      } rounded bg-white/70 px-1.5 py-0.5 text-[10px] font-medium text-neutral-700 shadow-sm`}
+                      style={{
+                        bottom: workAreaPadding + 2,
+                        left:
+                          (pageIndex + 1) % 2 === 0
+                            ? workAreaPadding + 8
+                            : undefined,
+                        right:
+                          (pageIndex + 1) % 2 !== 0
+                            ? workAreaPadding + 8
+                            : undefined,
+                      }}
+                    >
+                      {pageIndex + 1}
+                    </div>
+                    {page.elements.map((el) => {
+                      if (el.type === "image") {
+                        const asset = assets.find(
+                          (a) => a.id === el.data.assetId,
+                        );
+                        if (!asset) return null;
+                        const rotation =
+                          ((el.data as EditorImage).rotation || 0) % 360;
+                        const isQuarterTurn = Math.abs(rotation) % 180 !== 0;
+                        const containerW = Math.floor(
+                          (isQuarterTurn ? el.data.height : el.data.width) *
+                            renderZoom,
+                        );
+                        const containerH = Math.floor(
+                          (isQuarterTurn ? el.data.width : el.data.height) *
+                            renderZoom,
+                        );
+                        const leftPx = Math.floor(
+                          workAreaPadding + el.data.x * renderZoom,
+                        );
+                        const topPx = Math.floor(
+                          workAreaPadding + el.data.y * renderZoom,
+                        );
+                        return (
+                          <Draggable
+                            key={el.data.id}
+                            position={{ x: leftPx, y: topPx }}
+                            bounds="parent"
+                            onStart={() => {
                               setSelectedPageId(page.id);
                               setSelectedElementId(el.data.id);
                             }}
-                            style={{
-                              position: "absolute",
-                              left: 0,
-                              top: 0,
-                              width: containerW,
-                              height: containerH,
-                              cursor: "move",
-                            }}
-                            className={`group overflow-hidden rounded bg-white ${
-                              selectedElementId === el.data.id
-                                ? "ring-2 ring-primary"
-                                : ""
-                            }`}
-                          >
-                            <div className="relative h-full w-full">
-                              <div
-                                style={{
-                                  position: "absolute",
-                                  left: "50%",
-                                  top: "50%",
-                                  transform: `translate(-50%, -50%) rotate(${rotation}deg)`,
-                                  width: isQuarterTurn
-                                    ? containerH
-                                    : containerW,
-                                  height: isQuarterTurn
-                                    ? containerW
-                                    : containerH,
-                                }}
-                              >
-                                <img
-                                  src={asset.url}
-                                  alt={asset.name || "image"}
-                                  className={
-                                    (el.data as EditorImage).fit === "cover"
-                                      ? "h-full w-full object-cover"
-                                      : "h-full w-full object-contain"
-                                  }
-                                />
-                              </div>
-                            </div>
-                            <Button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                e.preventDefault();
-                                removeElement(el.data.id);
-                              }}
-                              variant="secondary"
-                              size="icon"
-                              className="absolute right-1 top-1 hidden h-6 w-6 p-0 group-hover:flex"
-                            >
-                              <Icons.close className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        </Draggable>
-                      );
-                    }
-                    if (el.type === "text") {
-                      return (
-                        <TextBox
-                          key={el.data.id}
-                          zoom={zoom}
-                          workAreaPadding={workAreaPadding}
-                          element={el.data as EditorTextBox}
-                          isSelected={selectedElementId === el.data.id}
-                          isEditing={editingElementId === el.data.id}
-                          onFocusEdit={() => setEditingElementId(el.data.id)}
-                          onBlurEdit={() => setEditingElementId(null)}
-                          onSelect={() => {
-                            setSelectedPageId(page.id);
-                            setSelectedElementId(el.data.id);
-                          }}
-                          onDoubleClickToEdit={() => {
-                            setSelectedPageId(page.id);
-                            setSelectedElementId(el.data.id);
-                            setEditingElementId(el.data.id);
-                          }}
-                          onDragTo={(x, y) =>
-                            updateElementPosition(el.data.id, x, y)
-                          }
-                          onChangeText={(text) =>
-                            updateElementData(el.data.id, { text })
-                          }
-                          onRemove={() => removeElement(el.data.id)}
-                        />
-                      );
-                    }
-                    return null;
-                  })}
-                </div>
-              </div>
-            ))}
-          </SimpleFlipBook>
-        </div>
-        {/* Controls */}
-        <div className="mt-4 grid gap-6">
-          <div className="flex flex-wrap items-end justify-center gap-2">
-            <div className="flex items-center gap-3">
-              <Label className="mr-1">Preview</Label>
-              <div className="w-48">
-                <Slider
-                  value={[Math.round(zoom * 100)]}
-                  min={50}
-                  max={120}
-                  step={5}
-                  onValueChange={([val]) => setZoom(val / 100)}
-                />
-              </div>
-              <span className="text-xs text-muted-foreground">
-                {Math.round(zoom * 100)}%
-              </span>
-            </div>
-            <Button
-              variant="secondary"
-              onClick={() => {
-                bookRef.current?.flipPrev();
-              }}
-            >
-              <Icons.chevronLeft className="mr-2 h-4 w-4" /> Prev
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={() => {
-                const current = bookRef.current?.getCurrentPage() ?? 0;
-                let delta = 1;
-                // Mirror SimpleFlipBook's spread + cover logic
-                delta = current === 0 ? 1 : 2;
-                const next = current + delta;
-                const lastIndex = book.pages.length - 1;
-                if (next > lastIndex) {
-                  const newId = generateId("page");
-                  setBook({
-                    ...book,
-                    pages: [...book.pages, { id: newId, elements: [] }],
-                  });
-                  setSelectedPageId(newId);
-                  setTimeout(() => bookRef.current?.flipNext(), 0);
-                } else {
-                  bookRef.current?.flipNext();
-                }
-              }}
-            >
-              Next <Icons.arrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-
-          <div className="mx-auto w-full rounded border bg-background p-3">
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-              <div className="md:col-span-2">
-                {selectedElement ? (
-                  <div className="grid grid-cols-2 gap-4 sm:grid-cols-12">
-                    {selectedElement.type === "text" ? (
-                      <div className="col-span-2 sm:col-span-12">
-                        <Label htmlFor="ctrl-text">Text</Label>
-                        <Input
-                          id="ctrl-text"
-                          value={(selectedElement.data as EditorTextBox).text}
-                          onChange={(e) =>
-                            updateElementData(selectedElement.data.id, {
-                              text: e.target.value,
-                            })
-                          }
-                        />
-                        <div className="mt-3 grid gap-3 sm:grid-cols-12">
-                          <div className="sm:col-span-6">
-                            <Label>Font family</Label>
-                            <Select
-                              value={
-                                (selectedElement.data as EditorTextBox)
-                                  .fontFamily || "Inter"
-                              }
-                              onValueChange={(v) =>
-                                updateElementData(selectedElement.data.id, {
-                                  fontFamily: v,
-                                })
-                              }
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Choose font" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="Inter">Inter</SelectItem>
-                                <SelectItem value="Georgia">Georgia</SelectItem>
-                                <SelectItem value="Times New Roman">
-                                  Times New Roman
-                                </SelectItem>
-                                <SelectItem value="Arial">Arial</SelectItem>
-                                <SelectItem value="Courier New">
-                                  Courier New
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="sm:col-span-6">
-                            <Label>Font size</Label>
-                            <div className="px-1">
-                              <Slider
-                                value={[
-                                  (selectedElement.data as EditorTextBox)
-                                    .fontSize || 18,
-                                ]}
-                                min={8}
-                                max={72}
-                                step={1}
-                                onValueChange={([v]) =>
-                                  updateElementData(selectedElement.data.id, {
-                                    fontSize: v,
-                                  })
-                                }
-                              />
-                            </div>
-                          </div>
-                          <div className="sm:col-span-6">
-                            <Label>Font color</Label>
-                            <div className="flex items-center gap-2 px-1">
-                              <input
-                                type="color"
-                                value={
-                                  (selectedElement.data as EditorTextBox)
-                                    .fontColor || "#111827"
-                                }
-                                onChange={(e) =>
-                                  updateElementData(selectedElement.data.id, {
-                                    fontColor: e.target.value,
-                                  })
-                                }
-                                className="h-8 w-12 cursor-pointer rounded border bg-transparent"
-                                aria-label="Font color"
-                              />
-                              <span className="text-xs text-muted-foreground">
-                                {(selectedElement.data as EditorTextBox)
-                                  .fontColor || "#111827"}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="sm:col-span-12">
-                            <Label>Style</Label>
-                            <div className="flex gap-2 py-1">
-                              <Button
-                                size="sm"
-                                variant={
-                                  (selectedElement.data as EditorTextBox).bold
-                                    ? "secondary"
-                                    : "outline"
-                                }
-                                onClick={() =>
-                                  updateElementData(selectedElement.data.id, {
-                                    bold: !(
-                                      (selectedElement.data as EditorTextBox)
-                                        .bold || false
-                                    ),
-                                  })
-                                }
-                              >
-                                B
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant={
-                                  (selectedElement.data as EditorTextBox).italic
-                                    ? "secondary"
-                                    : "outline"
-                                }
-                                onClick={() =>
-                                  updateElementData(selectedElement.data.id, {
-                                    italic: !(
-                                      (selectedElement.data as EditorTextBox)
-                                        .italic || false
-                                    ),
-                                  })
-                                }
-                              >
-                                I
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant={
-                                  (selectedElement.data as EditorTextBox)
-                                    .underline
-                                    ? "secondary"
-                                    : "outline"
-                                }
-                                onClick={() =>
-                                  updateElementData(selectedElement.data.id, {
-                                    underline: !(
-                                      (selectedElement.data as EditorTextBox)
-                                        .underline || false
-                                    ),
-                                  })
-                                }
-                              >
-                                U
-                              </Button>
-                            </div>
-                          </div>
-                          <div className="sm:col-span-12">
-                            <Label>Alignment</Label>
-                            <div className="flex gap-2 py-1">
-                              <Button
-                                size="sm"
-                                variant={
-                                  (selectedElement.data as EditorTextBox)
-                                    .textAlign === "left"
-                                    ? "secondary"
-                                    : "outline"
-                                }
-                                onClick={() =>
-                                  updateElementData(selectedElement.data.id, {
-                                    textAlign: "left",
-                                  })
-                                }
-                              >
-                                Left
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant={
-                                  (selectedElement.data as EditorTextBox)
-                                    .textAlign === "center"
-                                    ? "secondary"
-                                    : "outline"
-                                }
-                                onClick={() =>
-                                  updateElementData(selectedElement.data.id, {
-                                    textAlign: "center",
-                                  })
-                                }
-                              >
-                                Center
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant={
-                                  (selectedElement.data as EditorTextBox)
-                                    .textAlign === "right"
-                                    ? "secondary"
-                                    : "outline"
-                                }
-                                onClick={() =>
-                                  updateElementData(selectedElement.data.id, {
-                                    textAlign: "right",
-                                  })
-                                }
-                              >
-                                Right
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant={
-                                  (selectedElement.data as EditorTextBox)
-                                    .textAlign === "justify"
-                                    ? "secondary"
-                                    : "outline"
-                                }
-                                onClick={() =>
-                                  updateElementData(selectedElement.data.id, {
-                                    textAlign: "justify",
-                                  })
-                                }
-                              >
-                                Justify
-                              </Button>
-                            </div>
-                          </div>
-                          <div className="sm:col-span-12">
-                            <Label>Vertical alignment</Label>
-                            <div className="flex gap-2 py-1">
-                              <Button
-                                size="sm"
-                                variant={
-                                  (selectedElement.data as EditorTextBox)
-                                    .verticalAlign === "top"
-                                    ? "secondary"
-                                    : "outline"
-                                }
-                                onClick={() =>
-                                  updateElementData(selectedElement.data.id, {
-                                    verticalAlign: "top",
-                                  })
-                                }
-                              >
-                                Top
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant={
-                                  (selectedElement.data as EditorTextBox)
-                                    .verticalAlign === "middle"
-                                    ? "secondary"
-                                    : "outline"
-                                }
-                                onClick={() =>
-                                  updateElementData(selectedElement.data.id, {
-                                    verticalAlign: "middle",
-                                  })
-                                }
-                              >
-                                Middle
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant={
-                                  (selectedElement.data as EditorTextBox)
-                                    .verticalAlign === "bottom"
-                                    ? "secondary"
-                                    : "outline"
-                                }
-                                onClick={() =>
-                                  updateElementData(selectedElement.data.id, {
-                                    verticalAlign: "bottom",
-                                  })
-                                }
-                              >
-                                Bottom
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ) : null}
-                    <div className="sm:col-span-6">
-                      <Label>Position X</Label>
-                      <div className="px-1">
-                        {(() => {
-                          const isImg = selectedElement.type === "image";
-                          const rot = isImg
-                            ? ((selectedElement.data as any).rotation || 0) %
-                              360
-                            : 0;
-                          const quarter = Math.abs(rot) % 180 !== 0;
-                          const effWidth =
-                            isImg && quarter
-                              ? selectedElement.data.height
-                              : selectedElement.data.width;
-                          const maxX = Math.max(0, contentPageWidth - effWidth);
-                          const val = Math.max(
-                            -workAreaPadding / zoom,
-                            Math.min(selectedElement.data.x, maxX),
-                          );
-                          return (
-                            <Slider
-                              value={[val]}
-                              min={-workAreaPadding / zoom}
-                              max={maxX}
-                              step={1}
-                              onValueChange={([v]) =>
-                                updateElementData(selectedElement.data.id, {
-                                  x: Math.min(Math.max(v, 0), maxX),
-                                })
-                              }
-                            />
-                          );
-                        })()}
-                      </div>
-                    </div>
-                    <div className="sm:col-span-6">
-                      <Label>Position Y</Label>
-                      <div className="px-1">
-                        {(() => {
-                          const isImg = selectedElement.type === "image";
-                          const rot = isImg
-                            ? ((selectedElement.data as any).rotation || 0) %
-                              360
-                            : 0;
-                          const quarter = Math.abs(rot) % 180 !== 0;
-                          const effHeight =
-                            isImg && quarter
-                              ? selectedElement.data.width
-                              : selectedElement.data.height;
-                          const maxY = Math.max(
-                            0,
-                            contentPageHeight - effHeight,
-                          );
-                          const val = Math.max(
-                            -workAreaPadding / zoom,
-                            Math.min(selectedElement.data.y, maxY),
-                          );
-                          return (
-                            <Slider
-                              value={[val]}
-                              min={-workAreaPadding / zoom}
-                              max={maxY}
-                              step={1}
-                              onValueChange={([v]) =>
-                                updateElementData(selectedElement.data.id, {
-                                  y: Math.min(Math.max(v, 0), maxY),
-                                })
-                              }
-                            />
-                          );
-                        })()}
-                      </div>
-                    </div>
-                    <div className="sm:col-span-6">
-                      <Label>Width</Label>
-                      <div className="px-1">
-                        <Slider
-                          value={[
-                            Math.min(
-                              selectedElement.data.width,
-                              contentPageWidth,
-                            ),
-                          ]}
-                          max={contentPageWidth}
-                          min={20}
-                          step={1}
-                          onValueChange={([val]) =>
-                            updateElementData(selectedElement.data.id, {
-                              width: Math.min(
-                                Math.max(val, 20),
-                                contentPageWidth -
-                                  Math.max(selectedElement.data.x, 0),
-                              ),
-                            })
-                          }
-                        />
-                        <div className="mt-2 flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              if (selectedElement.type === "image") {
-                                const rotation =
-                                  ((selectedElement.data as EditorImage)
-                                    .rotation || 0) % 360;
-                                const quarter = Math.abs(rotation) % 180 !== 0;
-                                if (quarter) {
-                                  updateElementData(selectedElement.data.id, {
-                                    // For quarter turn, rotated width equals height
-                                    height: contentPageWidth,
-                                    // Include width to allow clamping to contentPageHeight
-                                    width: selectedElement.data.width,
-                                    x: 0,
-                                  } as Partial<EditorImage>);
-                                  return;
-                                }
-                              }
-                              updateElementData(selectedElement.data.id, {
-                                // Non-quarter: rotated width equals width
-                                width: contentPageWidth,
-                                // Include height to allow clamping to contentPageHeight
-                                height: selectedElement.data.height,
-                                x: 0,
-                              });
+                            onDrag={(e, data) => {
+                              const xPage =
+                                (data.x - workAreaPadding) / renderZoom;
+                              const yPage =
+                                (data.y - workAreaPadding) / renderZoom;
+                              updateElementPosition(el.data.id, xPage, yPage);
                             }}
                           >
-                            Full width
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="sm:col-span-6">
-                      <Label>Height</Label>
-                      <div className="px-1">
-                        <Slider
-                          value={[
-                            Math.min(
-                              selectedElement.data.height,
-                              contentPageHeight,
-                            ),
-                          ]}
-                          max={contentPageHeight}
-                          min={20}
-                          step={1}
-                          onValueChange={([val]) =>
-                            updateElementData(selectedElement.data.id, {
-                              height: Math.min(
-                                Math.max(val, 20),
-                                contentPageHeight -
-                                  Math.max(selectedElement.data.y, 0),
-                              ),
-                            })
-                          }
-                        />
-                        <div className="mt-2 flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              if (selectedElement.type === "image") {
-                                const rotation =
-                                  ((selectedElement.data as EditorImage)
-                                    .rotation || 0) % 360;
-                                const quarter = Math.abs(rotation) % 180 !== 0;
-                                if (quarter) {
-                                  updateElementData(selectedElement.data.id, {
-                                    // For quarter turn, rotated height equals width
-                                    width: contentPageHeight,
-                                    // Include height to allow clamping to contentPageWidth
-                                    height: selectedElement.data.height,
-                                    y: 0,
-                                  } as Partial<EditorImage>);
-                                  return;
-                                }
-                              }
-                              updateElementData(selectedElement.data.id, {
-                                // Non-quarter: rotated height equals height
-                                height: contentPageHeight,
-                                // Include width to allow clamping to contentPageWidth
-                                width: selectedElement.data.width,
-                                y: 0,
-                              });
-                            }}
-                          >
-                            Full height
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="sm:col-span-6">
-                      {selectedElement.type === "image" ? (
-                        <div className="space-y-1">
-                          <Label>Image fit</Label>
-                          <div className="flex gap-2">
-                            <Button
-                              variant={
-                                (selectedElement.data as EditorImage).fit ===
-                                "contain"
-                                  ? "secondary"
-                                  : "outline"
-                              }
-                              size="sm"
-                              onClick={() =>
-                                updateElementData(selectedElement.data.id, {
-                                  fit: "contain",
-                                } as Partial<EditorImage>)
-                              }
-                            >
-                              Contain
-                            </Button>
-                            <Button
-                              variant={
-                                (selectedElement.data as EditorImage).fit ===
-                                "cover"
-                                  ? "secondary"
-                                  : "outline"
-                              }
-                              size="sm"
-                              onClick={() =>
-                                updateElementData(selectedElement.data.id, {
-                                  fit: "cover",
-                                } as Partial<EditorImage>)
-                              }
-                            >
-                              Cover
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
+                            <div
+                              onMouseDown={(e) => e.stopPropagation()}
+                              onTouchStart={(e) => e.stopPropagation()}
                               onClick={() => {
-                                const currentRot =
-                                  (selectedElement.data as EditorImage)
-                                    .rotation || 0;
-                                const nextRot = (currentRot + 90) % 360;
-                                // swap width/height when rotating 90/270
-                                const willQuarterTurn =
-                                  Math.abs(nextRot % 180) !== 0;
-                                const newWidth = willQuarterTurn
-                                  ? Math.min(
-                                      selectedElement.data.height,
-                                      contentPageWidth,
-                                    )
-                                  : Math.min(
-                                      selectedElement.data.width,
-                                      contentPageWidth,
-                                    );
-                                const newHeight = willQuarterTurn
-                                  ? Math.min(
-                                      selectedElement.data.width,
-                                      contentPageHeight,
-                                    )
-                                  : Math.min(
-                                      selectedElement.data.height,
-                                      contentPageHeight,
-                                    );
-                                // Clamp position so rotated box stays inside
-                                const maxX = Math.max(
-                                  0,
-                                  contentPageWidth - newWidth,
-                                );
-                                const maxY = Math.max(
-                                  0,
-                                  contentPageHeight - newHeight,
-                                );
-                                const newX = Math.min(
-                                  Math.max(selectedElement.data.x, 0),
-                                  maxX,
-                                );
-                                const newY = Math.min(
-                                  Math.max(selectedElement.data.y, 0),
-                                  maxY,
-                                );
-                                updateElementData(selectedElement.data.id, {
-                                  rotation: nextRot,
-                                  width: newWidth,
-                                  height: newHeight,
-                                  x: newX,
-                                  y: newY,
-                                } as Partial<EditorImage>);
+                                setSelectedPageId(page.id);
+                                setSelectedElementId(el.data.id);
                               }}
+                              style={{
+                                position: "absolute",
+                                left: 0,
+                                top: 0,
+                                width: containerW,
+                                height: containerH,
+                                cursor: "move",
+                              }}
+                              className={`group overflow-hidden rounded bg-white ${
+                                selectedElementId === el.data.id
+                                  ? "ring-2 ring-primary"
+                                  : ""
+                              }`}
                             >
-                              Rotate 90°
-                            </Button>
-                          </div>
+                              <div className="relative h-full w-full">
+                                <div
+                                  style={{
+                                    position: "absolute",
+                                    left: "50%",
+                                    top: "50%",
+                                    transform: `translate(-50%, -50%) rotate(${rotation}deg)`,
+                                    width: isQuarterTurn
+                                      ? containerH
+                                      : containerW,
+                                    height: isQuarterTurn
+                                      ? containerW
+                                      : containerH,
+                                  }}
+                                >
+                                  <img
+                                    src={asset.url}
+                                    alt={asset.name || "image"}
+                                    className={
+                                      (el.data as EditorImage).fit === "cover"
+                                        ? "h-full w-full object-cover"
+                                        : "h-full w-full object-contain"
+                                    }
+                                  />
+                                </div>
+                              </div>
+                              <Button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  e.preventDefault();
+                                  removeElement(el.data.id);
+                                }}
+                                variant="secondary"
+                                size="icon"
+                                className="absolute right-1 top-1 hidden h-6 w-6 p-0 group-hover:flex"
+                              >
+                                <Icons.close className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </Draggable>
+                        );
+                      }
+                      if (el.type === "text") {
+                        return (
+                          <TextBox
+                            key={el.data.id}
+                            zoom={renderZoom}
+                            workAreaPadding={workAreaPadding}
+                            element={el.data as EditorTextBox}
+                            isSelected={selectedElementId === el.data.id}
+                            isEditing={editingElementId === el.data.id}
+                            onFocusEdit={() => setEditingElementId(el.data.id)}
+                            onBlurEdit={() => setEditingElementId(null)}
+                            onSelect={() => {
+                              setSelectedPageId(page.id);
+                              setSelectedElementId(el.data.id);
+                            }}
+                            onDoubleClickToEdit={() => {
+                              setSelectedPageId(page.id);
+                              setSelectedElementId(el.data.id);
+                              setEditingElementId(el.data.id);
+                            }}
+                            onDragTo={(x, y) =>
+                              updateElementPosition(el.data.id, x, y)
+                            }
+                            onChangeText={(text) =>
+                              updateElementData(el.data.id, { text })
+                            }
+                            onRemove={() => removeElement(el.data.id)}
+                          />
+                        );
+                      }
+                      return null;
+                    })}
+                  </div>
+                </div>
+              ))}
+            </SimpleFlipBook>
+          </div>
+        </div>
+        {/* Bottom sheet for properties */}
+        <Sheet open={propertiesOpen} onOpenChange={setPropertiesOpen}>
+          <SheetContent
+            side="bottom"
+            className="max-h-[40vh] w-full overflow-y-auto"
+          >
+            <SheetHeader>
+              <SheetTitle>Properties</SheetTitle>
+            </SheetHeader>
+            {selectedElement ? (
+              <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-12">
+                {selectedElement.type === "text" ? (
+                  <div className="col-span-2 sm:col-span-12">
+                    <Label htmlFor="ctrl-text">Text</Label>
+                    <Input
+                      id="ctrl-text"
+                      value={(selectedElement.data as EditorTextBox).text}
+                      onChange={(e) =>
+                        updateElementData(selectedElement.data.id, {
+                          text: e.target.value,
+                        })
+                      }
+                    />
+                    <div className="mt-3 grid gap-3 sm:grid-cols-12">
+                      <div className="sm:col-span-6">
+                        <Label>Font family</Label>
+                        <Select
+                          value={
+                            (selectedElement.data as EditorTextBox)
+                              .fontFamily || "Inter"
+                          }
+                          onValueChange={(v) =>
+                            updateElementData(selectedElement.data.id, {
+                              fontFamily: v,
+                            })
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Choose font" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Inter">Inter</SelectItem>
+                            <SelectItem value="Georgia">Georgia</SelectItem>
+                            <SelectItem value="Times New Roman">
+                              Times New Roman
+                            </SelectItem>
+                            <SelectItem value="Arial">Arial</SelectItem>
+                            <SelectItem value="Courier New">
+                              Courier New
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="sm:col-span-6">
+                        <Label>Font size</Label>
+                        <div className="px-1">
+                          <Slider
+                            value={[
+                              (selectedElement.data as EditorTextBox)
+                                .fontSize || 18,
+                            ]}
+                            min={8}
+                            max={72}
+                            step={1}
+                            onValueChange={([v]) =>
+                              updateElementData(selectedElement.data.id, {
+                                fontSize: v,
+                              })
+                            }
+                          />
                         </div>
-                      ) : null}
+                      </div>
+                      <div className="sm:col-span-6">
+                        <Label>Font color</Label>
+                        <div className="flex items-center gap-2 px-1">
+                          <input
+                            type="color"
+                            value={
+                              (selectedElement.data as EditorTextBox)
+                                .fontColor || "#111827"
+                            }
+                            onChange={(e) =>
+                              updateElementData(selectedElement.data.id, {
+                                fontColor: e.target.value,
+                              })
+                            }
+                            className="h-8 w-12 cursor-pointer rounded border bg-transparent"
+                            aria-label="Font color"
+                          />
+                          <span className="text-xs text-muted-foreground">
+                            {(selectedElement.data as EditorTextBox)
+                              .fontColor || "#111827"}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="sm:col-span-12">
+                        <Label>Style</Label>
+                        <div className="flex gap-2 py-1">
+                          <Button
+                            size="sm"
+                            variant={
+                              (selectedElement.data as EditorTextBox).bold
+                                ? "secondary"
+                                : "outline"
+                            }
+                            onClick={() =>
+                              updateElementData(selectedElement.data.id, {
+                                bold: !(
+                                  (selectedElement.data as EditorTextBox)
+                                    .bold || false
+                                ),
+                              })
+                            }
+                          >
+                            B
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={
+                              (selectedElement.data as EditorTextBox).italic
+                                ? "secondary"
+                                : "outline"
+                            }
+                            onClick={() =>
+                              updateElementData(selectedElement.data.id, {
+                                italic: !(
+                                  (selectedElement.data as EditorTextBox)
+                                    .italic || false
+                                ),
+                              })
+                            }
+                          >
+                            I
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={
+                              (selectedElement.data as EditorTextBox).underline
+                                ? "secondary"
+                                : "outline"
+                            }
+                            onClick={() =>
+                              updateElementData(selectedElement.data.id, {
+                                underline: !(
+                                  (selectedElement.data as EditorTextBox)
+                                    .underline || false
+                                ),
+                              })
+                            }
+                          >
+                            U
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="sm:col-span-12">
+                        <Label>Alignment</Label>
+                        <div className="flex gap-2 py-1">
+                          <Button
+                            size="sm"
+                            variant={
+                              (selectedElement.data as EditorTextBox)
+                                .textAlign === "left"
+                                ? "secondary"
+                                : "outline"
+                            }
+                            onClick={() =>
+                              updateElementData(selectedElement.data.id, {
+                                textAlign: "left",
+                              })
+                            }
+                          >
+                            Left
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={
+                              (selectedElement.data as EditorTextBox)
+                                .textAlign === "center"
+                                ? "secondary"
+                                : "outline"
+                            }
+                            onClick={() =>
+                              updateElementData(selectedElement.data.id, {
+                                textAlign: "center",
+                              })
+                            }
+                          >
+                            Center
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={
+                              (selectedElement.data as EditorTextBox)
+                                .textAlign === "right"
+                                ? "secondary"
+                                : "outline"
+                            }
+                            onClick={() =>
+                              updateElementData(selectedElement.data.id, {
+                                textAlign: "right",
+                              })
+                            }
+                          >
+                            Right
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={
+                              (selectedElement.data as EditorTextBox)
+                                .textAlign === "justify"
+                                ? "secondary"
+                                : "outline"
+                            }
+                            onClick={() =>
+                              updateElementData(selectedElement.data.id, {
+                                textAlign: "justify",
+                              })
+                            }
+                          >
+                            Justify
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="sm:col-span-12">
+                        <Label>Vertical alignment</Label>
+                        <div className="flex gap-2 py-1">
+                          <Button
+                            size="sm"
+                            variant={
+                              (selectedElement.data as EditorTextBox)
+                                .verticalAlign === "top"
+                                ? "secondary"
+                                : "outline"
+                            }
+                            onClick={() =>
+                              updateElementData(selectedElement.data.id, {
+                                verticalAlign: "top",
+                              })
+                            }
+                          >
+                            Top
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={
+                              (selectedElement.data as EditorTextBox)
+                                .verticalAlign === "middle"
+                                ? "secondary"
+                                : "outline"
+                            }
+                            onClick={() =>
+                              updateElementData(selectedElement.data.id, {
+                                verticalAlign: "middle",
+                              })
+                            }
+                          >
+                            Middle
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={
+                              (selectedElement.data as EditorTextBox)
+                                .verticalAlign === "bottom"
+                                ? "secondary"
+                                : "outline"
+                            }
+                            onClick={() =>
+                              updateElementData(selectedElement.data.id, {
+                                verticalAlign: "bottom",
+                              })
+                            }
+                          >
+                            Bottom
+                          </Button>
+                        </div>
+                      </div>
                     </div>
-                    <div className="col-span-2 flex items-end justify-end">
+                  </div>
+                ) : null}
+                <div className="sm:col-span-6">
+                  <Label>Position X</Label>
+                  <div className="px-1">
+                    {(() => {
+                      const isImg = selectedElement.type === "image";
+                      const rot = isImg
+                        ? ((selectedElement.data as any).rotation || 0) % 360
+                        : 0;
+                      const quarter = Math.abs(rot) % 180 !== 0;
+                      const effWidth =
+                        isImg && quarter
+                          ? selectedElement.data.height
+                          : selectedElement.data.width;
+                      const maxX = Math.max(0, contentPageWidth - effWidth);
+                      const val = Math.max(
+                        -workAreaPadding / zoom,
+                        Math.min(selectedElement.data.x, maxX),
+                      );
+                      return (
+                        <Slider
+                          value={[val]}
+                          min={-workAreaPadding / zoom}
+                          max={maxX}
+                          step={1}
+                          onValueChange={([v]) =>
+                            updateElementData(selectedElement.data.id, {
+                              x: Math.min(Math.max(v, 0), maxX),
+                            })
+                          }
+                        />
+                      );
+                    })()}
+                  </div>
+                </div>
+                <div className="sm:col-span-6">
+                  <Label>Position Y</Label>
+                  <div className="px-1">
+                    {(() => {
+                      const isImg = selectedElement.type === "image";
+                      const rot = isImg
+                        ? ((selectedElement.data as any).rotation || 0) % 360
+                        : 0;
+                      const quarter = Math.abs(rot) % 180 !== 0;
+                      const effHeight =
+                        isImg && quarter
+                          ? selectedElement.data.width
+                          : selectedElement.data.height;
+                      const maxY = Math.max(0, contentPageHeight - effHeight);
+                      const val = Math.max(
+                        -workAreaPadding / zoom,
+                        Math.min(selectedElement.data.y, maxY),
+                      );
+                      return (
+                        <Slider
+                          value={[val]}
+                          min={-workAreaPadding / zoom}
+                          max={maxY}
+                          step={1}
+                          onValueChange={([v]) =>
+                            updateElementData(selectedElement.data.id, {
+                              y: Math.min(Math.max(v, 0), maxY),
+                            })
+                          }
+                        />
+                      );
+                    })()}
+                  </div>
+                </div>
+                <div className="sm:col-span-6">
+                  <Label>Width</Label>
+                  <div className="px-1">
+                    <Slider
+                      value={[
+                        Math.min(selectedElement.data.width, contentPageWidth),
+                      ]}
+                      max={contentPageWidth}
+                      min={20}
+                      step={1}
+                      onValueChange={([val]) =>
+                        updateElementData(selectedElement.data.id, {
+                          width: Math.min(
+                            Math.max(val, 20),
+                            contentPageWidth -
+                              Math.max(selectedElement.data.x, 0),
+                          ),
+                        })
+                      }
+                    />
+                    <div className="mt-2 flex gap-2">
                       <Button
-                        variant="destructive"
-                        onClick={() =>
-                          selectedElement &&
-                          removeElement(selectedElement.data.id)
-                        }
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          if (selectedElement.type === "image") {
+                            const rotation =
+                              ((selectedElement.data as EditorImage).rotation ||
+                                0) % 360;
+                            const quarter = Math.abs(rotation) % 180 !== 0;
+                            if (quarter) {
+                              updateElementData(selectedElement.data.id, {
+                                // For quarter turn, rotated width equals height
+                                height: contentPageWidth,
+                                // Include width to allow clamping to contentPageHeight
+                                width: selectedElement.data.width,
+                                x: 0,
+                              } as Partial<EditorImage>);
+                              return;
+                            }
+                          }
+                          updateElementData(selectedElement.data.id, {
+                            // Non-quarter: rotated width equals width
+                            width: contentPageWidth,
+                            // Include height to allow clamping to contentPageHeight
+                            height: selectedElement.data.height,
+                            x: 0,
+                          });
+                        }}
                       >
-                        <Icons.trash className="mr-2 h-4 w-4" /> Delete selected
+                        Full width
                       </Button>
                     </div>
                   </div>
-                ) : (
-                  <p className="text-center text-sm text-muted-foreground">
-                    Select an element on the page to edit its properties here.
-                  </p>
-                )}
+                </div>
+                <div className="sm:col-span-6">
+                  <Label>Height</Label>
+                  <div className="px-1">
+                    <Slider
+                      value={[
+                        Math.min(
+                          selectedElement.data.height,
+                          contentPageHeight,
+                        ),
+                      ]}
+                      max={contentPageHeight}
+                      min={20}
+                      step={1}
+                      onValueChange={([val]) =>
+                        updateElementData(selectedElement.data.id, {
+                          height: Math.min(
+                            Math.max(val, 20),
+                            contentPageHeight -
+                              Math.max(selectedElement.data.y, 0),
+                          ),
+                        })
+                      }
+                    />
+                    <div className="mt-2 flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          if (selectedElement.type === "image") {
+                            const rotation =
+                              ((selectedElement.data as EditorImage).rotation ||
+                                0) % 360;
+                            const quarter = Math.abs(rotation) % 180 !== 0;
+                            if (quarter) {
+                              updateElementData(selectedElement.data.id, {
+                                // For quarter turn, rotated height equals width
+                                width: contentPageHeight,
+                                // Include height to allow clamping to contentPageWidth
+                                height: selectedElement.data.height,
+                                y: 0,
+                              } as Partial<EditorImage>);
+                              return;
+                            }
+                          }
+                          updateElementData(selectedElement.data.id, {
+                            // Non-quarter: rotated height equals height
+                            height: contentPageHeight,
+                            // Include width to allow clamping to contentPageWidth
+                            width: selectedElement.data.width,
+                            y: 0,
+                          });
+                        }}
+                      >
+                        Full height
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                <div className="sm:col-span-6">
+                  {selectedElement.type === "image" ? (
+                    <div className="space-y-1">
+                      <Label>Image fit</Label>
+                      <div className="flex gap-2">
+                        <Button
+                          variant={
+                            (selectedElement.data as EditorImage).fit ===
+                            "contain"
+                              ? "secondary"
+                              : "outline"
+                          }
+                          size="sm"
+                          onClick={() =>
+                            updateElementData(selectedElement.data.id, {
+                              fit: "contain",
+                            } as Partial<EditorImage>)
+                          }
+                        >
+                          Contain
+                        </Button>
+                        <Button
+                          variant={
+                            (selectedElement.data as EditorImage).fit ===
+                            "cover"
+                              ? "secondary"
+                              : "outline"
+                          }
+                          size="sm"
+                          onClick={() =>
+                            updateElementData(selectedElement.data.id, {
+                              fit: "cover",
+                            } as Partial<EditorImage>)
+                          }
+                        >
+                          Cover
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const currentRot =
+                              (selectedElement.data as EditorImage).rotation ||
+                              0;
+                            const nextRot = (currentRot + 90) % 360;
+                            // swap width/height when rotating 90/270
+                            const willQuarterTurn =
+                              Math.abs(nextRot % 180) !== 0;
+                            const newWidth = willQuarterTurn
+                              ? Math.min(
+                                  selectedElement.data.height,
+                                  contentPageWidth,
+                                )
+                              : Math.min(
+                                  selectedElement.data.width,
+                                  contentPageWidth,
+                                );
+                            const newHeight = willQuarterTurn
+                              ? Math.min(
+                                  selectedElement.data.width,
+                                  contentPageHeight,
+                                )
+                              : Math.min(
+                                  selectedElement.data.height,
+                                  contentPageHeight,
+                                );
+                            // Clamp position so rotated box stays inside
+                            const maxX = Math.max(
+                              0,
+                              contentPageWidth - newWidth,
+                            );
+                            const maxY = Math.max(
+                              0,
+                              contentPageHeight - newHeight,
+                            );
+                            const newX = Math.min(
+                              Math.max(selectedElement.data.x, 0),
+                              maxX,
+                            );
+                            const newY = Math.min(
+                              Math.max(selectedElement.data.y, 0),
+                              maxY,
+                            );
+                            updateElementData(selectedElement.data.id, {
+                              rotation: nextRot,
+                              width: newWidth,
+                              height: newHeight,
+                              x: newX,
+                              y: newY,
+                            } as Partial<EditorImage>);
+                          }}
+                        >
+                          Rotate 90°
+                        </Button>
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+                <div className="col-span-2 flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={duplicateSelected}
+                    >
+                      <Icons.copy className="mr-2 h-4 w-4" /> Duplicate
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={bringToFront}>
+                      <Icons.arrowUpRight className="mr-2 h-4 w-4" /> Bring to
+                      front
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={sendToBack}>
+                      <Icons.chevronRight className="mr-2 h-4 w-4 rotate-180" />{" "}
+                      Send to back
+                    </Button>
+                  </div>
+                  <Button
+                    variant="destructive"
+                    onClick={() =>
+                      selectedElement && removeElement(selectedElement.data.id)
+                    }
+                  >
+                    <Icons.trash className="mr-2 h-4 w-4" /> Delete selected
+                  </Button>
+                </div>
               </div>
-              <div className="md:col-span-1" />
-            </div>
-          </div>
-        </div>
+            ) : (
+              <p className="py-4 text-sm text-muted-foreground">
+                Select an element to edit its properties
+              </p>
+            )}
+          </SheetContent>
+        </Sheet>
       </div>
     </div>
   );

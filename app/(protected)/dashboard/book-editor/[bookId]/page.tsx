@@ -14,6 +14,21 @@ export const metadata = constructMetadata({
   description: "Edit your coloring book.",
 });
 
+// Minimal shape needed for the editor
+interface BookState {
+  title: string;
+  pages: Array<{ id: string; elements: any[]; background?: string }>; // eslint-disable-line @typescript-eslint/no-explicit-any
+}
+
+function isBookState(value: unknown): value is BookState {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    Array.isArray((value as any).pages) && // eslint-disable-line @typescript-eslint/no-explicit-any
+    typeof (value as any).title === "string" // eslint-disable-line @typescript-eslint/no-explicit-any
+  );
+}
+
 async function getUserCreations(userId: string) {
   const creations = await prisma.imageJob.findMany({
     where: {
@@ -52,6 +67,10 @@ export default async function EditBookPage({
     select: { id: true, title: true, data: true },
   });
 
+  const initialBook = isBookState(book?.data)
+    ? (book?.data as BookState)
+    : null;
+
   return (
     <>
       <DashboardHeader
@@ -61,7 +80,7 @@ export default async function EditBookPage({
       <BookEditor
         assets={assets}
         initialBookId={book?.id || null}
-        initialBook={book?.data || null}
+        initialBook={initialBook}
       />
     </>
   );

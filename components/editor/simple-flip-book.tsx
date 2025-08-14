@@ -123,7 +123,7 @@ export const SimpleFlipBook = React.forwardRef<
     onPageChange?.(current);
   }, [current, onPageChange]);
 
-  const leftIndex = mode === "spread" ? current : current;
+  const leftIndex = current;
   const rightIndex = mode === "spread" ? current + 1 : -1;
   const leftPage = pages[leftIndex] ?? null;
   const rightPage = mode === "spread" ? (pages[rightIndex] ?? null) : null;

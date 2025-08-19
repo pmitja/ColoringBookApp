@@ -26,10 +26,12 @@ import {
   Package,
   Plus,
   Puzzle,
+  Redo2,
   Search,
   Settings,
   SunMedium,
   Trash,
+  Undo2,
   User,
   X,
 } from "lucide-react";
@@ -111,11 +113,13 @@ export const Icons = {
   package: Package,
   page: File,
   download: Download,
+  redo: Redo2,
   post: FileText,
   search: Search,
   settings: Settings,
   spinner: Loader2,
   sun: SunMedium,
+  undo: Undo2,
   trash: Trash,
   twitter: ({ ...props }: LucideProps) => (
     <svg

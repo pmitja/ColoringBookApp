@@ -19,6 +19,11 @@ export interface EditorTextBox {
   borderRadius?: number
   boxShadow?: string
   padding?: number
+  chatBubble?: {
+    trianglePosition: 'top' | 'right' | 'bottom' | 'left'
+    triangleOffset: number // percentage from edge (0-100)
+    triangleSize: number // size of triangle in pixels
+  }
 }
 
 

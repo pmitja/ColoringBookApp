@@ -14,6 +14,7 @@ interface TextBoxProps {
   onDoubleClickToEdit: () => void;
   onFocusEdit: () => void;
   onBlurEdit: () => void;
+  onDragStart: () => void;
   onDragTo: (x: number, y: number) => void;
   onChangeText: (text: string) => void;
   onRemove: () => void;
@@ -30,6 +31,7 @@ export default function TextBox(props: TextBoxProps) {
     onDoubleClickToEdit,
     onFocusEdit,
     onBlurEdit,
+    onDragStart,
     onDragTo,
     onChangeText,
     onRemove,
@@ -47,6 +49,12 @@ export default function TextBox(props: TextBoxProps) {
   const textAlign = element.textAlign || "left";
   const verticalAlign = element.verticalAlign || "top";
   const alignItems =
+    textAlign === "center"
+      ? "center"
+      : textAlign === "right"
+        ? "flex-end"
+        : "flex-start";
+  const justifyContent =
     verticalAlign === "middle"
       ? "center"
       : verticalAlign === "bottom"
@@ -65,6 +73,9 @@ export default function TextBox(props: TextBoxProps) {
       position={{ x: left, y: top }}
       disabled={isEditing}
       bounds="parent"
+      onStart={() => {
+        onDragStart();
+      }}
       onDrag={(e, data) => {
         const xPage = (data.x - workAreaPadding) / zoom;
         const yPage = (data.y - workAreaPadding) / zoom;
@@ -94,12 +105,104 @@ export default function TextBox(props: TextBoxProps) {
         }}
         className={`group ${isSelected ? "ring-2 ring-primary ring-offset-1" : ""}`}
       >
+        {/* Chat bubble triangle - positioned outside the inner container */}
+        {element.chatBubble && (
+          <>
+            {/* Main triangle with background color */}
+            <div
+              style={{
+                position: "absolute",
+                width: 0,
+                height: 0,
+                borderStyle: "solid",
+                ...(element.chatBubble.trianglePosition === "top" && {
+                  top: -element.chatBubble.triangleSize,
+                  left: `${element.chatBubble.triangleOffset}%`,
+                  transform: "translateX(-50%)",
+                  borderWidth: `0 ${element.chatBubble.triangleSize}px ${element.chatBubble.triangleSize}px ${element.chatBubble.triangleSize}px`,
+                  borderColor: `transparent transparent ${backgroundColor} transparent`,
+                }),
+                ...(element.chatBubble.trianglePosition === "right" && {
+                  right: -element.chatBubble.triangleSize,
+                  top: `${element.chatBubble.triangleOffset}%`,
+                  transform: "translateY(-50%)",
+                  borderWidth: `${element.chatBubble.triangleSize}px 0 ${element.chatBubble.triangleSize}px ${element.chatBubble.triangleSize}px`,
+                  borderColor: `transparent transparent transparent ${backgroundColor}`,
+                }),
+                ...(element.chatBubble.trianglePosition === "bottom" && {
+                  bottom: -element.chatBubble.triangleSize,
+                  left: `${element.chatBubble.triangleOffset}%`,
+                  transform: "translateX(-50%)",
+                  borderWidth: `${element.chatBubble.triangleSize}px ${element.chatBubble.triangleSize}px 0 ${element.chatBubble.triangleSize}px`,
+                  borderColor: `${backgroundColor} transparent transparent transparent`,
+                }),
+                ...(element.chatBubble.trianglePosition === "left" && {
+                  left: -element.chatBubble.triangleSize,
+                  top: `${element.chatBubble.triangleOffset}%`,
+                  transform: "translateY(-50%)",
+                  borderWidth: `${element.chatBubble.triangleSize}px ${element.chatBubble.triangleSize}px ${element.chatBubble.triangleSize}px 0`,
+                  borderColor: `transparent ${backgroundColor} transparent transparent`,
+                }),
+                zIndex: 0,
+              }}
+            />
+
+            {/* Border triangle - slightly larger to create border effect */}
+            {borderWidth > 0 && (
+              <div
+                style={{
+                  position: "absolute",
+                  width: 0,
+                  height: 0,
+                  borderStyle: "solid",
+                  ...(element.chatBubble.trianglePosition === "top" && {
+                    top: -(element.chatBubble.triangleSize + borderWidth),
+                    left: `${element.chatBubble.triangleOffset}%`,
+                    transform: "translateX(-50%)",
+                    borderWidth: `0 ${element.chatBubble.triangleSize + borderWidth}px ${element.chatBubble.triangleSize + borderWidth}px ${element.chatBubble.triangleSize + borderWidth}px`,
+                    borderColor: `transparent transparent ${borderColor} transparent`,
+                  }),
+                  ...(element.chatBubble.trianglePosition === "right" && {
+                    right: -(element.chatBubble.triangleSize + borderWidth),
+                    top: `${element.chatBubble.triangleOffset}%`,
+                    transform: "translateY(-50%)",
+                    borderWidth: `${element.chatBubble.triangleSize + borderWidth}px 0 ${element.chatBubble.triangleSize + borderWidth}px ${element.chatBubble.triangleSize + borderWidth}px`,
+                    borderColor: `transparent transparent transparent ${borderColor}`,
+                  }),
+                  ...(element.chatBubble.trianglePosition === "bottom" && {
+                    bottom: -(element.chatBubble.triangleSize + borderWidth),
+                    left: `${element.chatBubble.triangleOffset}%`,
+                    transform: "translateX(-50%)",
+                    borderWidth: `${element.chatBubble.triangleSize + borderWidth}px ${element.chatBubble.triangleSize + borderWidth}px 0 ${element.chatBubble.triangleSize + borderWidth}px`,
+                    borderColor: `${borderColor} transparent transparent transparent`,
+                  }),
+                  ...(element.chatBubble.trianglePosition === "left" && {
+                    left: -(element.chatBubble.triangleSize + borderWidth),
+                    top: `${element.chatBubble.triangleOffset}%`,
+                    transform: "translateY(-50%)",
+                    borderWidth: `${element.chatBubble.triangleSize + borderWidth}px ${element.chatBubble.triangleSize + borderWidth}px ${element.chatBubble.triangleSize + borderWidth}px 0`,
+                    borderColor: `transparent ${borderColor} transparent transparent`,
+                  }),
+                  zIndex: -1,
+                }}
+              />
+            )}
+          </>
+        )}
+
+        {/* Text content container */}
         <div
           style={{
             display: "flex",
+            flexDirection: "column",
             alignItems,
+            justifyContent,
             height: "100%",
             width: "100%",
+            position: "relative",
+            zIndex: 1,
+            backgroundColor,
+            borderRadius: `${borderRadius}px`,
           }}
         >
           {isEditing ? (
@@ -129,7 +232,7 @@ export default function TextBox(props: TextBoxProps) {
                 textAlign,
                 color,
                 width: "100%",
-                height: "100%",
+                height: "auto",
                 border: "none",
                 outline: "none",
                 resize: "none",
@@ -154,7 +257,7 @@ export default function TextBox(props: TextBoxProps) {
                 whiteSpace: "pre-wrap",
                 wordBreak: "break-word",
                 width: "100%",
-                height: "100%",
+                height: "auto",
                 direction: "ltr",
               }}
             >
@@ -162,13 +265,14 @@ export default function TextBox(props: TextBoxProps) {
             </div>
           )}
         </div>
+
         <button
           onClick={(e) => {
             e.stopPropagation();
             e.preventDefault();
             onRemove();
           }}
-          className="absolute right-1 top-1 hidden rounded bg-white/80 p-1 text-xs shadow group-hover:block"
+          className="absolute right-1 top-1 z-50 hidden rounded bg-white/80 p-1 text-xs shadow group-hover:block"
         >
           ✕
         </button>

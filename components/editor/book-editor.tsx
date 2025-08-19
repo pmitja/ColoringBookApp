@@ -79,6 +79,8 @@ interface EditorImage {
   height: number;
   fit?: "contain" | "cover";
   rotation?: number; // degrees, multiples of 90
+  objectPosX?: number; // 0-100 percentage for cover positioning (X)
+  objectPosY?: number; // 0-100 percentage for cover positioning (Y)
 }
 
 type PageElement =
@@ -104,6 +106,10 @@ interface BookEditorProps {
 
 function generateId(prefix: string) {
   return `${prefix}_${Math.random().toString(36).slice(2, 9)}`;
+}
+
+function deepCloneBook<T>(value: T): T {
+  return JSON.parse(JSON.stringify(value)) as T;
 }
 
 export default function BookEditor({
@@ -178,6 +184,36 @@ export default function BookEditor({
   const [zoom, setZoom] = useLocalStorage<number>("book-editor:zoom", 1.0);
   const [assetQuery, setAssetQuery] = useState<string>("");
   const [settingsOpen, setSettingsOpen] = useState<boolean>(false);
+
+  const [historyPast, setHistoryPast] = useState<BookState[]>([]);
+  const [historyFuture, setHistoryFuture] = useState<BookState[]>([]);
+  const canUndo = historyPast.length > 0;
+  const canRedo = historyFuture.length > 0;
+
+  const pushHistory = useCallback(() => {
+    setHistoryPast((prev) => [...prev, deepCloneBook(book)]);
+    setHistoryFuture([]);
+  }, [book]);
+
+  const undo = useCallback(() => {
+    setHistoryPast((prev) => {
+      if (prev.length === 0) return prev;
+      const last = prev[prev.length - 1];
+      setHistoryFuture((f) => [deepCloneBook(book), ...f]);
+      setBook(last);
+      return prev.slice(0, -1);
+    });
+  }, [book, setBook]);
+
+  const redo = useCallback(() => {
+    setHistoryFuture((prev) => {
+      if (prev.length === 0) return prev;
+      const [next, ...rest] = prev;
+      setHistoryPast((p) => [...p, deepCloneBook(book)]);
+      setBook(next);
+      return rest;
+    });
+  }, [book, setBook]);
 
   const selectedPage = useMemo(
     () => book.pages.find((p) => p.id === selectedPageId) ?? book.pages[0],
@@ -278,6 +314,7 @@ export default function BookEditor({
       });
       toast.success("PDF saved");
     } catch (e) {
+      console.error(e);
       toast.error("Failed to export PDF");
     }
   }, [
@@ -326,24 +363,27 @@ export default function BookEditor({
   }, [setBook, setBookId]);
 
   const addPage = useCallback(() => {
+    pushHistory();
     setBook({
       ...book,
       pages: [...book.pages, { id: generateId("page"), elements: [] }],
     });
     setSelectedElementId(null);
-  }, [book, setBook]);
+  }, [book, setBook, pushHistory]);
 
   const removePage = useCallback(() => {
     if (book.pages.length <= 1) return;
+    pushHistory();
     const idx = book.pages.findIndex((p) => p.id === selectedPage?.id);
     const newPages = book.pages.filter((p) => p.id !== selectedPage?.id);
     setBook({ ...book, pages: newPages });
     const nextIdx = Math.max(0, idx - 1);
     setSelectedPageId(newPages[nextIdx]?.id);
-  }, [book, selectedPage, setBook]);
+  }, [book, selectedPage, setBook, pushHistory]);
 
   const addTextBox = useCallback(() => {
     if (!selectedPage) return;
+    pushHistory();
     const newText: EditorTextBox = {
       id: generateId("text"),
       x: 40,
@@ -365,6 +405,7 @@ export default function BookEditor({
       borderRadius: 8,
       boxShadow: "none",
       padding: 8,
+      chatBubble: undefined, // No chat bubble by default
     };
     const newPages = book.pages.map((p) =>
       p.id === selectedPage.id
@@ -379,11 +420,12 @@ export default function BookEditor({
     );
     setBook({ ...book, pages: newPages });
     setSelectedElementId(newText.id);
-  }, [book, selectedPage, setBook]);
+  }, [book, selectedPage, setBook, pushHistory]);
 
   const addImage = useCallback(
     (assetId: string) => {
       if (!selectedPage) return;
+      pushHistory();
       const newImg: EditorImage = {
         id: generateId("img"),
         assetId,
@@ -393,6 +435,8 @@ export default function BookEditor({
         height: 260,
         fit: "contain",
         rotation: 0,
+        objectPosX: 50,
+        objectPosY: 50,
       };
       const newPages = book.pages.map((p) =>
         p.id === selectedPage.id
@@ -408,7 +452,7 @@ export default function BookEditor({
       setBook({ ...book, pages: newPages });
       setSelectedElementId(newImg.id);
     },
-    [book, selectedPage, setBook],
+    [book, selectedPage, setBook, pushHistory],
   );
 
   const updateElementPosition = useCallback(
@@ -464,6 +508,7 @@ export default function BookEditor({
 
   const updateText = useCallback(
     (elementId: string, text: string) => {
+      // Do not push history on every keystroke; snapshot when entering edit mode
       const newPages = book.pages.map((p) => {
         if (p.id !== selectedPage?.id) return p;
         return {
@@ -485,6 +530,7 @@ export default function BookEditor({
       elementId: string,
       partial: Partial<EditorTextBox> | Partial<EditorImage>,
     ) => {
+      // For property changes triggered by buttons/sliders, snapshot once per interaction elsewhere when possible
       const newPages = book.pages.map((p) => {
         if (p.id !== selectedPage?.id) return p;
         return {
@@ -608,6 +654,7 @@ export default function BookEditor({
 
   const removeElement = useCallback(
     (elementId: string) => {
+      pushHistory();
       const newPages = book.pages.map((p) => {
         if (p.id !== selectedPage?.id) return p;
         return {
@@ -622,7 +669,7 @@ export default function BookEditor({
       setBook({ ...book, pages: newPages });
       if (selectedElementId === elementId) setSelectedElementId(null);
     },
-    [book, selectedPage, setBook, selectedElementId],
+    [book, selectedPage, setBook, selectedElementId, pushHistory],
   );
 
   // Auto-open properties when an element is selected
@@ -632,6 +679,7 @@ export default function BookEditor({
 
   const duplicateSelected = useCallback(() => {
     if (!selectedPage || !selectedElement) return;
+    pushHistory();
     const newId = generateId("dup");
     const cloned = {
       ...selectedElement,
@@ -656,10 +704,12 @@ export default function BookEditor({
     setBook,
     contentPageWidth,
     contentPageHeight,
+    pushHistory,
   ]);
 
   const bringToFront = useCallback(() => {
     if (!selectedPage || !selectedElementId) return;
+    pushHistory();
     const newPages = book.pages.map((p) => {
       if (p.id !== selectedPage.id) return p;
       const idx = p.elements.findIndex((el) =>
@@ -674,10 +724,11 @@ export default function BookEditor({
       return { ...p, elements: copy };
     });
     setBook({ ...book, pages: newPages });
-  }, [book, selectedPage, selectedElementId, setBook]);
+  }, [book, selectedPage, selectedElementId, setBook, pushHistory]);
 
   const sendToBack = useCallback(() => {
     if (!selectedPage || !selectedElementId) return;
+    pushHistory();
     const newPages = book.pages.map((p) => {
       if (p.id !== selectedPage.id) return p;
       const idx = p.elements.findIndex((el) =>
@@ -692,7 +743,26 @@ export default function BookEditor({
       return { ...p, elements: copy };
     });
     setBook({ ...book, pages: newPages });
-  }, [book, selectedPage, selectedElementId, setBook]);
+  }, [book, selectedPage, selectedElementId, setBook, pushHistory]);
+
+  // Keyboard shortcuts for undo/redo
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (editingElementId) return; // let textarea handle its own undo
+      const isMeta = e.metaKey || e.ctrlKey;
+      if (!isMeta) return;
+      const key = e.key.toLowerCase();
+      if (key === "z" && !e.shiftKey) {
+        e.preventDefault();
+        if (canUndo) undo();
+      } else if ((key === "z" && e.shiftKey) || key === "y") {
+        e.preventDefault();
+        if (canRedo) redo();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [undo, redo, canUndo, canRedo, editingElementId]);
 
   // Using react-draggable; native DnD removed
 
@@ -882,6 +952,36 @@ export default function BookEditor({
               />
               <TooltipProvider>
                 <div className="flex flex-wrap items-center gap-2">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        disabled={!canUndo}
+                        onClick={undo}
+                      >
+                        <Icons.undo className="mr-2 h-4 w-4" /> Undo
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Undo (Cmd/Ctrl+Z)</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        disabled={!canRedo}
+                        onClick={redo}
+                      >
+                        <Icons.redo className="mr-2 h-4 w-4" /> Redo
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Redo (Cmd/Ctrl+Shift+Z or Cmd/Ctrl+Y)
+                    </TooltipContent>
+                  </Tooltip>
+                  <Separator
+                    orientation="vertical"
+                    className="mx-1 hidden h-6 lg:block"
+                  />
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button variant="secondary" onClick={addTextBox}>
@@ -1198,7 +1298,9 @@ export default function BookEditor({
                             key={el.data.id}
                             position={{ x: leftPx, y: topPx }}
                             bounds="parent"
+                            cancel=".object-pos-handle"
                             onStart={() => {
+                              pushHistory();
                               setSelectedPageId(page.id);
                               setSelectedElementId(el.data.id);
                             }}
@@ -1244,17 +1346,102 @@ export default function BookEditor({
                                     height: isQuarterTurn
                                       ? containerW
                                       : containerH,
+                                    overflow: "hidden",
                                   }}
                                 >
                                   <img
                                     src={asset.url}
                                     alt={asset.name || "image"}
-                                    className={
-                                      (el.data as EditorImage).fit === "cover"
-                                        ? "h-full w-full object-cover"
-                                        : "h-full w-full object-contain"
-                                    }
+                                    style={{
+                                      width: "100%",
+                                      height: "100%",
+                                      objectFit:
+                                        (el.data as EditorImage).fit === "cover"
+                                          ? "cover"
+                                          : "contain",
+                                      objectPosition:
+                                        (el.data as EditorImage).fit === "cover"
+                                          ? `${(el.data as EditorImage).objectPosX ?? 50}% ${(el.data as EditorImage).objectPosY ?? 50}%`
+                                          : undefined,
+                                    }}
                                   />
+                                  {(el.data as EditorImage).fit === "cover" &&
+                                  selectedElementId === el.data.id ? (
+                                    <div
+                                      style={{ position: "absolute", inset: 0 }}
+                                    >
+                                      <Draggable
+                                        position={{
+                                          x: Math.round(
+                                            (((el.data as EditorImage)
+                                              .objectPosX ?? 50) /
+                                              100) *
+                                              (isQuarterTurn
+                                                ? containerH
+                                                : containerW),
+                                          ),
+                                          y: Math.round(
+                                            (((el.data as EditorImage)
+                                              .objectPosY ?? 50) /
+                                              100) *
+                                              (isQuarterTurn
+                                                ? containerW
+                                                : containerH),
+                                          ),
+                                        }}
+                                        bounds={{
+                                          left: 0,
+                                          top: 0,
+                                          right: isQuarterTurn
+                                            ? containerH
+                                            : containerW,
+                                          bottom: isQuarterTurn
+                                            ? containerW
+                                            : containerH,
+                                        }}
+                                        onStart={() => pushHistory()}
+                                        onDrag={(e, data) => {
+                                          const boxW = isQuarterTurn
+                                            ? containerH
+                                            : containerW;
+                                          const boxH = isQuarterTurn
+                                            ? containerW
+                                            : containerH;
+                                          const pctX = Math.max(
+                                            0,
+                                            Math.min(
+                                              100,
+                                              (data.x / Math.max(1, boxW)) *
+                                                100,
+                                            ),
+                                          );
+                                          const pctY = Math.max(
+                                            0,
+                                            Math.min(
+                                              100,
+                                              (data.y / Math.max(1, boxH)) *
+                                                100,
+                                            ),
+                                          );
+                                          updateElementData(el.data.id, {
+                                            objectPosX: pctX,
+                                            objectPosY: pctY,
+                                          } as Partial<EditorImage>);
+                                        }}
+                                      >
+                                        <div
+                                          title="Drag to position image"
+                                          className="object-pos-handle absolute -left-2 -top-2 h-4 w-4 cursor-grab rounded-full border border-white bg-black/60"
+                                          onMouseDown={(e) =>
+                                            e.stopPropagation()
+                                          }
+                                          onTouchStart={(e) =>
+                                            e.stopPropagation()
+                                          }
+                                        />
+                                      </Draggable>
+                                    </div>
+                                  ) : null}
                                 </div>
                               </div>
                               <Button
@@ -1292,6 +1479,9 @@ export default function BookEditor({
                               setSelectedPageId(page.id);
                               setSelectedElementId(el.data.id);
                               setEditingElementId(el.data.id);
+                            }}
+                            onDragStart={() => {
+                              pushHistory();
                             }}
                             onDragTo={(x, y) =>
                               updateElementPosition(el.data.id, x, y)
@@ -1335,6 +1525,7 @@ export default function BookEditor({
                       }
                     />
                     <div className="mt-3 grid gap-3 sm:grid-cols-12">
+                      {/* Shape controls removed */}
                       <div className="sm:col-span-6">
                         <Label>Font family</Label>
                         <Select
@@ -1930,6 +2121,174 @@ export default function BookEditor({
                                   </span>
                                 </Button>
                               ))}
+                            </div>
+                          </div>
+
+                          {/* Chat Bubble Section */}
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium text-foreground">
+                              Chat Bubble
+                            </Label>
+                            <div className="space-y-3">
+                              {/* Enable/Disable Chat Bubble */}
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  size="sm"
+                                  variant={
+                                    (selectedElement.data as EditorTextBox)
+                                      .chatBubble
+                                      ? "secondary"
+                                      : "outline"
+                                  }
+                                  onClick={() => {
+                                    if (
+                                      (selectedElement.data as EditorTextBox)
+                                        .chatBubble
+                                    ) {
+                                      updateElementData(
+                                        selectedElement.data.id,
+                                        {
+                                          chatBubble: undefined,
+                                        },
+                                      );
+                                    } else {
+                                      updateElementData(
+                                        selectedElement.data.id,
+                                        {
+                                          chatBubble: {
+                                            trianglePosition: "bottom",
+                                            triangleOffset: 50,
+                                            triangleSize: 12,
+                                          },
+                                        },
+                                      );
+                                    }
+                                  }}
+                                  className="h-8 px-3 text-xs"
+                                >
+                                  {(selectedElement.data as EditorTextBox)
+                                    .chatBubble
+                                    ? "Remove Bubble"
+                                    : "Add Bubble"}
+                                </Button>
+                              </div>
+
+                              {/* Chat Bubble Controls */}
+                              {(selectedElement.data as EditorTextBox)
+                                .chatBubble && (
+                                <>
+                                  {/* Triangle Position */}
+                                  <div className="space-y-2">
+                                    <Label className="text-xs font-medium">
+                                      Triangle Position
+                                    </Label>
+                                    <div className="flex flex-wrap gap-1.5">
+                                      {[
+                                        { value: "top", label: "Top" },
+                                        { value: "right", label: "Right" },
+                                        { value: "bottom", label: "Bottom" },
+                                        { value: "left", label: "Left" },
+                                      ].map((pos) => (
+                                        <Button
+                                          key={pos.value}
+                                          size="sm"
+                                          variant={
+                                            (
+                                              selectedElement.data as EditorTextBox
+                                            ).chatBubble?.trianglePosition ===
+                                            pos.value
+                                              ? "secondary"
+                                              : "outline"
+                                          }
+                                          onClick={() =>
+                                            updateElementData(
+                                              selectedElement.data.id,
+                                              {
+                                                chatBubble: {
+                                                  ...(
+                                                    selectedElement.data as EditorTextBox
+                                                  ).chatBubble!,
+                                                  trianglePosition:
+                                                    pos.value as any,
+                                                },
+                                              },
+                                            )
+                                          }
+                                          className="h-7 px-2 text-xs"
+                                        >
+                                          {pos.label}
+                                        </Button>
+                                      ))}
+                                    </div>
+                                  </div>
+
+                                  {/* Triangle Offset */}
+                                  <div className="space-y-2">
+                                    <Label className="text-xs font-medium">
+                                      Triangle Position:{" "}
+                                      {Math.round(
+                                        (selectedElement.data as EditorTextBox)
+                                          .chatBubble?.triangleOffset || 50,
+                                      )}
+                                      %
+                                    </Label>
+                                    <Slider
+                                      value={[
+                                        (selectedElement.data as EditorTextBox)
+                                          .chatBubble?.triangleOffset || 50,
+                                      ]}
+                                      min={0}
+                                      max={100}
+                                      step={1}
+                                      onValueChange={([val]) =>
+                                        updateElementData(
+                                          selectedElement.data.id,
+                                          {
+                                            chatBubble: {
+                                              ...(
+                                                selectedElement.data as EditorTextBox
+                                              ).chatBubble!,
+                                              triangleOffset: val,
+                                            },
+                                          },
+                                        )
+                                      }
+                                    />
+                                  </div>
+
+                                  {/* Triangle Size */}
+                                  <div className="space-y-2">
+                                    <Label className="text-xs font-medium">
+                                      Triangle Size:{" "}
+                                      {(selectedElement.data as EditorTextBox)
+                                        .chatBubble?.triangleSize || 12}
+                                      px
+                                    </Label>
+                                    <Slider
+                                      value={[
+                                        (selectedElement.data as EditorTextBox)
+                                          .chatBubble?.triangleSize || 12,
+                                      ]}
+                                      min={6}
+                                      max={24}
+                                      step={1}
+                                      onValueChange={([val]) =>
+                                        updateElementData(
+                                          selectedElement.data.id,
+                                          {
+                                            chatBubble: {
+                                              ...(
+                                                selectedElement.data as EditorTextBox
+                                              ).chatBubble!,
+                                              triangleSize: val,
+                                            },
+                                          },
+                                        )
+                                      }
+                                    />
+                                  </div>
+                                </>
+                              )}
                             </div>
                           </div>
                         </div>

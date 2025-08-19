@@ -53,6 +53,12 @@ export default function TextBox(props: TextBoxProps) {
         ? "flex-end"
         : "flex-start";
   const color = element.fontColor || "#111827";
+  const backgroundColor = element.backgroundColor || "transparent";
+  const borderColor = element.borderColor || "transparent";
+  const borderWidth = element.borderWidth || 0;
+  const borderRadius = element.borderRadius || 8;
+  const boxShadow = element.boxShadow || "none";
+  const padding = element.padding || 8;
 
   return (
     <Draggable
@@ -77,10 +83,16 @@ export default function TextBox(props: TextBoxProps) {
           width,
           height,
           cursor: isEditing ? "text" : "move",
+          backgroundColor,
+          border:
+            borderWidth > 0 ? `${borderWidth}px solid ${borderColor}` : "none",
+          borderRadius: `${borderRadius}px`,
+          boxShadow: isSelected
+            ? `${boxShadow === "none" ? "" : boxShadow + ", "}0 0 0 2px var(--primary)`
+            : boxShadow,
+          padding: `${padding}px`,
         }}
-        className={`group rounded bg-white/80 p-2 ${
-          isSelected ? "ring-2 ring-primary" : ""
-        }`}
+        className={`group ${isSelected ? "ring-2 ring-primary ring-offset-1" : ""}`}
       >
         <div
           style={{
@@ -90,42 +102,65 @@ export default function TextBox(props: TextBoxProps) {
             width: "100%",
           }}
         >
-          <div
-            id={`text-${element.id}`}
-            contentEditable={isEditing}
-            suppressContentEditableWarning
-            onInput={(e) =>
-              onChangeText((e.target as HTMLDivElement).innerText)
-            }
-            onMouseDown={(e) => e.stopPropagation()}
-            onTouchStart={(e) => e.stopPropagation()}
-            onFocus={onFocusEdit}
-            onBlur={onBlurEdit}
-            onKeyDown={(e) => {
-              e.stopPropagation();
-              if (e.key === "Escape") {
-                (e.target as HTMLDivElement).blur();
-              }
-            }}
-            // autofocus works on div in React
-            autoFocus={isEditing as any}
-            style={{
-              fontWeight,
-              fontStyle,
-              textDecoration,
-              fontFamily: element.fontFamily || "Inter, system-ui, sans-serif",
-              fontSize: `${fontSizePx}px`,
-              lineHeight: 1.25,
-              textAlign,
-              color,
-              whiteSpace: "pre-wrap",
-              wordBreak: "break-word",
-              width: "100%",
-            }}
-            className="bg-transparent text-sm outline-none"
-          >
-            {element.text}
-          </div>
+          {isEditing ? (
+            <textarea
+              id={`text-${element.id}`}
+              value={element.text}
+              onChange={(e) => onChangeText(e.target.value)}
+              onMouseDown={(e) => e.stopPropagation()}
+              onTouchStart={(e) => e.stopPropagation()}
+              onFocus={onFocusEdit}
+              onBlur={onBlurEdit}
+              onKeyDown={(e) => {
+                e.stopPropagation();
+                if (e.key === "Escape") {
+                  (e.target as HTMLTextAreaElement).blur();
+                }
+              }}
+              autoFocus
+              style={{
+                fontWeight,
+                fontStyle,
+                textDecoration,
+                fontFamily:
+                  element.fontFamily || "Inter, system-ui, sans-serif",
+                fontSize: `${fontSizePx}px`,
+                lineHeight: 1.25,
+                textAlign,
+                color,
+                width: "100%",
+                height: "100%",
+                border: "none",
+                outline: "none",
+                resize: "none",
+                background: "transparent",
+                padding: 0,
+                margin: 0,
+                direction: "ltr",
+              }}
+            />
+          ) : (
+            <div
+              style={{
+                fontWeight,
+                fontStyle,
+                textDecoration,
+                fontFamily:
+                  element.fontFamily || "Inter, system-ui, sans-serif",
+                fontSize: `${fontSizePx}px`,
+                lineHeight: 1.25,
+                textAlign,
+                color,
+                whiteSpace: "pre-wrap",
+                wordBreak: "break-word",
+                width: "100%",
+                height: "100%",
+                direction: "ltr",
+              }}
+            >
+              {element.text}
+            </div>
+          )}
         </div>
         <button
           onClick={(e) => {

@@ -14,7 +14,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DashboardHeader } from "@/components/dashboard/header";
 import { Icons } from "@/components/shared/icons";
 
@@ -22,7 +21,7 @@ interface JobData {
   id: string;
   status: "DONE" | "FAILED";
   inputFileName: string;
-  cartoonUrl?: string;
+  cartoonUrl?: string; // This will store the styled version URL
   lineartUrl?: string;
   errorMessage?: string;
   createdAt: string;
@@ -40,7 +39,6 @@ export default function ResultsPage({ params }: ResultsPageProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [downloading, setDownloading] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<string>("cartoon");
 
   useEffect(() => {
     const fetchJobData = async () => {
@@ -63,22 +61,16 @@ export default function ResultsPage({ params }: ResultsPageProps) {
     fetchJobData();
   }, [params.jobId]);
 
-  const handleDownload = async (
-    type: "cartoon" | "lineart",
-    format: "png" | "pdf" = "png",
-  ) => {
-    if (!jobData) return;
+  const handleDownload = async (format: "png" | "pdf" = "png") => {
+    if (!jobData?.lineartUrl) return;
 
-    setDownloading(`${type}-${format}`);
+    setDownloading(`lineart-${format}`);
 
     try {
-      const url = type === "cartoon" ? jobData.cartoonUrl : jobData.lineartUrl;
-      if (!url) throw new Error("Image URL not available");
-
       // Create download link
       const link = document.createElement("a");
-      link.href = url;
-      link.download = `${jobData.inputFileName.split(".")[0]}-${type}.${format}`;
+      link.href = jobData.lineartUrl;
+      link.download = `${jobData.inputFileName.split(".")[0]}-coloring-page.${format}`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -90,18 +82,15 @@ export default function ResultsPage({ params }: ResultsPageProps) {
     }
   };
 
-  const handleShare = async (type: "cartoon" | "lineart") => {
-    if (!jobData) return;
-
-    const url = type === "cartoon" ? jobData.cartoonUrl : jobData.lineartUrl;
-    if (!url) return;
+  const handleShare = async () => {
+    if (!jobData?.lineartUrl) return;
 
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `My ${type === "cartoon" ? "Cartoon" : "Coloring Book"}`,
-          text: `Check out this amazing ${type === "cartoon" ? "cartoon version" : "coloring book"} created from my photo!`,
-          url: url,
+          title: "My Coloring Book Page",
+          text: "Check out this amazing coloring book page created from my photo!",
+          url: jobData.lineartUrl,
         });
       } catch (err) {
         console.error("Share error:", err);
@@ -109,7 +98,7 @@ export default function ResultsPage({ params }: ResultsPageProps) {
     } else {
       // Fallback: copy to clipboard
       try {
-        await navigator.clipboard.writeText(url);
+        await navigator.clipboard.writeText(jobData.lineartUrl);
         // Show success toast
       } catch (err) {
         console.error("Copy error:", err);
@@ -180,182 +169,87 @@ export default function ResultsPage({ params }: ResultsPageProps) {
         <Alert className="border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20">
           <Icons.check className="h-4 w-4 text-green-600" />
           <AlertDescription className="text-green-800 dark:text-green-400">
-            <strong>Success!</strong> Your magical coloring book has been
-            created. Download both versions below.
+            <strong>Success!</strong> Your coloring book page has been created
+            and is ready to download!
           </AlertDescription>
         </Alert>
 
-        {/* Results Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="cartoon" className="gap-2">
-              <Icons.media className="h-4 w-4" />
-              Cartoon Version
-            </TabsTrigger>
-            <TabsTrigger value="lineart" className="gap-2">
-              <Icons.media className="h-4 w-4" />
-              Coloring Page
-            </TabsTrigger>
-          </TabsList>
+        {/* Coloring Page Result */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Icons.media className="h-5 w-5" />
+                  Your Coloring Book Page
+                </CardTitle>
+                <CardDescription>
+                  Black & white line art perfect for coloring
+                </CardDescription>
+              </div>
+              <Badge variant="secondary">Ready</Badge>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Image Display */}
+            {jobData.lineartUrl && (
+              <div className="relative mx-auto aspect-square max-w-2xl overflow-hidden rounded-lg border bg-white">
+                <Image
+                  src={jobData.lineartUrl}
+                  alt="Coloring page line art"
+                  fill
+                  className="object-contain"
+                  priority
+                />
+              </div>
+            )}
 
-          {/* Cartoon Tab */}
-          <TabsContent value="cartoon" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <Icons.media className="h-5 w-5" />
-                      Pixar-Style Cartoon
-                    </CardTitle>
-                    <CardDescription>
-                      Your photo transformed into a beautiful 3D cartoon style
-                    </CardDescription>
-                  </div>
-                  <Badge variant="secondary">Ready</Badge>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Image Display */}
-                {jobData.cartoonUrl && (
-                  <div className="relative mx-auto aspect-square max-w-2xl overflow-hidden rounded-lg border">
-                    <Image
-                      src={jobData.cartoonUrl}
-                      alt="Cartoon version"
-                      fill
-                      className="object-contain"
-                      priority
-                    />
-                  </div>
-                )}
+            {/* Download Options */}
+            <div className="space-y-4">
+              <h3 className="font-medium">Download Options</h3>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Button
+                  onClick={() => handleDownload("png")}
+                  disabled={downloading === "lineart-png"}
+                  className="gap-2"
+                >
+                  {downloading === "lineart-png" ? (
+                    <Icons.spinner className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Icons.package className="h-4 w-4" />
+                  )}
+                  Download PNG (High-res)
+                </Button>
+                <Button
+                  onClick={() => handleDownload("pdf")}
+                  disabled={downloading === "lineart-pdf"}
+                  variant="outline"
+                  className="gap-2"
+                >
+                  {downloading === "lineart-pdf" ? (
+                    <Icons.spinner className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Icons.page className="h-4 w-4" />
+                  )}
+                  Download PDF (Print)
+                </Button>
+              </div>
+            </div>
 
-                {/* Download Options */}
-                <div className="space-y-4">
-                  <h3 className="font-medium">Download Options</h3>
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <Button
-                      onClick={() => handleDownload("cartoon", "png")}
-                      disabled={downloading === "cartoon-png"}
-                      className="gap-2"
-                    >
-                      {downloading === "cartoon-png" ? (
-                        <Icons.spinner className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Icons.package className="h-4 w-4" />
-                      )}
-                      Download PNG (High-res)
-                    </Button>
-                    <Button
-                      onClick={() => handleDownload("cartoon", "pdf")}
-                      disabled={downloading === "cartoon-pdf"}
-                      variant="outline"
-                      className="gap-2"
-                    >
-                      {downloading === "cartoon-pdf" ? (
-                        <Icons.spinner className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Icons.page className="h-4 w-4" />
-                      )}
-                      Download PDF (Print)
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Share */}
-                <div className="text-center">
-                  <Button
-                    onClick={() => handleShare("cartoon")}
-                    variant="ghost"
-                    size="sm"
-                    className="gap-2"
-                  >
-                    <Icons.arrowUpRight className="h-4 w-4" />
-                    Share Cartoon
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Line Art Tab */}
-          <TabsContent value="lineart" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <Icons.media className="h-5 w-5" />
-                      Coloring Book Page
-                    </CardTitle>
-                    <CardDescription>
-                      Black & white line art perfect for coloring
-                    </CardDescription>
-                  </div>
-                  <Badge variant="secondary">Ready</Badge>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Image Display */}
-                {jobData.lineartUrl && (
-                  <div className="relative mx-auto aspect-square max-w-2xl overflow-hidden rounded-lg border bg-white">
-                    <Image
-                      src={jobData.lineartUrl}
-                      alt="Coloring page line art"
-                      fill
-                      className="object-contain"
-                      priority
-                    />
-                  </div>
-                )}
-
-                {/* Download Options */}
-                <div className="space-y-4">
-                  <h3 className="font-medium">Download Options</h3>
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <Button
-                      onClick={() => handleDownload("lineart", "png")}
-                      disabled={downloading === "lineart-png"}
-                      className="gap-2"
-                    >
-                      {downloading === "lineart-png" ? (
-                        <Icons.spinner className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Icons.package className="h-4 w-4" />
-                      )}
-                      Download PNG (High-res)
-                    </Button>
-                    <Button
-                      onClick={() => handleDownload("lineart", "pdf")}
-                      disabled={downloading === "lineart-pdf"}
-                      variant="outline"
-                      className="gap-2"
-                    >
-                      {downloading === "lineart-pdf" ? (
-                        <Icons.spinner className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Icons.page className="h-4 w-4" />
-                      )}
-                      Download PDF (Print)
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Share */}
-                <div className="text-center">
-                  <Button
-                    onClick={() => handleShare("lineart")}
-                    variant="ghost"
-                    size="sm"
-                    className="gap-2"
-                  >
-                    <Icons.arrowUpRight className="h-4 w-4" />
-                    Share Coloring Page
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+            {/* Share */}
+            <div className="text-center">
+              <Button
+                onClick={handleShare}
+                variant="ghost"
+                size="sm"
+                className="gap-2"
+              >
+                <Icons.arrowUpRight className="h-4 w-4" />
+                Share Coloring Page
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Action Bar */}
         <Card>

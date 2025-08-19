@@ -3,15 +3,16 @@
 import { Fragment, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { NavItem, SidebarNavItem } from "@/types";
+import { SidebarNavItem } from "@/types";
 import { Menu, PanelLeftClose, PanelRightClose } from "lucide-react";
 
 import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   Tooltip,
@@ -19,7 +20,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import ProjectSwitcher from "@/components/dashboard/project-switcher";
 import { UpgradeCard } from "@/components/dashboard/upgrade-card";
 import { Icons } from "@/components/shared/icons";
 
@@ -72,7 +72,22 @@ export function DashboardSidebar({ links }: DashboardSidebarProps) {
           >
             <div className="flex h-full max-h-screen flex-1 flex-col gap-2">
               <div className="flex h-14 items-center p-4 lg:h-[60px]">
-                {isSidebarExpanded ? <ProjectSwitcher /> : null}
+                {isSidebarExpanded ? (
+                  <Link
+                    href="/"
+                    className="flex items-center gap-2 text-lg font-semibold"
+                  >
+                    <Icons.logo className="size-5" />
+                    <span className="font-urban text-lg font-bold">
+                      {siteConfig.name}
+                    </span>
+                  </Link>
+                ) : (
+                  <Link href="/" className="flex items-center">
+                    <Icons.logo className="size-5" />
+                    <span className="sr-only">{siteConfig.name}</span>
+                  </Link>
+                )}
 
                 <Button
                   variant="ghost"
@@ -94,6 +109,7 @@ export function DashboardSidebar({ links }: DashboardSidebarProps) {
                   <span className="sr-only">Toggle Sidebar</span>
                 </Button>
               </div>
+              <Separator className="mx-4" />
 
               <nav className="flex flex-1 flex-col gap-8 px-4 pt-4">
                 {links.map((section) => (
@@ -118,16 +134,19 @@ export function DashboardSidebar({ links }: DashboardSidebarProps) {
                                 key={`link-${item.title}`}
                                 href={item.disabled ? "#" : item.href}
                                 className={cn(
-                                  "flex items-center gap-3 rounded-md p-2 text-sm font-medium hover:bg-muted",
-                                  path === item.href
-                                    ? "bg-muted"
-                                    : "text-muted-foreground hover:text-accent-foreground",
+                                  buttonVariants({
+                                    variant:
+                                      path === item.href
+                                        ? "secondary"
+                                        : "ghost",
+                                  }),
+                                  "w-full justify-start gap-3 px-2 py-2",
                                   item.disabled &&
-                                    "cursor-not-allowed opacity-80 hover:bg-transparent hover:text-muted-foreground",
+                                    "cursor-not-allowed opacity-80 hover:bg-transparent",
                                 )}
                               >
                                 <Icon className="size-5" />
-                                {item.title}
+                                <span>{item.title}</span>
                                 {item.badge && (
                                   <Badge className="ml-auto flex size-5 shrink-0 items-center justify-center rounded-full">
                                     {item.badge}
@@ -141,12 +160,16 @@ export function DashboardSidebar({ links }: DashboardSidebarProps) {
                                     key={`link-tooltip-${item.title}`}
                                     href={item.disabled ? "#" : item.href}
                                     className={cn(
-                                      "flex items-center gap-3 rounded-md py-2 text-sm font-medium hover:bg-muted",
-                                      path === item.href
-                                        ? "bg-muted"
-                                        : "text-muted-foreground hover:text-accent-foreground",
+                                      buttonVariants({
+                                        variant:
+                                          path === item.href
+                                            ? "secondary"
+                                            : "ghost",
+                                        size: "icon",
+                                      }),
+                                      "w-full justify-center",
                                       item.disabled &&
-                                        "cursor-not-allowed opacity-80 hover:bg-transparent hover:text-muted-foreground",
+                                        "cursor-not-allowed opacity-80 hover:bg-transparent",
                                     )}
                                   >
                                     <span className="flex size-full items-center justify-center">
@@ -201,7 +224,7 @@ export function MobileSheetSidebar({ links }: DashboardSidebarProps) {
             <div className="flex h-screen flex-col">
               <nav className="flex flex-1 flex-col gap-y-8 p-6 text-lg font-medium">
                 <Link
-                  href="#"
+                  href="/"
                   className="flex items-center gap-2 text-lg font-semibold"
                 >
                   <Icons.logo className="size-6" />
@@ -209,8 +232,6 @@ export function MobileSheetSidebar({ links }: DashboardSidebarProps) {
                     {siteConfig.name}
                   </span>
                 </Link>
-
-                <ProjectSwitcher large />
 
                 {links.map((section) => (
                   <section

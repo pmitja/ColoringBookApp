@@ -30,7 +30,7 @@ interface JobData {
   errorMessage?: string;
   createdAt: string;
   updatedAt: string;
-  currentStage?: "cartoon" | "lineart";
+  currentStage?: "styling" | "lineart";
   progress?: number;
 }
 
@@ -113,7 +113,7 @@ export default function ProcessingPage({ params }: ProcessingPageProps) {
       case "QUEUED":
         return 0;
       case "PROCESSING":
-        if (jobData.currentStage === "cartoon") return 40;
+        if (jobData.currentStage === "styling") return 40;
         if (jobData.currentStage === "lineart") return 80;
         return jobData.progress || 20;
       case "DONE":
@@ -132,8 +132,8 @@ export default function ProcessingPage({ params }: ProcessingPageProps) {
       case "QUEUED":
         return "Your image is in the processing queue...";
       case "PROCESSING":
-        if (jobData.currentStage === "cartoon")
-          return "Creating Pixar-style cartoon...";
+        if (jobData.currentStage === "styling")
+          return "Applying artistic style...";
         if (jobData.currentStage === "lineart")
           return "Generating coloring book line art...";
         return "Processing your image...";
@@ -153,7 +153,7 @@ export default function ProcessingPage({ params }: ProcessingPageProps) {
       case "QUEUED":
         return "Estimated: 2-3 minutes";
       case "PROCESSING":
-        if (jobData.currentStage === "cartoon")
+        if (jobData.currentStage === "styling")
           return "Estimated: 1-2 minutes remaining";
         if (jobData.currentStage === "lineart")
           return "Estimated: 30-60 seconds remaining";
@@ -245,7 +245,7 @@ export default function ProcessingPage({ params }: ProcessingPageProps) {
             <div className="space-y-4">
               <h3 className="font-medium">Processing Stages</h3>
 
-              {/* Stage 1: Cartoon */}
+              {/* Stage 1: Artistic Style */}
               <div className="flex items-center gap-3">
                 <div
                   className={cn(
@@ -255,7 +255,7 @@ export default function ProcessingPage({ params }: ProcessingPageProps) {
                         jobData.currentStage === "lineart")
                       ? "bg-green-100 text-green-600 dark:bg-green-900/20 dark:text-green-400"
                       : jobData.status === "PROCESSING" &&
-                          jobData.currentStage === "cartoon"
+                          jobData.currentStage === "styling"
                         ? "bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"
                         : "bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-600",
                   )}
@@ -265,16 +265,16 @@ export default function ProcessingPage({ params }: ProcessingPageProps) {
                     jobData.currentStage === "lineart") ? (
                     <Icons.check className="h-4 w-4" />
                   ) : jobData.status === "PROCESSING" &&
-                    jobData.currentStage === "cartoon" ? (
+                    jobData.currentStage === "styling" ? (
                     <Icons.spinner className="h-4 w-4 animate-spin" />
                   ) : (
                     <span className="text-xs font-medium">1</span>
                   )}
                 </div>
                 <div>
-                  <p className="font-medium">Create Pixar-style Cartoon</p>
+                  <p className="font-medium">Apply Artistic Style</p>
                   <p className="text-sm text-muted-foreground">
-                    Transforming your photo into a 3D cartoon style
+                    Transforming your photo with your chosen art style
                   </p>
                 </div>
               </div>
@@ -359,7 +359,7 @@ export default function ProcessingPage({ params }: ProcessingPageProps) {
           <CardContent className="pt-6 text-center">
             <div className="mb-4 text-4xl">
               {jobData.status === "PROCESSING" &&
-                jobData.currentStage === "cartoon" &&
+                jobData.currentStage === "styling" &&
                 "🎨"}
               {jobData.status === "PROCESSING" &&
                 jobData.currentStage === "lineart" &&

@@ -359,6 +359,12 @@ export default function BookEditor({
       textAlign: "left",
       verticalAlign: "top",
       fontColor: "#111827",
+      backgroundColor: "transparent",
+      borderColor: "transparent",
+      borderWidth: 0,
+      borderRadius: 8,
+      boxShadow: "none",
+      padding: 8,
     };
     const newPages = book.pages.map((p) =>
       p.id === selectedPage.id
@@ -1579,6 +1585,353 @@ export default function BookEditor({
                           >
                             Bottom
                           </Button>
+                        </div>
+                      </div>
+                      <div className="sm:col-span-12">
+                        <Label className="text-base font-medium">
+                          Background & Style
+                        </Label>
+                        <div className="mt-3 space-y-4">
+                          {/* Background Color Section */}
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium text-foreground">
+                              Background Color
+                            </Label>
+                            <div className="space-y-2">
+                              <div className="flex flex-wrap gap-1.5">
+                                {[
+                                  { name: "None", value: "transparent" },
+                                  { name: "White", value: "#ffffff" },
+                                  { name: "Light Gray", value: "#f3f4f6" },
+                                  { name: "Yellow", value: "#fef3c7" },
+                                  { name: "Blue", value: "#dbeafe" },
+                                  { name: "Green", value: "#d1fae5" },
+                                  { name: "Pink", value: "#fce7f3" },
+                                  { name: "Purple", value: "#e9d5ff" },
+                                ].map((bg) => (
+                                  <Button
+                                    key={bg.value}
+                                    size="sm"
+                                    variant={
+                                      (selectedElement.data as EditorTextBox)
+                                        .backgroundColor === bg.value
+                                        ? "secondary"
+                                        : "outline"
+                                    }
+                                    onClick={() =>
+                                      updateElementData(
+                                        selectedElement.data.id,
+                                        {
+                                          backgroundColor: bg.value,
+                                        },
+                                      )
+                                    }
+                                    className="h-9 px-3 text-xs"
+                                  >
+                                    <div
+                                      className="mr-2 h-3 w-3 rounded-sm border"
+                                      style={{
+                                        backgroundColor:
+                                          bg.value === "transparent"
+                                            ? "#ffffff"
+                                            : bg.value,
+                                        border:
+                                          bg.value === "transparent"
+                                            ? "1px solid #d1d5db"
+                                            : "1px solid rgba(0,0,0,0.1)",
+                                      }}
+                                    />
+                                    {bg.name}
+                                  </Button>
+                                ))}
+                              </div>
+                              {/* Custom Background Color Picker */}
+                              <div className="flex items-center gap-2 rounded-md border p-2">
+                                <Label className="text-xs font-medium">
+                                  Custom Color:
+                                </Label>
+                                <input
+                                  type="color"
+                                  value={
+                                    (selectedElement.data as EditorTextBox)
+                                      .backgroundColor === "transparent"
+                                      ? "#ffffff"
+                                      : (selectedElement.data as EditorTextBox)
+                                          .backgroundColor || "#ffffff"
+                                  }
+                                  onChange={(e) =>
+                                    updateElementData(selectedElement.data.id, {
+                                      backgroundColor: e.target.value,
+                                    })
+                                  }
+                                  className="h-8 w-16 cursor-pointer rounded border-0"
+                                  title="Pick custom background color"
+                                />
+                                <span className="text-xs text-muted-foreground">
+                                  {(selectedElement.data as EditorTextBox)
+                                    .backgroundColor === "transparent"
+                                    ? "Transparent"
+                                    : (selectedElement.data as EditorTextBox)
+                                        .backgroundColor || "#ffffff"}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Border Section */}
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium text-foreground">
+                              Border
+                            </Label>
+                            <div className="space-y-2">
+                              <div className="flex flex-wrap gap-1.5">
+                                {[
+                                  {
+                                    name: "None",
+                                    width: 0,
+                                    color: "transparent",
+                                  },
+                                  { name: "Thin", width: 1, color: "#d1d5db" },
+                                  {
+                                    name: "Medium",
+                                    width: 2,
+                                    color: "#d1d5db",
+                                  },
+                                  { name: "Thick", width: 3, color: "#6b7280" },
+                                  { name: "Black", width: 2, color: "#000000" },
+                                  { name: "Blue", width: 2, color: "#3b82f6" },
+                                ].map((border) => (
+                                  <Button
+                                    key={`${border.width}-${border.color}`}
+                                    size="sm"
+                                    variant={
+                                      (selectedElement.data as EditorTextBox)
+                                        .borderWidth === border.width &&
+                                      (selectedElement.data as EditorTextBox)
+                                        .borderColor === border.color
+                                        ? "secondary"
+                                        : "outline"
+                                    }
+                                    onClick={() =>
+                                      updateElementData(
+                                        selectedElement.data.id,
+                                        {
+                                          borderWidth: border.width,
+                                          borderColor: border.color,
+                                        },
+                                      )
+                                    }
+                                    className="h-9 px-3 text-xs"
+                                  >
+                                    {border.name}
+                                  </Button>
+                                ))}
+                              </div>
+                              {/* Custom Border Controls */}
+                              <div className="flex items-center gap-3 rounded-md border p-2">
+                                <div className="flex items-center gap-2">
+                                  <Label className="text-xs font-medium">
+                                    Width:
+                                  </Label>
+                                  <Select
+                                    value={String(
+                                      (selectedElement.data as EditorTextBox)
+                                        .borderWidth || 0,
+                                    )}
+                                    onValueChange={(value) =>
+                                      updateElementData(
+                                        selectedElement.data.id,
+                                        {
+                                          borderWidth: parseInt(value),
+                                        },
+                                      )
+                                    }
+                                  >
+                                    <SelectTrigger className="h-8 w-20">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="0">None</SelectItem>
+                                      <SelectItem value="1">1px</SelectItem>
+                                      <SelectItem value="2">2px</SelectItem>
+                                      <SelectItem value="3">3px</SelectItem>
+                                      <SelectItem value="4">4px</SelectItem>
+                                      <SelectItem value="5">5px</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Label className="text-xs font-medium">
+                                    Color:
+                                  </Label>
+                                  <input
+                                    type="color"
+                                    value={
+                                      (selectedElement.data as EditorTextBox)
+                                        .borderColor === "transparent"
+                                        ? "#d1d5db"
+                                        : (
+                                            selectedElement.data as EditorTextBox
+                                          ).borderColor || "#d1d5db"
+                                    }
+                                    onChange={(e) =>
+                                      updateElementData(
+                                        selectedElement.data.id,
+                                        {
+                                          borderColor: e.target.value,
+                                          borderWidth:
+                                            (
+                                              selectedElement.data as EditorTextBox
+                                            ).borderWidth || 2, // Auto-set width if none
+                                        },
+                                      )
+                                    }
+                                    className="h-8 w-16 cursor-pointer rounded border-0"
+                                    title="Pick custom border color"
+                                  />
+                                  <span className="text-xs text-muted-foreground">
+                                    {(selectedElement.data as EditorTextBox)
+                                      .borderColor === "transparent"
+                                      ? "None"
+                                      : (selectedElement.data as EditorTextBox)
+                                          .borderColor || "#d1d5db"}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Shadow Section */}
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium text-foreground">
+                              Shadow
+                            </Label>
+                            <div className="flex flex-wrap gap-1.5">
+                              {[
+                                { name: "None", value: "none" },
+                                {
+                                  name: "Small",
+                                  value: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+                                },
+                                {
+                                  name: "Medium",
+                                  value: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                                },
+                                {
+                                  name: "Large",
+                                  value: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                                },
+                                {
+                                  name: "Glow",
+                                  value: "0 0 15px rgba(59, 130, 246, 0.3)",
+                                },
+                              ].map((shadow) => (
+                                <Button
+                                  key={shadow.value}
+                                  size="sm"
+                                  variant={
+                                    (selectedElement.data as EditorTextBox)
+                                      .boxShadow === shadow.value
+                                      ? "secondary"
+                                      : "outline"
+                                  }
+                                  onClick={() =>
+                                    updateElementData(selectedElement.data.id, {
+                                      boxShadow: shadow.value,
+                                    })
+                                  }
+                                  className="h-9 px-3 text-xs"
+                                >
+                                  {shadow.name}
+                                </Button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Corner Radius Section */}
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium text-foreground">
+                              Corner Style
+                            </Label>
+                            <div className="flex flex-wrap gap-1.5">
+                              {[
+                                { name: "Square", value: 0, preview: "⬜" },
+                                { name: "Rounded", value: 8, preview: "▢" },
+                                { name: "Very Round", value: 16, preview: "◯" },
+                                { name: "Pill", value: 999, preview: "⬭" },
+                              ].map((radius) => (
+                                <Button
+                                  key={radius.value}
+                                  size="sm"
+                                  variant={
+                                    (selectedElement.data as EditorTextBox)
+                                      .borderRadius === radius.value
+                                      ? "secondary"
+                                      : "outline"
+                                  }
+                                  onClick={() =>
+                                    updateElementData(selectedElement.data.id, {
+                                      borderRadius: radius.value,
+                                    })
+                                  }
+                                  className="h-9 px-3 text-xs"
+                                >
+                                  <span className="mr-1">{radius.preview}</span>
+                                  {radius.name}
+                                </Button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Padding Section */}
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium text-foreground">
+                              Inner Spacing
+                            </Label>
+                            <div className="flex flex-wrap gap-1.5">
+                              {[
+                                {
+                                  name: "None",
+                                  value: 0,
+                                  description: "No space",
+                                },
+                                { name: "Small", value: 4, description: "4px" },
+                                {
+                                  name: "Medium",
+                                  value: 8,
+                                  description: "8px",
+                                },
+                                {
+                                  name: "Large",
+                                  value: 16,
+                                  description: "16px",
+                                },
+                              ].map((pad) => (
+                                <Button
+                                  key={pad.value}
+                                  size="sm"
+                                  variant={
+                                    (selectedElement.data as EditorTextBox)
+                                      .padding === pad.value
+                                      ? "secondary"
+                                      : "outline"
+                                  }
+                                  onClick={() =>
+                                    updateElementData(selectedElement.data.id, {
+                                      padding: pad.value,
+                                    })
+                                  }
+                                  className="flex h-9 flex-col items-center px-3 text-xs"
+                                  title={pad.description}
+                                >
+                                  <span>{pad.name}</span>
+                                  <span className="text-xs text-muted-foreground">
+                                    {pad.description}
+                                  </span>
+                                </Button>
+                              ))}
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>

@@ -13,6 +13,12 @@ export interface EditorTextBox {
   textAlign?: 'left' | 'center' | 'right' | 'justify'
   verticalAlign?: 'top' | 'middle' | 'bottom'
   fontColor?: string
+  backgroundColor?: string
+  borderColor?: string
+  borderWidth?: number
+  borderRadius?: number
+  boxShadow?: string
+  padding?: number
 }
 
 

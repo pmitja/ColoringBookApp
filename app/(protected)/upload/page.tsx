@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useDropzone } from "react-dropzone";
 
+import { BASE_STYLES, FACE_ADDONS } from "@/config/prompts";
 import { cn } from "@/lib/utils";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { DashboardHeader } from "@/components/dashboard/header";
 import { Icons } from "@/components/shared/icons";
 
@@ -26,6 +36,11 @@ export default function UploadPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedStyle, setSelectedStyle] =
+    useState<keyof typeof BASE_STYLES>("INTO_PIXAR");
+  const [selectedAddons, setSelectedAddons] = useState<
+    (keyof typeof FACE_ADDONS)[]
+  >([]);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
@@ -81,6 +96,8 @@ export default function UploadPage() {
       // Upload image and create job
       const formData = new FormData();
       formData.append("image", selectedFile);
+      formData.append("style", selectedStyle);
+      formData.append("addons", JSON.stringify(selectedAddons));
 
       const response = await fetch("/api/upload", {
         method: "POST",
@@ -150,12 +167,12 @@ export default function UploadPage() {
                 className={cn(
                   "cursor-pointer rounded-lg border-2 border-dashed p-8 text-center transition-colors",
                   isDragActive
-                    ? "border-primary bg-primary/5"
+                    ? "bg-primary/5 border-primary"
                     : "border-muted-foreground/25 hover:border-primary/50",
                 )}
               >
                 <input {...getInputProps()} />
-                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+                <div className="bg-primary/10 mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full">
                   <Icons.media className="h-8 w-8 text-primary" />
                 </div>
                 {isDragActive ? (
@@ -217,6 +234,84 @@ export default function UploadPage() {
                 <p>
                   <strong>Type:</strong> {selectedFile.type}
                 </p>
+              </div>
+
+              {/* Style Selection */}
+              <div className="space-y-4 border-t pt-4">
+                <div className="space-y-3">
+                  <Label
+                    htmlFor="style-select"
+                    className="text-base font-medium"
+                  >
+                    Choose Art Style
+                  </Label>
+                  <Select
+                    value={selectedStyle}
+                    onValueChange={(value) =>
+                      setSelectedStyle(value as keyof typeof BASE_STYLES)
+                    }
+                  >
+                    <SelectTrigger id="style-select">
+                      <SelectValue placeholder="Select a style" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(BASE_STYLES).map(([key, description]) => (
+                        <SelectItem key={key} value={key}>
+                          {key
+                            .replace(/_/g, " ")
+                            .replace("INTO ", "")
+                            .toLowerCase()
+                            .replace(/\b\w/g, (l) => l.toUpperCase())}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Face Enhancement Options */}
+                <div className="space-y-3">
+                  <Label className="text-base font-medium">
+                    Face Enhancements (Optional)
+                  </Label>
+                  <div className="grid grid-cols-1 gap-3">
+                    {Object.entries(FACE_ADDONS).map(([key, description]) => (
+                      <div key={key} className="flex items-start space-x-3">
+                        <Checkbox
+                          id={key}
+                          checked={selectedAddons.includes(
+                            key as keyof typeof FACE_ADDONS,
+                          )}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedAddons([
+                                ...selectedAddons,
+                                key as keyof typeof FACE_ADDONS,
+                              ]);
+                            } else {
+                              setSelectedAddons(
+                                selectedAddons.filter((addon) => addon !== key),
+                              );
+                            }
+                          }}
+                        />
+                        <div className="grid gap-1.5 leading-none">
+                          <Label
+                            htmlFor={key}
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                          >
+                            {key
+                              .replace(/_/g, " ")
+                              .toLowerCase()
+                              .replace(/\b\w/g, (l) => l.toUpperCase())}
+                          </Label>
+                          <p className="text-xs text-muted-foreground">
+                            {description}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               {/* Upload Progress */}

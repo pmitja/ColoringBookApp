@@ -1,4 +1,4 @@
-import { INTO_LINEART, INTO_PIXAR } from '@/config/prompts'
+import { BASE_STYLES, FACE_ADDONS, INTO_LINEART } from '@/config/prompts'
 import { prisma } from '@/lib/db'
 import { getCurrentUser } from '@/lib/session'
 import { fal } from '@fal-ai/client'
@@ -12,7 +12,7 @@ if (process.env.FAL_API_KEY) {
 }
 
 // Function to process a single job
-async function processJob(jobId: string, originalImageBuffer: Buffer, fileType: string) {
+async function processJob(jobId: string, originalImageBuffer: Buffer, fileType: string, style: keyof typeof BASE_STYLES, addons: (keyof typeof FACE_ADDONS)[]) {
   try {
     // Get the job
     const job = await prisma.imageJob.findUnique({
@@ -33,28 +33,35 @@ async function processJob(jobId: string, originalImageBuffer: Buffer, fileType: 
     const base64Image = originalImageBuffer.toString('base64')
     const dataUrl = `data:${fileType};base64,${base64Image}`
 
-    // 1. Call FAL.AI for cartoon using the original image
-    const cartoonResult = await fal.subscribe('fal-ai/flux-kontext/dev', {
+    // Build the prompt with selected style and addons
+    let stylePrompt = BASE_STYLES[style]
+    if (addons.length > 0) {
+      const addonPrompts = addons.map(addon => FACE_ADDONS[addon]).join(' ')
+      stylePrompt = `${stylePrompt} ${addonPrompts}`
+    }
+
+    // 1. Call FAL.AI for style transformation using the original image
+    const styledResult = await fal.subscribe('fal-ai/flux-kontext/dev', {
       input: {
-        prompt: INTO_PIXAR,
+        prompt: stylePrompt,
         image_url: dataUrl,
       } as any,
       logs: true,
       onQueueUpdate: (update) => {
         if (update.status === 'IN_PROGRESS') {
-          console.log('Cartoon generation progress:', update.logs?.map((log) => log.message).join('\n'))
+          console.log('Style generation progress:', update.logs?.map((log) => log.message).join('\n'))
         }
       },
     })
     
-    const cartoonImageUrl = cartoonResult.data?.images?.[0]?.url
-    if (!cartoonImageUrl) throw new Error('No cartoon image returned from FAL.AI')
+    const styledImageUrl = styledResult.data?.images?.[0]?.url
+    if (!styledImageUrl) throw new Error('No styled image returned from FAL.AI')
 
-    // 2. Call FAL.AI for lineart using the cartoon as base
+    // 2. Call FAL.AI for lineart using the styled image as base
     const lineartResult = await fal.subscribe('fal-ai/flux-kontext/dev', {
       input: {
         prompt: INTO_LINEART,
-        image_url: cartoonImageUrl,
+        image_url: styledImageUrl,
       } as any,
       logs: true,
       onQueueUpdate: (update) => {
@@ -67,9 +74,9 @@ async function processJob(jobId: string, originalImageBuffer: Buffer, fileType: 
     const lineartImageUrl = lineartResult.data?.images?.[0]?.url
     if (!lineartImageUrl) throw new Error('No lineart image returned from FAL.AI')
 
-    // 3. Upload both cartoon and lineart images to UploadThing for permanent storage
-    const cartoonUrl = await fetchAndUploadToUploadThing(cartoonImageUrl, `cartoon-${jobId}.jpg`)
-    if (!cartoonUrl) throw new Error('Failed to upload cartoon image to UploadThing')
+    // 3. Upload both styled and lineart images to UploadThing for permanent storage
+    const styledUrl = await fetchAndUploadToUploadThing(styledImageUrl, `styled-${jobId}.jpg`)
+    if (!styledUrl) throw new Error('Failed to upload styled image to UploadThing')
 
     const lineartUrl = await fetchAndUploadToUploadThing(lineartImageUrl, `lineart-${jobId}.jpg`)
     if (!lineartUrl) throw new Error('Failed to upload lineart image to UploadThing')
@@ -80,7 +87,7 @@ async function processJob(jobId: string, originalImageBuffer: Buffer, fileType: 
       data: {
         status: 'DONE',
         inputUrl: null, // No original image URL stored
-        cartoonUrl: cartoonUrl,
+        cartoonUrl: styledUrl,
         lineartUrl: lineartUrl,
         errorMessage: null,
       },
@@ -161,9 +168,30 @@ export async function POST(request: NextRequest) {
     // Parse form data
     const formData = await request.formData()
     const file = formData.get('image') as File
+    const style = formData.get('style') as string || 'INTO_PIXAR'
+    const addonsString = formData.get('addons') as string || '[]'
 
     if (!file) {
       return NextResponse.json({ error: 'No image file provided' }, { status: 400 })
+    }
+
+    // Validate style
+    if (!BASE_STYLES[style as keyof typeof BASE_STYLES]) {
+      return NextResponse.json({ error: 'Invalid style selected' }, { status: 400 })
+    }
+
+    // Parse and validate addons
+    let addons: (keyof typeof FACE_ADDONS)[] = []
+    try {
+      addons = JSON.parse(addonsString)
+      // Validate each addon
+      for (const addon of addons) {
+        if (!FACE_ADDONS[addon]) {
+          return NextResponse.json({ error: `Invalid addon: ${addon}` }, { status: 400 })
+        }
+      }
+    } catch {
+      return NextResponse.json({ error: 'Invalid addons format' }, { status: 400 })
     }
 
     // Validate file type
@@ -192,7 +220,7 @@ export async function POST(request: NextRequest) {
 
     // Start processing the job immediately in the background
     process.nextTick(() => {
-      processJob(job.id, buffer, file.type)
+      processJob(job.id, buffer, file.type, style as keyof typeof BASE_STYLES, addons)
     })
 
     // Return job ID immediately for redirect to processing page

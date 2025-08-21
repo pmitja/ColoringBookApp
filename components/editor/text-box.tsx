@@ -102,6 +102,8 @@ export default function TextBox(props: TextBoxProps) {
             ? `${boxShadow === "none" ? "" : boxShadow + ", "}0 0 0 2px var(--primary)`
             : boxShadow,
           padding: `${padding}px`,
+          minWidth: "20px",
+          minHeight: "20px",
         }}
         className={`group ${isSelected ? "ring-2 ring-primary ring-offset-1" : ""}`}
       >
@@ -203,6 +205,7 @@ export default function TextBox(props: TextBoxProps) {
             zIndex: 1,
             backgroundColor,
             borderRadius: `${borderRadius}px`,
+            overflow: "hidden",
           }}
         >
           {isEditing ? (
@@ -232,7 +235,7 @@ export default function TextBox(props: TextBoxProps) {
                 textAlign,
                 color,
                 width: "100%",
-                height: "auto",
+                height: "100%",
                 border: "none",
                 outline: "none",
                 resize: "none",
@@ -240,6 +243,9 @@ export default function TextBox(props: TextBoxProps) {
                 padding: 0,
                 margin: 0,
                 direction: "ltr",
+                overflow: "auto",
+                wordWrap: "break-word",
+                wordBreak: "break-word",
               }}
             />
           ) : (
@@ -257,8 +263,12 @@ export default function TextBox(props: TextBoxProps) {
                 whiteSpace: "pre-wrap",
                 wordBreak: "break-word",
                 width: "100%",
-                height: "auto",
+                height: "100%",
                 direction: "ltr",
+                overflow: "hidden",
+                display: "flex",
+                alignItems,
+                justifyContent,
               }}
             >
               {element.text}
@@ -272,7 +282,14 @@ export default function TextBox(props: TextBoxProps) {
             e.preventDefault();
             onRemove();
           }}
-          className="absolute right-1 top-1 z-50 hidden rounded bg-white/80 p-1 text-xs shadow group-hover:block"
+          className="focus:ring-primary/20 absolute right-1 top-1 z-50 hidden rounded bg-white/80 p-1 text-xs shadow hover:bg-white/90 focus:bg-white/90 focus:outline-none focus:ring-2 group-hover:block"
+          style={{
+            minWidth: "24px",
+            minHeight: "24px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
         >
           ✕
         </button>

@@ -136,6 +136,8 @@ export const SimpleFlipBook = React.forwardRef<
         width: mode === "spread" ? width * 2 : width,
         height,
         position: "relative",
+        maxWidth: "100%",
+        overflow: "hidden",
       }}
       onClick={() => {
         if (!disableFlipByClick) flipNext();

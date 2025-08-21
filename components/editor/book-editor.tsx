@@ -12,6 +12,13 @@ import { useMounted } from "@/hooks/use-mounted";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -185,6 +192,14 @@ export default function BookEditor({
   const [zoom, setZoom] = useLocalStorage<number>("book-editor:zoom", 1.0);
   const [assetQuery, setAssetQuery] = useState<string>("");
   const [settingsOpen, setSettingsOpen] = useState<boolean>(false);
+  const clipboardRef = useRef<PageElement | null>(null);
+  const [lastContextPos, setLastContextPos] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+  const [lastContextPageId, setLastContextPageId] = useState<string | null>(
+    null,
+  );
 
   const [historyPast, setHistoryPast] = useState<BookState[]>([]);
   const [historyFuture, setHistoryFuture] = useState<BookState[]>([]);
@@ -601,6 +616,107 @@ export default function BookEditor({
     [book, selectedPage, setBook, contentPageWidth, contentPageHeight],
   );
 
+  const getPagePosFromEvent = useCallback(
+    (pageId: string, e: any) => {
+      const el = pageRefs.current[pageId];
+      if (!el) return null as { x: number; y: number } | null;
+      const rect = el.getBoundingClientRect();
+      const clientX = (e?.clientX ?? e?.nativeEvent?.clientX ?? 0) as number;
+      const clientY = (e?.clientY ?? e?.nativeEvent?.clientY ?? 0) as number;
+      const localX = clientX - rect.left;
+      const localY = clientY - rect.top;
+      const xPage = (localX - workAreaPadding) / Math.max(renderZoom, 0.0001);
+      const yPage = (localY - workAreaPadding) / Math.max(renderZoom, 0.0001);
+      return { x: xPage, y: yPage };
+    },
+    [pageRefs, workAreaPadding, renderZoom],
+  );
+
+  const getElementIdFromEventTarget = useCallback((e: any) => {
+    const t = (e?.target || e?.currentTarget) as HTMLElement | null;
+    if (!t || !t.closest) return null as string | null;
+    const host = t.closest("[data-element-id]") as HTMLElement | null;
+    return host?.getAttribute("data-element-id") || null;
+  }, []);
+
+  const copyElement = useCallback(
+    (element?: PageElement | null) => {
+      const target = element ?? selectedElement ?? null;
+      if (!target) return;
+      clipboardRef.current = JSON.parse(JSON.stringify(target)) as PageElement;
+      toast.success("Copied");
+    },
+    [selectedElement],
+  );
+
+  const pasteClipboard = useCallback(
+    (pos?: { x: number; y: number }, pageId?: string | null) => {
+      const clip = clipboardRef.current;
+      if (!clip) return;
+      const targetPageId = pageId ?? lastContextPageId ?? selectedPage?.id;
+      if (!targetPageId) return;
+      const page = book.pages.find((p) => p.id === targetPageId);
+      if (!page) return;
+      const base = JSON.parse(JSON.stringify(clip)) as PageElement;
+      const newId =
+        base.type === "text" ? generateId("text") : generateId("img");
+      const width = base.data.width;
+      const height = base.data.height;
+      let newX: number;
+      let newY: number;
+      if (pos) {
+        newX = pos.x;
+        newY = pos.y;
+      } else if (selectedElement) {
+        newX = selectedElement.data.x + 12;
+        newY = selectedElement.data.y + 12;
+      } else {
+        newX = 40;
+        newY = 40;
+      }
+      // Clamp position to content area
+      const rotation =
+        base.type === "image" ? ((base.data as any).rotation || 0) % 360 : 0;
+      const isQuarter = Math.abs(rotation) % 180 !== 0;
+      const rotatedWidth = base.type === "image" && isQuarter ? height : width;
+      const rotatedHeight = base.type === "image" && isQuarter ? width : height;
+      const maxX = Math.max(0, contentPageWidth - rotatedWidth);
+      const maxY = Math.max(0, contentPageHeight - rotatedHeight);
+      newX = Math.min(Math.max(newX, 0), maxX);
+      newY = Math.min(Math.max(newY, 0), maxY);
+
+      const newEl: PageElement = {
+        type: base.type,
+        data: {
+          ...(base.data as any),
+          id: newId,
+          x: newX,
+          y: newY,
+        },
+      } as PageElement;
+      pushHistory();
+      const newPages = book.pages.map((p) =>
+        p.id === targetPageId ? { ...p, elements: [...p.elements, newEl] } : p,
+      );
+      setBook({ ...book, pages: newPages });
+      setSelectedPageId(targetPageId);
+      setSelectedElementId(newId);
+      toast.success("Pasted");
+    },
+    [
+      book,
+      contentPageWidth,
+      contentPageHeight,
+      lastContextPageId,
+      selectedElement,
+      selectedPage,
+      setBook,
+      setSelectedElementId,
+      setSelectedPageId,
+      pushHistory,
+    ],
+  );
+
   // Re-clamp all elements when content area changes (zoom, padding, format)
   useEffect(() => {
     if (!hasMeasured) return;
@@ -766,19 +882,44 @@ export default function BookEditor({
     const onKeyDown = (e: KeyboardEvent) => {
       if (editingElementId) return; // let textarea handle its own undo
       const isMeta = e.metaKey || e.ctrlKey;
-      if (!isMeta) return;
       const key = e.key.toLowerCase();
-      if (key === "z" && !e.shiftKey) {
+      if (isMeta && key === "z" && !e.shiftKey) {
         e.preventDefault();
         if (canUndo) undo();
-      } else if ((key === "z" && e.shiftKey) || key === "y") {
+        return;
+      }
+      if (isMeta && ((key === "z" && e.shiftKey) || key === "y")) {
         e.preventDefault();
         if (canRedo) redo();
+        return;
+      }
+      if (isMeta && key === "c") {
+        if (selectedElement) {
+          e.preventDefault();
+          copyElement(selectedElement);
+        }
+        return;
+      }
+      if (isMeta && key === "v") {
+        if (clipboardRef.current) {
+          e.preventDefault();
+          pasteClipboard();
+        }
+        return;
       }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [undo, redo, canUndo, canRedo, editingElementId]);
+  }, [
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+    editingElementId,
+    selectedElement,
+    copyElement,
+    pasteClipboard,
+  ]);
 
   // Using react-draggable; native DnD removed
 
@@ -1136,7 +1277,7 @@ export default function BookEditor({
 
                   <div className="flex flex-wrap items-center gap-2">
                     <Button
-                      variant="secondary"
+                      variant="default"
                       onClick={saveBook}
                       className="h-9 px-2 text-xs sm:h-10 sm:px-3 sm:text-sm"
                     >
@@ -1300,286 +1441,353 @@ export default function BookEditor({
               >
                 {book.pages.map((page, pageIndex) => (
                   <div key={page.id} className="bg-white">
-                    <div
-                      ref={(el) => {
-                        pageRefs.current[page.id] = el;
-                      }}
-                      className="relative overflow-hidden rounded-md border bg-white shadow-sm"
-                      style={{
-                        height: displayHeight,
-                        width: displayWidth,
-                        padding: 0,
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedPageId(page.id);
-                      }}
-                    >
-                      {page.id === selectedPageId ? (
+                    <ContextMenu>
+                      <ContextMenuTrigger asChild>
                         <div
-                          className="pointer-events-none absolute inset-0 rounded-md border-2 border-dashed border-red-500"
-                          style={{
-                            top: workAreaPadding,
-                            left: workAreaPadding,
-                            right: workAreaPadding,
-                            bottom: workAreaPadding,
+                          ref={(el) => {
+                            pageRefs.current[page.id] = el;
                           }}
-                          data-ignore-export="true"
-                        />
-                      ) : null}
-                      {/* Page number badge */}
-                      <div
-                        className={`pointer-events-none absolute bottom-1 ${
-                          (pageIndex + 1) % 2 === 0 ? "left-2" : "right-2"
-                        } rounded bg-white/70 px-1.5 py-0.5 text-[10px] font-medium text-neutral-700 shadow-sm`}
-                        style={{
-                          bottom: workAreaPadding + 2,
-                          left:
-                            (pageIndex + 1) % 2 === 0
-                              ? workAreaPadding + 8
-                              : undefined,
-                          right:
-                            (pageIndex + 1) % 2 !== 0
-                              ? workAreaPadding + 8
-                              : undefined,
-                        }}
-                        data-ignore-export="true"
-                      >
-                        {pageIndex + 1}
-                      </div>
-                      {page.elements.map((el) => {
-                        if (el.type === "image") {
-                          const asset = assets.find(
-                            (a) => a.id === el.data.assetId,
-                          );
-                          if (!asset) return null;
-                          const rotation =
-                            ((el.data as EditorImage).rotation || 0) % 360;
-                          const isQuarterTurn = Math.abs(rotation) % 180 !== 0;
-                          const containerW = Math.floor(
-                            (isQuarterTurn ? el.data.height : el.data.width) *
-                              renderZoom,
-                          );
-                          const containerH = Math.floor(
-                            (isQuarterTurn ? el.data.width : el.data.height) *
-                              renderZoom,
-                          );
-                          const leftPx = Math.floor(
-                            workAreaPadding + el.data.x * renderZoom,
-                          );
-                          const topPx = Math.floor(
-                            workAreaPadding + el.data.y * renderZoom,
-                          );
-                          return (
-                            <Draggable
-                              key={el.data.id}
-                              position={{ x: leftPx, y: topPx }}
-                              bounds="parent"
-                              cancel=".object-pos-handle"
-                              onStart={() => {
-                                pushHistory();
-                                setSelectedPageId(page.id);
-                                setSelectedElementId(el.data.id);
+                          className="relative overflow-hidden rounded-md border bg-white shadow-sm"
+                          style={{
+                            height: displayHeight,
+                            width: displayWidth,
+                            padding: 0,
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedPageId(page.id);
+                          }}
+                          onContextMenu={(e) => {
+                            const id = getElementIdFromEventTarget(e as any);
+                            if (id) setSelectedElementId(id);
+                            setSelectedPageId(page.id);
+                            setLastContextPageId(page.id);
+                            const pos = getPagePosFromEvent(page.id, e as any);
+                            if (pos) setLastContextPos(pos);
+                          }}
+                        >
+                          {page.id === selectedPageId ? (
+                            <div
+                              className="pointer-events-none absolute inset-0 rounded-md border-2 border-dashed border-red-500"
+                              style={{
+                                top: workAreaPadding,
+                                left: workAreaPadding,
+                                right: workAreaPadding,
+                                bottom: workAreaPadding,
                               }}
-                              onDrag={(e, data) => {
-                                const xPage =
-                                  (data.x - workAreaPadding) / renderZoom;
-                                const yPage =
-                                  (data.y - workAreaPadding) / renderZoom;
-                                updateElementPosition(el.data.id, xPage, yPage);
-                              }}
-                            >
-                              <div
-                                onMouseDown={(e) => e.stopPropagation()}
-                                onTouchStart={(e) => e.stopPropagation()}
-                                onClick={() => {
-                                  setSelectedPageId(page.id);
-                                  setSelectedElementId(el.data.id);
-                                }}
-                                style={{
-                                  position: "absolute",
-                                  left: 0,
-                                  top: 0,
-                                  width: containerW,
-                                  height: containerH,
-                                  cursor: "move",
-                                }}
-                                className={`group overflow-hidden rounded bg-white ${
-                                  selectedElementId === el.data.id
-                                    ? "ring-2 ring-primary"
-                                    : ""
-                                }`}
-                              >
-                                <div className="relative h-full w-full">
+                              data-ignore-export="true"
+                            />
+                          ) : null}
+                          {/* Page number badge */}
+                          <div
+                            className={`pointer-events-none absolute bottom-1 ${
+                              (pageIndex + 1) % 2 === 0 ? "left-2" : "right-2"
+                            } rounded bg-white/70 px-1.5 py-0.5 text-[10px] font-medium text-neutral-700 shadow-sm`}
+                            style={{
+                              bottom: workAreaPadding + 2,
+                              left:
+                                (pageIndex + 1) % 2 === 0
+                                  ? workAreaPadding + 8
+                                  : undefined,
+                              right:
+                                (pageIndex + 1) % 2 !== 0
+                                  ? workAreaPadding + 8
+                                  : undefined,
+                            }}
+                            data-ignore-export="true"
+                          >
+                            {pageIndex + 1}
+                          </div>
+                          {page.elements.map((el) => {
+                            if (el.type === "image") {
+                              const asset = assets.find(
+                                (a) => a.id === el.data.assetId,
+                              );
+                              if (!asset) return null;
+                              const rotation =
+                                ((el.data as EditorImage).rotation || 0) % 360;
+                              const isQuarterTurn =
+                                Math.abs(rotation) % 180 !== 0;
+                              const containerW = Math.floor(
+                                (isQuarterTurn
+                                  ? el.data.height
+                                  : el.data.width) * renderZoom,
+                              );
+                              const containerH = Math.floor(
+                                (isQuarterTurn
+                                  ? el.data.width
+                                  : el.data.height) * renderZoom,
+                              );
+                              const leftPx = Math.floor(
+                                workAreaPadding + el.data.x * renderZoom,
+                              );
+                              const topPx = Math.floor(
+                                workAreaPadding + el.data.y * renderZoom,
+                              );
+                              return (
+                                <Draggable
+                                  key={el.data.id}
+                                  position={{ x: leftPx, y: topPx }}
+                                  bounds="parent"
+                                  cancel=".object-pos-handle"
+                                  onStart={() => {
+                                    pushHistory();
+                                    setSelectedPageId(page.id);
+                                    setSelectedElementId(el.data.id);
+                                  }}
+                                  onDrag={(e, data) => {
+                                    const xPage =
+                                      (data.x - workAreaPadding) / renderZoom;
+                                    const yPage =
+                                      (data.y - workAreaPadding) / renderZoom;
+                                    updateElementPosition(
+                                      el.data.id,
+                                      xPage,
+                                      yPage,
+                                    );
+                                  }}
+                                >
                                   <div
+                                    onMouseDown={(e) => e.stopPropagation()}
+                                    onTouchStart={(e) => e.stopPropagation()}
+                                    onClick={() => {
+                                      setSelectedPageId(page.id);
+                                      setSelectedElementId(el.data.id);
+                                    }}
                                     style={{
                                       position: "absolute",
-                                      left: "50%",
-                                      top: "50%",
-                                      transform: `translate(-50%, -50%) rotate(${rotation}deg)`,
-                                      width: isQuarterTurn
-                                        ? containerH
-                                        : containerW,
-                                      height: isQuarterTurn
-                                        ? containerW
-                                        : containerH,
-                                      overflow: "hidden",
+                                      left: 0,
+                                      top: 0,
+                                      width: containerW,
+                                      height: containerH,
+                                      cursor: "move",
                                     }}
+                                    className={`group overflow-hidden rounded bg-white ${
+                                      selectedElementId === el.data.id
+                                        ? "ring-2 ring-primary"
+                                        : ""
+                                    }`}
                                   >
-                                    <img
-                                      src={asset.url}
-                                      alt={asset.name || "image"}
-                                      style={{
-                                        width: "100%",
-                                        height: "100%",
-                                        objectFit:
-                                          (el.data as EditorImage).fit ===
-                                          "cover"
-                                            ? "cover"
-                                            : "contain",
-                                        objectPosition:
-                                          (el.data as EditorImage).fit ===
-                                          "cover"
-                                            ? `${(el.data as EditorImage).objectPosX ?? 50}% ${(el.data as EditorImage).objectPosY ?? 50}%`
-                                            : undefined,
-                                      }}
-                                    />
-                                    {(el.data as EditorImage).fit === "cover" &&
-                                    selectedElementId === el.data.id ? (
+                                    <div className="relative h-full w-full">
                                       <div
                                         style={{
                                           position: "absolute",
-                                          inset: 0,
+                                          left: "50%",
+                                          top: "50%",
+                                          transform: `translate(-50%, -50%) rotate(${rotation}deg)`,
+                                          width: isQuarterTurn
+                                            ? containerH
+                                            : containerW,
+                                          height: isQuarterTurn
+                                            ? containerW
+                                            : containerH,
+                                          overflow: "hidden",
                                         }}
                                       >
-                                        <Draggable
-                                          position={{
-                                            x: Math.round(
-                                              (((el.data as EditorImage)
-                                                .objectPosX ?? 50) /
-                                                100) *
-                                                (isQuarterTurn
-                                                  ? containerH
-                                                  : containerW),
-                                            ),
-                                            y: Math.round(
-                                              (((el.data as EditorImage)
-                                                .objectPosY ?? 50) /
-                                                100) *
-                                                (isQuarterTurn
-                                                  ? containerW
-                                                  : containerH),
-                                            ),
+                                        <img
+                                          src={asset.url}
+                                          alt={asset.name || "image"}
+                                          style={{
+                                            width: "100%",
+                                            height: "100%",
+                                            objectFit:
+                                              (el.data as EditorImage).fit ===
+                                              "cover"
+                                                ? "cover"
+                                                : "contain",
+                                            objectPosition:
+                                              (el.data as EditorImage).fit ===
+                                              "cover"
+                                                ? `${(el.data as EditorImage).objectPosX ?? 50}% ${(el.data as EditorImage).objectPosY ?? 50}%`
+                                                : undefined,
                                           }}
-                                          bounds={{
-                                            left: 0,
-                                            top: 0,
-                                            right: isQuarterTurn
-                                              ? containerH
-                                              : containerW,
-                                            bottom: isQuarterTurn
-                                              ? containerW
-                                              : containerH,
-                                          }}
-                                          onStart={() => pushHistory()}
-                                          onDrag={(e, data) => {
-                                            const boxW = isQuarterTurn
-                                              ? containerH
-                                              : containerW;
-                                            const boxH = isQuarterTurn
-                                              ? containerW
-                                              : containerH;
-                                            const pctX = Math.max(
-                                              0,
-                                              Math.min(
-                                                100,
-                                                (data.x / Math.max(1, boxW)) *
-                                                  100,
-                                              ),
-                                            );
-                                            const pctY = Math.max(
-                                              0,
-                                              Math.min(
-                                                100,
-                                                (data.y / Math.max(1, boxH)) *
-                                                  100,
-                                              ),
-                                            );
-                                            updateElementData(el.data.id, {
-                                              objectPosX: pctX,
-                                              objectPosY: pctY,
-                                            } as Partial<EditorImage>);
-                                          }}
-                                        >
+                                        />
+                                        {(el.data as EditorImage).fit ===
+                                          "cover" &&
+                                        selectedElementId === el.data.id ? (
                                           <div
-                                            title="Drag to position image"
-                                            className="object-pos-handle absolute -left-2 -top-2 h-4 w-4 cursor-grab rounded-full border border-white bg-black/60"
-                                            onMouseDown={(e) =>
-                                              e.stopPropagation()
-                                            }
-                                            onTouchStart={(e) =>
-                                              e.stopPropagation()
-                                            }
-                                          />
-                                        </Draggable>
+                                            style={{
+                                              position: "absolute",
+                                              inset: 0,
+                                            }}
+                                          >
+                                            <Draggable
+                                              position={{
+                                                x: Math.round(
+                                                  (((el.data as EditorImage)
+                                                    .objectPosX ?? 50) /
+                                                    100) *
+                                                    (isQuarterTurn
+                                                      ? containerH
+                                                      : containerW),
+                                                ),
+                                                y: Math.round(
+                                                  (((el.data as EditorImage)
+                                                    .objectPosY ?? 50) /
+                                                    100) *
+                                                    (isQuarterTurn
+                                                      ? containerW
+                                                      : containerH),
+                                                ),
+                                              }}
+                                              bounds={{
+                                                left: 0,
+                                                top: 0,
+                                                right: isQuarterTurn
+                                                  ? containerH
+                                                  : containerW,
+                                                bottom: isQuarterTurn
+                                                  ? containerW
+                                                  : containerH,
+                                              }}
+                                              onStart={() => pushHistory()}
+                                              onDrag={(e, data) => {
+                                                const boxW = isQuarterTurn
+                                                  ? containerH
+                                                  : containerW;
+                                                const boxH = isQuarterTurn
+                                                  ? containerW
+                                                  : containerH;
+                                                const pctX = Math.max(
+                                                  0,
+                                                  Math.min(
+                                                    100,
+                                                    (data.x /
+                                                      Math.max(1, boxW)) *
+                                                      100,
+                                                  ),
+                                                );
+                                                const pctY = Math.max(
+                                                  0,
+                                                  Math.min(
+                                                    100,
+                                                    (data.y /
+                                                      Math.max(1, boxH)) *
+                                                      100,
+                                                  ),
+                                                );
+                                                updateElementData(el.data.id, {
+                                                  objectPosX: pctX,
+                                                  objectPosY: pctY,
+                                                } as Partial<EditorImage>);
+                                              }}
+                                            >
+                                              <div
+                                                title="Drag to position image"
+                                                className="object-pos-handle absolute -left-2 -top-2 h-4 w-4 cursor-grab rounded-full border border-white bg-black/60"
+                                                onMouseDown={(e) =>
+                                                  e.stopPropagation()
+                                                }
+                                                onTouchStart={(e) =>
+                                                  e.stopPropagation()
+                                                }
+                                              />
+                                            </Draggable>
+                                          </div>
+                                        ) : null}
                                       </div>
-                                    ) : null}
+                                    </div>
+                                    <Button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        e.preventDefault();
+                                        removeElement(el.data.id);
+                                      }}
+                                      variant="secondary"
+                                      size="icon"
+                                      className="absolute right-1 top-1 hidden h-6 w-6 p-0 group-hover:flex"
+                                    >
+                                      <Icons.close className="h-3 w-3" />
+                                    </Button>
                                   </div>
-                                </div>
-                                <Button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    e.preventDefault();
-                                    removeElement(el.data.id);
+                                </Draggable>
+                              );
+                            }
+                            if (el.type === "text") {
+                              return (
+                                <TextBox
+                                  key={el.data.id}
+                                  zoom={renderZoom}
+                                  workAreaPadding={workAreaPadding}
+                                  element={el.data as EditorTextBox}
+                                  isSelected={selectedElementId === el.data.id}
+                                  isEditing={editingElementId === el.data.id}
+                                  onFocusEdit={() =>
+                                    setEditingElementId(el.data.id)
+                                  }
+                                  onBlurEdit={() => setEditingElementId(null)}
+                                  onSelect={() => {
+                                    setSelectedPageId(page.id);
+                                    setSelectedElementId(el.data.id);
                                   }}
-                                  variant="secondary"
-                                  size="icon"
-                                  className="absolute right-1 top-1 hidden h-6 w-6 p-0 group-hover:flex"
-                                >
-                                  <Icons.close className="h-3 w-3" />
-                                </Button>
-                              </div>
-                            </Draggable>
-                          );
-                        }
-                        if (el.type === "text") {
-                          return (
-                            <TextBox
-                              key={el.data.id}
-                              zoom={renderZoom}
-                              workAreaPadding={workAreaPadding}
-                              element={el.data as EditorTextBox}
-                              isSelected={selectedElementId === el.data.id}
-                              isEditing={editingElementId === el.data.id}
-                              onFocusEdit={() =>
-                                setEditingElementId(el.data.id)
-                              }
-                              onBlurEdit={() => setEditingElementId(null)}
-                              onSelect={() => {
-                                setSelectedPageId(page.id);
-                                setSelectedElementId(el.data.id);
+                                  onDoubleClickToEdit={() => {
+                                    setSelectedPageId(page.id);
+                                    setSelectedElementId(el.data.id);
+                                    setEditingElementId(el.data.id);
+                                  }}
+                                  onDragStart={() => {
+                                    pushHistory();
+                                  }}
+                                  onDragTo={(x, y) =>
+                                    updateElementPosition(el.data.id, x, y)
+                                  }
+                                  onChangeText={(text) =>
+                                    updateElementData(el.data.id, { text })
+                                  }
+                                  onRemove={() => removeElement(el.data.id)}
+                                />
+                              );
+                            }
+                            return null;
+                          })}
+                        </div>
+                      </ContextMenuTrigger>
+                      <ContextMenuContent>
+                        {selectedElement && selectedPageId === page.id ? (
+                          <ContextMenuItem
+                            onClick={(e) => {
+                              e.preventDefault();
+                              copyElement(selectedElement);
+                            }}
+                          >
+                            Copy
+                          </ContextMenuItem>
+                        ) : null}
+                        <ContextMenuItem
+                          disabled={!clipboardRef.current}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            pasteClipboard(
+                              lastContextPos ?? undefined,
+                              page.id,
+                            );
+                          }}
+                        >
+                          Paste
+                        </ContextMenuItem>
+                        {selectedElement && selectedPageId === page.id ? (
+                          <>
+                            <ContextMenuSeparator />
+                            <ContextMenuItem
+                              onClick={(e) => {
+                                e.preventDefault();
+                                duplicateSelected();
                               }}
-                              onDoubleClickToEdit={() => {
-                                setSelectedPageId(page.id);
-                                setSelectedElementId(el.data.id);
-                                setEditingElementId(el.data.id);
+                            >
+                              Duplicate
+                            </ContextMenuItem>
+                            <ContextMenuItem
+                              onClick={(e) => {
+                                e.preventDefault();
+                                removeElement(selectedElement.data.id);
                               }}
-                              onDragStart={() => {
-                                pushHistory();
-                              }}
-                              onDragTo={(x, y) =>
-                                updateElementPosition(el.data.id, x, y)
-                              }
-                              onChangeText={(text) =>
-                                updateElementData(el.data.id, { text })
-                              }
-                              onRemove={() => removeElement(el.data.id)}
-                            />
-                          );
-                        }
-                        return null;
-                      })}
-                    </div>
+                            >
+                              Delete
+                            </ContextMenuItem>
+                          </>
+                        ) : null}
+                      </ContextMenuContent>
+                    </ContextMenu>
                   </div>
                 ))}
               </SimpleFlipBook>

@@ -83,6 +83,7 @@ export default function TextBox(props: TextBoxProps) {
       }}
     >
       <div
+        data-element-id={element.id}
         onMouseDown={(e) => e.stopPropagation()}
         onTouchStart={(e) => e.stopPropagation()}
         onClick={onSelect}

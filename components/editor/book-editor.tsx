@@ -179,6 +179,7 @@ export default function BookEditor({
   const bookRef = useRef<SimpleFlipBookHandle | null>(null);
   const stageRef = useRef<HTMLDivElement | null>(null);
   const viewportRef = useRef<HTMLDivElement | null>(null);
+  const pageRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const [containerWidth, setContainerWidth] = useState<number>(420);
   const [hasMeasured, setHasMeasured] = useState<boolean>(false);
   const [zoom, setZoom] = useLocalStorage<number>("book-editor:zoom", 1.0);
@@ -303,27 +304,38 @@ export default function BookEditor({
   const exportToPdf = useCallback(async () => {
     try {
       toast.info("Generating PDF...");
+      const prevSelectedEl = selectedElementId;
+      const prevSelectedPage = selectedPageId;
+      setSelectedElementId(null);
+      setSelectedPageId(undefined as any);
+      await new Promise((r) => requestAnimationFrame(() => r(undefined)));
+      await new Promise((r) => requestAnimationFrame(() => r(undefined)));
+
+      const elements = book.pages
+        .map((p) => pageRefs.current[p.id])
+        .filter(Boolean) as HTMLElement[];
+
       await exportBookAsPdf({
-        book,
-        assets,
+        elements,
         pageFormat,
         orientation: pageOrientation,
-        contentPageWidth,
-        contentPageHeight,
         fileName: book.title,
+        scale: 2,
       });
+
+      setSelectedElementId(prevSelectedEl);
+      setSelectedPageId(prevSelectedPage as any);
       toast.success("PDF saved");
     } catch (e) {
       console.error(e);
       toast.error("Failed to export PDF");
     }
   }, [
-    assets,
-    book,
-    contentPageHeight,
-    contentPageWidth,
+    book.pages,
     pageFormat,
     pageOrientation,
+    selectedElementId,
+    selectedPageId,
   ]);
 
   const saveBook = useCallback(async () => {
@@ -1228,7 +1240,9 @@ export default function BookEditor({
               {book.pages.map((page, pageIndex) => (
                 <div key={page.id} className="bg-white">
                   <div
-                    ref={stageRef}
+                    ref={(el) => {
+                      pageRefs.current[page.id] = el;
+                    }}
                     className="relative overflow-hidden rounded-md border bg-white shadow-sm"
                     style={{
                       height: displayHeight,
@@ -1249,6 +1263,7 @@ export default function BookEditor({
                           right: workAreaPadding,
                           bottom: workAreaPadding,
                         }}
+                        data-ignore-export="true"
                       />
                     ) : null}
                     {/* Page number badge */}
@@ -1267,6 +1282,7 @@ export default function BookEditor({
                             ? workAreaPadding + 8
                             : undefined,
                       }}
+                      data-ignore-export="true"
                     >
                       {pageIndex + 1}
                     </div>

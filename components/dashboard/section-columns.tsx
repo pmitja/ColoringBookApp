@@ -12,14 +12,18 @@ export function SectionColumns({
   children,
 }: SectionColumnsType) {
   return (
-    <div className="grid grid-cols-1 gap-x-10 gap-y-4 py-8 md:grid-cols-10">
-      <div className="col-span-4 space-y-1.5">
-        <h2 className="text-lg font-semibold leading-none">{title}</h2>
-        <p className="text-balance text-sm text-muted-foreground">
-          {description}
-        </p>
+    <div className="rounded-2xl border border-white/10 bg-white/5 p-6 shadow-[0_0_0_1px_rgba(255,255,255,0.04)] backdrop-blur">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-12">
+        <div className="space-y-2 md:col-span-5">
+          <h2 className="text-lg font-semibold leading-tight">{title}</h2>
+          {description ? (
+            <p className="text-balance text-sm text-muted-foreground">
+              {description}
+            </p>
+          ) : null}
+        </div>
+        <div className="md:col-span-7">{children}</div>
       </div>
-      <div className="col-span-6">{children}</div>
     </div>
   );
 }

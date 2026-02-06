@@ -1,0 +1,31 @@
+<svg width="1200" height="900" viewBox="0 0 1200 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="900" fill="#F8FAFC"/>
+  <circle cx="180" cy="120" r="180" fill="#99F6E4" opacity="0.35"/>
+  <circle cx="1040" cy="160" r="220" fill="#FDE68A" opacity="0.28"/>
+  <circle cx="1040" cy="780" r="220" fill="#BFDBFE" opacity="0.25"/>
+  <rect x="120" y="130" width="440" height="620" rx="36" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="6"/>
+  <rect x="180" y="210" width="320" height="340" rx="24" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="4"/>
+  <circle cx="300" cy="320" r="42" fill="#FCA5A5" stroke="#0F172A" stroke-width="3"/>
+  <circle cx="370" cy="300" r="36" fill="#FDBA74" stroke="#0F172A" stroke-width="3"/>
+  <circle cx="240" cy="300" r="30" fill="#93C5FD" stroke="#0F172A" stroke-width="3"/>
+  <path d="M230 420C230 390 250 370 270 370C290 370 310 390 310 420" stroke="#0F172A" stroke-width="3" stroke-linecap="round"/>
+  <path d="M290 432C290 400 312 376 336 376C360 376 382 400 382 432" stroke="#0F172A" stroke-width="3" stroke-linecap="round"/>
+  <path d="M340 420C340 390 358 370 376 370C394 370 412 390 412 420" stroke="#0F172A" stroke-width="3" stroke-linecap="round"/>
+  <rect x="180" y="575" width="320" height="18" rx="9" fill="#E2E8F0"/>
+  <rect x="180" y="605" width="220" height="14" rx="7" fill="#E2E8F0"/>
+
+  <rect x="520" y="190" width="520" height="620" rx="36" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="6"/>
+  <rect x="590" y="260" width="380" height="420" rx="24" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="4" stroke-dasharray="10 12"/>
+  <circle cx="720" cy="360" r="40" stroke="#0F172A" stroke-width="4"/>
+  <circle cx="800" cy="340" r="46" stroke="#0F172A" stroke-width="4"/>
+  <circle cx="880" cy="360" r="40" stroke="#0F172A" stroke-width="4"/>
+  <path d="M680 470C680 440 700 420 720 420C740 420 760 440 760 470" stroke="#0F172A" stroke-width="4" stroke-linecap="round"/>
+  <path d="M752 496C752 460 776 430 800 430C824 430 848 460 848 496" stroke="#0F172A" stroke-width="4" stroke-linecap="round"/>
+  <path d="M840 470C840 440 860 420 880 420C900 420 920 440 920 470" stroke="#0F172A" stroke-width="4" stroke-linecap="round"/>
+  <path d="M670 545C730 510 870 510 930 545" stroke="#0F172A" stroke-width="4" stroke-linecap="round"/>
+
+  <rect x="560" y="130" width="220" height="36" rx="18" fill="#0EA5A4"/>
+  <rect x="800" y="130" width="200" height="36" rx="18" fill="#FACC15"/>
+  <text x="606" y="155" fill="#F0FDFA" font-family="Arial" font-size="14" font-weight="700">Photo</text>
+  <text x="832" y="155" fill="#78350F" font-family="Arial" font-size="14" font-weight="700">Line Art</text>
+</svg>

@@ -40,6 +40,36 @@ export default function ResultsPage({ params }: ResultsPageProps) {
   const [error, setError] = useState<string | null>(null);
   const [downloading, setDownloading] = useState<string | null>(null);
 
+  const downloadBlob = (blob: Blob, filename: string) => {
+    const blobUrl = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = blobUrl;
+    link.download = filename;
+    link.rel = "noopener";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 5000);
+  };
+
+  const fetchBlob = async (url: string, errorMessage: string) => {
+    const response = await fetch(url, { cache: "no-store" });
+    if (!response.ok) {
+      throw new Error(errorMessage);
+    }
+    return response.blob();
+  };
+
+  const copyShareLink = async () => {
+    if (!jobData?.lineartUrl) return;
+    try {
+      await navigator.clipboard.writeText(jobData.lineartUrl);
+      // Show success toast
+    } catch (err) {
+      console.error("Copy error:", err);
+    }
+  };
+
   useEffect(() => {
     const fetchJobData = async () => {
       try {
@@ -67,13 +97,23 @@ export default function ResultsPage({ params }: ResultsPageProps) {
     setDownloading(`lineart-${format}`);
 
     try {
-      // Create download link
-      const link = document.createElement("a");
-      link.href = jobData.lineartUrl;
-      link.download = `${jobData.inputFileName.split(".")[0]}-coloring-page.${format}`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      const fileBaseName =
+        jobData.inputFileName.split(".")[0] || "coloring-page";
+
+      if (format === "png") {
+        const imageBlob = await fetchBlob(
+          `/api/download/lineart/${params.jobId}`,
+          "Failed to fetch line art"
+        );
+        downloadBlob(imageBlob, `${fileBaseName}-coloring-page.png`);
+        return;
+      }
+
+      const pdfBlob = await fetchBlob(
+        `/api/download/lineart-pdf/${params.jobId}`,
+        "Failed to generate PDF"
+      );
+      downloadBlob(pdfBlob, `${fileBaseName}-coloring-page.pdf`);
     } catch (err) {
       console.error("Download error:", err);
       // Show error toast
@@ -87,23 +127,34 @@ export default function ResultsPage({ params }: ResultsPageProps) {
 
     if (navigator.share) {
       try {
+        const fileBaseName =
+          jobData.inputFileName.split(".")[0] || "coloring-page";
+        const pdfBlob = await fetchBlob(
+          `/api/download/lineart-pdf/${params.jobId}`,
+          "Failed to generate PDF"
+        );
+        const pdfFile = new File(
+          [pdfBlob],
+          `${fileBaseName}-coloring-page.pdf`,
+          { type: "application/pdf" }
+        );
+
+        if (navigator.canShare && !navigator.canShare({ files: [pdfFile] })) {
+          throw new Error("File sharing not supported");
+        }
+
         await navigator.share({
           title: "My Coloring Book Page",
           text: "Check out this amazing coloring book page created from my photo!",
-          url: jobData.lineartUrl,
+          files: [pdfFile],
         });
+        return;
       } catch (err) {
         console.error("Share error:", err);
       }
-    } else {
-      // Fallback: copy to clipboard
-      try {
-        await navigator.clipboard.writeText(jobData.lineartUrl);
-        // Show success toast
-      } catch (err) {
-        console.error("Copy error:", err);
-      }
     }
+
+    await copyShareLink();
   };
 
   if (isLoading) {
@@ -128,9 +179,9 @@ export default function ResultsPage({ params }: ResultsPageProps) {
           text="Unable to load your coloring book results."
         />
         <div className="mx-auto max-w-2xl">
-          <Alert className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20">
-            <Icons.warning className="h-4 w-4 text-red-600" />
-            <AlertDescription className="text-red-800 dark:text-red-400">
+          <Alert className="border-rose-400/30 bg-rose-500/10 text-rose-800 dark:text-rose-100">
+            <Icons.warning className="h-4 w-4 text-rose-500 dark:text-rose-200" />
+            <AlertDescription className="text-rose-700 dark:text-rose-50">
               {error ||
                 jobData?.errorMessage ||
                 "Results not found or job not completed"}
@@ -164,18 +215,18 @@ export default function ResultsPage({ params }: ResultsPageProps) {
         text={`Created from: ${jobData.inputFileName}`}
       />
 
-      <div className="mx-auto max-w-4xl space-y-6">
+      <div className="mx-auto max-w-4xl space-y-6 pb-10">
         {/* Success Message */}
-        <Alert className="border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20">
-          <Icons.check className="h-4 w-4 text-green-600" />
-          <AlertDescription className="text-green-800 dark:text-green-400">
+        <Alert className="border-emerald-400/30 bg-emerald-500/10 text-emerald-800 dark:text-emerald-100">
+          <Icons.check className="h-4 w-4 text-emerald-500 dark:text-emerald-200" />
+          <AlertDescription className="text-emerald-700 dark:text-emerald-50">
             <strong>Success!</strong> Your coloring book page has been created
             and is ready to download!
           </AlertDescription>
         </Alert>
 
         {/* Coloring Page Result */}
-        <Card>
+        <Card className="border-slate-200/70 bg-white/80 dark:border-white/10 dark:bg-white/5">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
@@ -187,13 +238,18 @@ export default function ResultsPage({ params }: ResultsPageProps) {
                   Black & white line art perfect for coloring
                 </CardDescription>
               </div>
-              <Badge variant="secondary">Ready</Badge>
+              <Badge
+                variant="outline"
+                className="border-emerald-400/30 bg-emerald-500/15 text-emerald-800 dark:text-emerald-100"
+              >
+                Ready
+              </Badge>
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Image Display */}
             {jobData.lineartUrl && (
-              <div className="relative mx-auto aspect-square max-w-2xl overflow-hidden rounded-lg border bg-white">
+              <div className="relative aspect-square w-full max-w-2xl overflow-hidden rounded-2xl border border-slate-200/70 bg-white dark:border-white/10">
                 <Image
                   src={jobData.lineartUrl}
                   alt="Coloring page line art"
@@ -224,7 +280,7 @@ export default function ResultsPage({ params }: ResultsPageProps) {
                   onClick={() => handleDownload("pdf")}
                   disabled={downloading === "lineart-pdf"}
                   variant="outline"
-                  className="gap-2"
+                  className="gap-2 border-slate-200/70 bg-white/80 dark:border-white/10 dark:bg-white/5"
                 >
                   {downloading === "lineart-pdf" ? (
                     <Icons.spinner className="h-4 w-4 animate-spin" />
@@ -237,7 +293,7 @@ export default function ResultsPage({ params }: ResultsPageProps) {
             </div>
 
             {/* Share */}
-            <div className="text-center">
+            <div className="flex justify-start">
               <Button
                 onClick={handleShare}
                 variant="ghost"
@@ -252,9 +308,9 @@ export default function ResultsPage({ params }: ResultsPageProps) {
         </Card>
 
         {/* Action Bar */}
-        <Card>
+        <Card className="border-slate-200/70 bg-white/80 dark:border-white/10 dark:bg-white/5">
           <CardContent className="pt-6">
-            <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
+            <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
               <div className="text-sm text-muted-foreground">
                 <p>Created on {createdDate}</p>
                 <p>Processing time: ~2 minutes</p>
@@ -267,7 +323,10 @@ export default function ResultsPage({ params }: ResultsPageProps) {
                   </Button>
                 </Link>
                 <Link href="/creations">
-                  <Button variant="outline" className="gap-2">
+                  <Button
+                    variant="outline"
+                    className="gap-2 border-slate-200/70 bg-white/80 dark:border-white/10 dark:bg-white/5"
+                  >
                     <Icons.bookOpen className="h-4 w-4" />
                     View All
                   </Button>
@@ -278,33 +337,33 @@ export default function ResultsPage({ params }: ResultsPageProps) {
         </Card>
 
         {/* Coloring Tips */}
-        <Card className="border-yellow-200 bg-gradient-to-r from-yellow-50 to-orange-50 dark:border-yellow-800 dark:from-yellow-950/20 dark:to-orange-950/20">
+        <Card className="border-amber-400/30 bg-gradient-to-r from-amber-500/15 via-amber-500/10 to-orange-500/10">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-yellow-900 dark:text-yellow-100">
+            <CardTitle className="flex items-center gap-2 text-amber-900 dark:text-amber-50">
               <Icons.help className="h-5 w-5" />
               Coloring Tips for Kids
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-yellow-800 dark:text-yellow-200">
+          <CardContent className="text-amber-800 dark:text-amber-100">
             <div className="grid grid-cols-1 gap-4 text-sm md:grid-cols-2">
               <ul className="space-y-2">
                 <li className="flex items-start gap-2">
-                  <span className="text-yellow-500">🖍️</span>
+                  <span className="text-amber-500 dark:text-amber-300">🖍️</span>
                   Start with light colors and build up darker ones
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-yellow-500">🎨</span>
+                  <span className="text-amber-500 dark:text-amber-300">🎨</span>
                   Try different coloring tools: crayons, markers, colored
                   pencils
                 </li>
               </ul>
               <ul className="space-y-2">
                 <li className="flex items-start gap-2">
-                  <span className="text-yellow-500">✨</span>
+                  <span className="text-amber-500 dark:text-amber-300">✨</span>
                   Don't worry about staying in the lines - creativity is key!
                 </li>
                 <li className="flex items-start gap-2">
-                  <span className="text-yellow-500">👨‍👩‍👧‍👦</span>
+                  <span className="text-amber-500 dark:text-amber-300">👨‍👩‍👧‍👦</span>
                   Make it a family activity - color together!
                 </li>
               </ul>

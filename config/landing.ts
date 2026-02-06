@@ -2,51 +2,48 @@ import { FeatureLdg, InfoLdg, TestimonialType } from "types";
 
 export const infos: InfoLdg[] = [
   {
-    title: "Empower your projects",
+    title: "From Photo to Printable Line Art",
     description:
-      "Unlock the full potential of your projects with our open-source SaaS platform. Collaborate seamlessly, innovate effortlessly, and scale limitlessly.",
-    image: "/_static/illustrations/work-from-home.jpg",
+      "Upload a family photo, pick a style, and get crisp line art that is ready for crayons, markers, or colored pencils.",
+    image: "/illustrations/landing-story.svg",
     list: [
       {
-        title: "Collaborative",
-        description: "Work together with your team members in real-time.",
-        icon: "laptop",
-      },
-      {
-        title: "Innovative",
-        description: "Stay ahead of the curve with access constant updates.",
+        title: "Private by default",
+        description: "Your images are processed instantly and never stored.",
         icon: "settings",
       },
       {
-        title: "Scalable",
-        description:
-          "Our platform offers the scalability needed to adapt to your needs.",
-        icon: "search",
+        title: "Kid-friendly lines",
+        description: "Clean outlines that are easy for little hands to color.",
+        icon: "bookOpen",
+      },
+      {
+        title: "Fast turnaround",
+        description: "Pages are ready in minutes, not hours.",
+        icon: "lineChart",
       },
     ],
   },
   {
-    title: "Seamless Integration",
+    title: "Make a Whole Book Together",
     description:
-      "Integrate our open-source SaaS seamlessly into your existing workflows. Effortlessly connect with your favorite tools and services for a streamlined experience.",
-    image: "/_static/illustrations/work-from-home.jpg",
+      "Collect multiple pages, add titles, and export a full coloring book for family nights or classrooms.",
+    image: "/illustrations/landing-book.svg",
     list: [
       {
-        title: "Flexible",
-        description:
-          "Customize your integrations to fit your unique requirements.",
+        title: "Multi-page books",
+        description: "Combine favorite photos into a complete book.",
+        icon: "copy",
+      },
+      {
+        title: "Print-ready exports",
+        description: "Get crisp PDFs and PNGs for any printer.",
+        icon: "download",
+      },
+      {
+        title: "Works everywhere",
+        description: "Create on desktop, tablet, or mobile.",
         icon: "laptop",
-      },
-      {
-        title: "Efficient",
-        description: "Streamline your processes and reducing manual effort.",
-        icon: "search",
-      },
-      {
-        title: "Reliable",
-        description:
-          "Rely on our robust infrastructure and comprehensive documentation.",
-        icon: "settings",
       },
     ],
   },
@@ -54,97 +51,69 @@ export const infos: InfoLdg[] = [
 
 export const features: FeatureLdg[] = [
   {
-    title: "Feature 1",
+    title: "Privacy-first processing",
     description:
-      "Amet praesentium deserunt ex commodi tempore fuga voluptatem. Sit, sapiente.",
+      "Photos are processed instantly and never stored, so family moments stay yours.",
     link: "/",
-    icon: "nextjs",
+    icon: "settings",
   },
   {
-    title: "Feature 2",
+    title: "Print-ready downloads",
     description:
-      "Amet praesentium deserunt ex commodi tempore fuga voluptatem. Sit, sapiente.",
+      "Export crisp PDFs and PNGs that look great on any home printer.",
     link: "/",
-    icon: "google",
+    icon: "download",
   },
   {
-    title: "Feature 3",
+    title: "Kid-friendly editor",
     description:
-      "Amet praesentium deserunt ex commodi tempore fuga voluptatem. Sit, sapiente.",
+      "Drag, resize, and arrange pages with big, clear controls.",
     link: "/",
-    icon: "gitHub",
+    icon: "bookOpen",
   },
   {
-    title: "Feature 4",
+    title: "Fast creation",
     description:
-      "Amet praesentium deserunt ex commodi tempore fuga voluptatem. Sit, sapiente.",
+      "Most photos become line art in minutes, not hours.",
     link: "/",
-    icon: "laptop",
+    icon: "lineChart",
   },
   {
-    title: "Feature 5",
+    title: "Multi-page books",
     description:
-      "Amet praesentium deserunt ex commodi tempore fuga voluptatem. Sit, sapiente.",
-    link: "/",
-    icon: "user",
-  },
-  {
-    title: "Feature 6",
-    description:
-      "Amet praesentium deserunt ex commodi tempore fuga voluptatem. Sit, sapiente.",
+      "Build a full book with titles, covers, and multiple pages.",
     link: "/",
     icon: "copy",
+  },
+  {
+    title: "Works on any device",
+    description:
+      "Create on laptop, tablet, or phone without losing progress.",
+    link: "/",
+    icon: "laptop",
   },
 ];
 
 export const testimonials: TestimonialType[] = [
   {
-    name: "John Doe",
-    job: "Full Stack Developer",
-    image: "https://randomuser.me/api/portraits/men/1.jpg",
+    name: "Maya R.",
+    job: "Parent of Two",
+    image: "/avatars/avatar-01.svg",
     review:
-      "The next-saas-stripe-starter repo has truly revolutionized my development workflow. With its comprehensive features and seamless integration with Stripe, I've been able to build and deploy projects faster than ever before. The documentation is clear and concise, making it easy to navigate through the setup process. I highly recommend next-saas-stripe-starter to any developer.",
+      "My kids color the pages every weekend. The lines are clean and the prints look amazing on our home printer.",
   },
   {
-    name: "Alice Smith",
-    job: "UI/UX Designer",
-    image: "https://randomuser.me/api/portraits/women/2.jpg",
+    name: "Chris T.",
+    job: "Kindergarten Teacher",
+    image: "/avatars/avatar-02.svg",
     review:
-      "Thanks to next-saas-stripe-starter, I've been able to create modern and attractive user interfaces in record time. The starter kit provides a solid foundation for building sleek and intuitive designs, allowing me to focus more on the creative aspects of my work.",
+      "I made a class coloring book from our field trip photos. The kids were thrilled and it printed perfectly.",
   },
   {
-    name: "David Johnson",
-    job: "DevOps Engineer",
-    image: "https://randomuser.me/api/portraits/men/3.jpg",
+    name: "Priya S.",
+    job: "Busy Mom",
+    image: "/avatars/avatar-03.svg",
     review:
-      "Thanks to next-saas-stripe-starter, I was able to streamline the entire process and get payments up and running in no time. ",
-  },
-  {
-    name: "Michael Wilson",
-    job: "Project Manager",
-    image: "https://randomuser.me/api/portraits/men/5.jpg",
-    review:
-      "I'm impressed by the quality of code and clear documentation of next-saas-stripe-starter. Kudos to the team!",
-  },
-  {
-    name: "Sophia Garcia",
-    job: "Data Analyst",
-    image: "https://randomuser.me/api/portraits/women/6.jpg",
-    review:
-      "next-saas-stripe-starter provided me with the tools I needed to efficiently manage user data. Thank you so much!",
-  },
-  {
-    name: "Emily Brown",
-    job: "Marketing Manager",
-    image: "https://randomuser.me/api/portraits/women/4.jpg",
-    review:
-      "next-saas-stripe-starter has been an invaluable asset in my role as a marketing manager. With its seamless integration with Stripe, I've been able to launch targeted marketing campaigns with built-in payment functionality, allowing us to monetize our products and services more effectively.",
-  },
-  {
-    name: "Jason Stan",
-    job: "Web Designer",
-    image: "https://randomuser.me/api/portraits/men/9.jpg",
-    review:
-      "Thanks to next-saas-stripe-starter, I've been able to create modern and attractive user interfaces in record time. The starter kit provides a solid foundation for building sleek and intuitive designs, allowing me to focus more on the creative aspects of my work.",
+      "The editor is simple enough for my 5-year-old, and I still get professional-looking pages.",
   },
 ];

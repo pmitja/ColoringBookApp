@@ -13,19 +13,11 @@ export const INTO_PENCIL_SKETCH = "Convert this photo into a pencil sketch drawi
 
 export const INTO_ADULT_COLORING_BOOK = "Turn this photo into a clean cartoon-style drawing with bold outlines, simple shapes, and minimal shading. Keep it playful and easy to color."
 
-export const FACE_ADDONS = {
-    BEAUTIFY: "Enhance the face with smooth skin, natural proportions, and clear details. Remove distortions or artifacts.",
-    FIX_EYES: "Ensure eyes are symmetrical, fully open, and natural. Correct distortions, squints, or misaligned pupils.",
-    SMILE: "Adjust the face to have a gentle, natural smile and friendly expression.",
-    BIG_EYES: "Redraw the face with larger, rounded eyes while keeping them proportional and natural.",
-    SHARPEN: "Refine the face with sharper contours, clear eyes, and defined features. Avoid blurriness or smudging."
-  };
-
-  export const BASE_STYLES = {
-    INTO_LINEART: "Turn this photo into a clean line drawing with minimal detail and smooth contours without colors",
-    INTO_PIXAR: "Reimagine this photo as if it were a Pixar , vibrant colors, soft shadows, big eyes, rounded features, emotional depth, and animated charm. Ensure no one is squinting or cross-eyed—portray all eyes fully open and natural.",
-    CARTOON: "Transform this photo into a cartoon-style illustration with bold outlines, flat colors, and playful proportions. Without any colors",
-    ANIME: "Convert this photo into anime-style artwork with expressive eyes, sharp outlines, and clean shading, like Japanese manga. Without any colors",
-    SKETCH: "Convert this photo into a pencil sketch drawing with fine shading, realistic proportions, and delicate contours. Without any colors",
-    STENCIL: "Make this photo into a high-contrast stencil outline with only clean black-and-white shapes and edges. Without any colors",
-  };
+export const BASE_STYLES = {
+  INTO_LINEART: "Turn this photo into a clean line drawing with minimal detail and smooth contours without colors",
+  INTO_PIXAR: "Reimagine this photo as if it were a Pixar , vibrant colors, soft shadows, big eyes, rounded features, emotional depth, and animated charm. Ensure no one is squinting or cross-eyed—portray all eyes fully open and natural.",
+  CARTOON: "Transform this photo into a cartoon-style illustration with bold outlines, flat colors, and playful proportions. Without any colors",
+  ANIME: "Convert this photo into anime-style artwork with expressive eyes, sharp outlines, and clean shading, like Japanese manga. Without any colors",
+  SKETCH: "Convert this photo into a pencil sketch drawing with fine shading, realistic proportions, and delicate contours. Without any colors",
+  STENCIL: "Make this photo into a high-contrast stencil outline with only clean black-and-white shapes and edges. Without any colors",
+};

@@ -58,69 +58,96 @@ export default async function DashboardPage() {
     <>
       <DashboardHeader
         heading="Create Coloring Books"
-        text="Transform your family photos into magical coloring adventures."
+        text="Turn family photos into coloring pages kids can’t wait to color."
       />
 
-      <div className="grid gap-6 md:grid-cols-3">
-        {/* Upload Card */}
-        <Card className="border-2 border-dashed transition-colors hover:border-primary/50 md:col-span-2">
-          <CardHeader className="pb-2 text-center">
-            <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
-              <Icons.media className="h-10 w-10 text-primary" />
+      <div className="grid gap-6 lg:grid-cols-[1.4fr_0.8fr]">
+        <Card className="relative overflow-hidden border-slate-200/70 bg-white/80 dark:border-white/10 dark:bg-white/5">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(14,165,164,0.15),_transparent_55%)] dark:bg-[radial-gradient(circle_at_top,_rgba(20,184,166,0.15),_transparent_55%)]" />
+          <CardHeader className="relative z-10 space-y-3 pb-2">
+            <div className="inline-flex w-fit items-center gap-2 rounded-full border border-slate-200/70 bg-slate-100/80 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.3em] text-slate-500 dark:border-white/10 dark:bg-white/10 dark:text-muted-foreground">
+              New Project
             </div>
-            <CardTitle className="text-xl">Upload Your Photo</CardTitle>
-            <CardDescription>
-              Drag & drop a family photo or click to browse. We'll create a
-              beautiful coloring page!
+            <CardTitle className="text-2xl sm:text-3xl">
+              Start with a photo
+            </CardTitle>
+            <CardDescription className="text-sm text-muted-foreground">
+              Upload one family photo and we’ll turn it into a clean, printable
+              coloring page.
             </CardDescription>
           </CardHeader>
-          <CardContent className="text-center">
+          <CardContent className="relative z-10 space-y-4">
             {creditsRemaining > 0 ? (
-              <Link href="/upload">
-                <Button size="lg" className="gap-2">
-                  <Icons.media className="h-4 w-4" />
-                  Choose Photo
-                </Button>
-              </Link>
+              <div className="flex flex-wrap items-center gap-3">
+                <Link href="/upload">
+                  <Button size="lg" className="gap-2 rounded-2xl">
+                    <Icons.media className="h-4 w-4" />
+                    Choose Photo
+                  </Button>
+                </Link>
+                <span className="text-xs text-muted-foreground">
+                  {creditsRemaining} credits left this month
+                </span>
+              </div>
             ) : (
               <div className="space-y-4">
                 <p className="text-sm text-muted-foreground">
-                  You've used all your free credits this month
+                  You’ve used all your free credits this month.
                 </p>
                 <Link href="/dashboard/billing">
-                  <Button size="lg" variant="outline" className="gap-2">
+                  <Button size="lg" variant="outline" className="gap-2 rounded-2xl">
                     <Icons.billing className="h-4 w-4" />
                     Get More Credits
                   </Button>
                 </Link>
               </div>
             )}
+
+            <div className="grid gap-2 text-xs text-muted-foreground sm:grid-cols-3">
+              <div className="flex items-center gap-2">
+                <span className="flex size-6 items-center justify-center rounded-full bg-slate-200/70 text-[10px] font-semibold dark:bg-white/10">
+                  1
+                </span>
+                Upload photo
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="flex size-6 items-center justify-center rounded-full bg-slate-200/70 text-[10px] font-semibold dark:bg-white/10">
+                  2
+                </span>
+                Pick pages
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="flex size-6 items-center justify-center rounded-full bg-slate-200/70 text-[10px] font-semibold dark:bg-white/10">
+                  3
+                </span>
+                Print & color
+              </div>
+            </div>
           </CardContent>
         </Card>
 
-        {/* Credits Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
+        <Card className="border-slate-200/70 bg-white/80 dark:border-white/10 dark:bg-white/5">
+          <CardHeader className="space-y-2">
+            <CardTitle className="flex items-center justify-between text-lg">
               <span>Credits</span>
               <Badge variant={creditsRemaining > 0 ? "default" : "destructive"}>
                 {creditsRemaining} left
               </Badge>
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-xs text-muted-foreground">
               {creditsUsed} of {creditsAllocated} used this month
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <Progress value={progressPercentage} className="h-2" />
-            <div className="text-xs text-muted-foreground">
+            <div className="rounded-2xl border border-slate-200/70 bg-white/80 p-3 text-xs text-muted-foreground dark:border-white/10 dark:bg-white/5">
               {creditsRemaining > 0
-                ? `Create ${creditsRemaining} more coloring books`
-                : "Credits reset next month"}
+                ? `You can create ${creditsRemaining} more books this month.`
+                : "Credits reset next month."}
             </div>
             {creditsRemaining <= 1 && (
               <Link href="/dashboard/billing">
-                <Button variant="outline" size="sm" className="w-full">
+                <Button variant="outline" size="sm" className="w-full rounded-xl">
                   Upgrade for unlimited
                 </Button>
               </Link>
@@ -129,13 +156,17 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      {/* Recent Creations */}
-      <div className="mt-8">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold">Your Creations</h2>
+      <div className="mt-8 space-y-4">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-semibold">Your Creations</h2>
+            <p className="text-xs text-muted-foreground">
+              Recent pages you can open, edit, or print.
+            </p>
+          </div>
           {recentCreations.length > 0 && (
             <Link href="/creations">
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" className="rounded-xl">
                 View all
                 <Icons.arrowRight className="ml-2 h-4 w-4" />
               </Button>
@@ -153,11 +184,11 @@ export default async function DashboardPage() {
               Upload your first family photo to create a magical coloring book.
             </EmptyPlaceholder.Description>
             <Link href="/upload">
-              <Button>Upload First Photo</Button>
+              <Button className="rounded-xl">Upload First Photo</Button>
             </Link>
           </EmptyPlaceholder>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             {recentCreations.map((creation) => (
               <CreationCard key={creation.id} creation={creation} />
             ))}
@@ -165,32 +196,33 @@ export default async function DashboardPage() {
         )}
       </div>
 
-      {/* Tips Section */}
-      <Card className="mt-8 border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950/20">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-blue-900 dark:text-blue-100">
-            <Icons.help className="h-5 w-5" />
-            Tips for Best Results
+      <Card className="mt-8 border-slate-200/70 bg-white/80 dark:border-white/10 dark:bg-white/5">
+        <CardHeader className="space-y-2">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Icons.help className="h-5 w-5 text-primary" />
+            Tips for the best pages
           </CardTitle>
+          <CardDescription className="text-xs text-muted-foreground">
+            Simple tweaks can make the line art look extra clean.
+          </CardDescription>
         </CardHeader>
-        <CardContent className="text-blue-800 dark:text-blue-200">
-          <ul className="space-y-2 text-sm">
+        <CardContent className="text-sm text-muted-foreground">
+          <ul className="space-y-2">
             <li className="flex items-start gap-2">
-              <span className="text-blue-500">•</span>
-              Use high-resolution photos with clear faces and good lighting
+              <span className="text-primary">•</span>
+              Use photos with clear faces and good lighting.
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-blue-500">•</span>
-              Photos with 1-4 people work best for detailed coloring pages
+              <span className="text-primary">•</span>
+              1–4 people in the frame gives the best detail.
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-blue-500">•</span>
-              Avoid photos with busy backgrounds for cleaner line art
+              <span className="text-primary">•</span>
+              Simple backgrounds create cleaner line art.
             </li>
             <li className="flex items-start gap-2">
-              <span className="text-blue-500">•</span>
-              Your photos are processed instantly and never stored on our
-              servers
+              <span className="text-primary">•</span>
+              Your files stay private and are not stored.
             </li>
           </ul>
         </CardContent>
@@ -241,8 +273,8 @@ function CreationCard({ creation }: CreationCardProps) {
   };
 
   return (
-    <Card className="overflow-hidden transition-shadow hover:shadow-lg">
-      <div className="relative aspect-square bg-gray-100 dark:bg-gray-800">
+    <Card className="overflow-hidden border-slate-200/70 bg-white/80 transition hover:bg-slate-100/80 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10">
+      <div className="relative aspect-[4/3] bg-slate-100 dark:bg-white/5">
         {creation.status === "DONE" && creation.lineartUrl ? (
           <Image
             src={creation.lineartUrl}
@@ -280,10 +312,10 @@ function CreationCard({ creation }: CreationCardProps) {
         </div>
       </div>
 
-      <CardHeader className="pb-2">
+      <CardHeader className="p-4 pb-2">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
-            <CardTitle className="truncate text-sm font-medium">
+            <CardTitle className="truncate text-xs font-semibold sm:text-sm">
               {creation.inputFileName.replace(/\.[^/.]+$/, "")}
             </CardTitle>
             <CardDescription className="text-xs">
@@ -293,15 +325,19 @@ function CreationCard({ creation }: CreationCardProps) {
         </div>
       </CardHeader>
 
-      <CardContent className="pt-0">
+      <CardContent className="p-4 pt-0">
         <div className="flex gap-2">
           <Link href={getCardLink()} className="flex-1">
-            <Button size="sm" className="w-full">
+            <Button size="sm" className="h-8 w-full rounded-xl text-xs">
               {creation.status === "DONE" ? "View Results" : "View Details"}
             </Button>
           </Link>
           {creation.status === "DONE" && (
-            <Button size="sm" variant="outline">
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-8 rounded-xl px-2"
+            >
               <Icons.arrowUpRight className="h-4 w-4" />
             </Button>
           )}

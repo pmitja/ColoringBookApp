@@ -1,4 +1,4 @@
-import { BASE_STYLES, FACE_ADDONS, INTO_LINEART } from '@/config/prompts'
+import { BASE_STYLES, INTO_LINEART } from '@/config/prompts'
 import { prisma } from '@/lib/db'
 import { getCurrentUser } from '@/lib/session'
 import { fal } from '@fal-ai/client'
@@ -12,7 +12,7 @@ if (process.env.FAL_API_KEY) {
 }
 
 // Function to process a single job
-async function processJob(jobId: string, originalImageBuffer: Buffer, fileType: string, style: keyof typeof BASE_STYLES, addons: (keyof typeof FACE_ADDONS)[]) {
+async function processJob(jobId: string, originalImageBuffer: Buffer, fileType: string, style: keyof typeof BASE_STYLES) {
   try {
     // Get the job
     const job = await prisma.imageJob.findUnique({
@@ -33,18 +33,20 @@ async function processJob(jobId: string, originalImageBuffer: Buffer, fileType: 
     const base64Image = originalImageBuffer.toString('base64')
     const dataUrl = `data:${fileType};base64,${base64Image}`
 
-    // Build the prompt with selected style and addons
-    let stylePrompt = BASE_STYLES[style]
-    if (addons.length > 0) {
-      const addonPrompts = addons.map(addon => FACE_ADDONS[addon]).join(' ')
-      stylePrompt = `${stylePrompt} ${addonPrompts}`
+    // Build the prompt with selected style
+    const stylePrompt = BASE_STYLES[style]
+    const finalStylePrompt = (stylePrompt ?? '').trim().length > 0
+      ? (stylePrompt ?? '').trim()
+      : BASE_STYLES.INTO_LINEART
+    if (finalStylePrompt !== stylePrompt) {
+      console.warn('Empty style prompt computed, applying fallback prompt')
     }
-
+    console.log('stylePrompt', finalStylePrompt)
     // 1. Call FAL.AI for style transformation using the original image
-    const styledResult = await fal.subscribe('fal-ai/flux-kontext/dev', {
+    const styledResult = await fal.subscribe('fal-ai/nano-banana/edit', {
       input: {
-        prompt: stylePrompt,
-        image_url: dataUrl,
+        prompt: finalStylePrompt,
+        image_urls: [`${dataUrl}`],
       } as any,
       logs: true,
       onQueueUpdate: (update) => {
@@ -53,15 +55,16 @@ async function processJob(jobId: string, originalImageBuffer: Buffer, fileType: 
         }
       },
     })
+    console.log('FAL style requestId:', styledResult.requestId)
     
     const styledImageUrl = styledResult.data?.images?.[0]?.url
     if (!styledImageUrl) throw new Error('No styled image returned from FAL.AI')
 
     // 2. Call FAL.AI for lineart using the styled image as base
-    const lineartResult = await fal.subscribe('fal-ai/flux-kontext/dev', {
+    const lineartResult = await fal.subscribe('fal-ai/nano-banana/edit', {
       input: {
         prompt: INTO_LINEART,
-        image_url: styledImageUrl,
+        image_urls: [`${styledImageUrl}`],
       } as any,
       logs: true,
       onQueueUpdate: (update) => {
@@ -70,6 +73,7 @@ async function processJob(jobId: string, originalImageBuffer: Buffer, fileType: 
         }
       },
     })
+    console.log('FAL lineart requestId:', lineartResult.requestId)
     
     const lineartImageUrl = lineartResult.data?.images?.[0]?.url
     if (!lineartImageUrl) throw new Error('No lineart image returned from FAL.AI')
@@ -169,7 +173,6 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData()
     const file = formData.get('image') as File
     const style = formData.get('style') as string || 'INTO_PIXAR'
-    const addonsString = formData.get('addons') as string || '[]'
 
     if (!file) {
       return NextResponse.json({ error: 'No image file provided' }, { status: 400 })
@@ -178,20 +181,6 @@ export async function POST(request: NextRequest) {
     // Validate style
     if (!BASE_STYLES[style as keyof typeof BASE_STYLES]) {
       return NextResponse.json({ error: 'Invalid style selected' }, { status: 400 })
-    }
-
-    // Parse and validate addons
-    let addons: (keyof typeof FACE_ADDONS)[] = []
-    try {
-      addons = JSON.parse(addonsString)
-      // Validate each addon
-      for (const addon of addons) {
-        if (!FACE_ADDONS[addon]) {
-          return NextResponse.json({ error: `Invalid addon: ${addon}` }, { status: 400 })
-        }
-      }
-    } catch {
-      return NextResponse.json({ error: 'Invalid addons format' }, { status: 400 })
     }
 
     // Validate file type
@@ -220,7 +209,7 @@ export async function POST(request: NextRequest) {
 
     // Start processing the job immediately in the background
     process.nextTick(() => {
-      processJob(job.id, buffer, file.type, style as keyof typeof BASE_STYLES, addons)
+      processJob(job.id, buffer, file.type, style as keyof typeof BASE_STYLES)
     })
 
     // Return job ID immediately for redirect to processing page

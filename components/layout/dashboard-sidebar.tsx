@@ -63,22 +63,22 @@ export function DashboardSidebar({ links }: DashboardSidebarProps) {
   return (
     <TooltipProvider delayDuration={0}>
       <div className="sticky top-0 h-full">
-        <ScrollArea className="h-full overflow-y-auto border-r">
+        <ScrollArea className="h-full overflow-y-auto border-r border-slate-200/70 dark:border-white/10">
           <aside
             className={cn(
               isSidebarExpanded ? "w-[220px] xl:w-[260px]" : "w-[68px]",
-              "hidden h-screen md:block",
+              "hidden h-screen bg-white/85 backdrop-blur-xl dark:bg-slate-950/70 md:block",
             )}
           >
             <div className="flex h-full max-h-screen flex-1 flex-col gap-2">
-              <div className="flex h-14 items-center p-4 lg:h-[60px]">
+              <div className="flex h-14 items-center gap-2 p-4 lg:h-[60px]">
                 {isSidebarExpanded ? (
                   <Link
                     href="/"
                     className="flex items-center gap-2 text-lg font-semibold"
                   >
                     <Icons.logo className="size-5" />
-                    <span className="font-urban text-lg font-bold">
+                    <span className="font-urban text-lg font-bold text-foreground">
                       {siteConfig.name}
                     </span>
                   </Link>
@@ -92,7 +92,7 @@ export function DashboardSidebar({ links }: DashboardSidebarProps) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="ml-auto size-9 lg:size-8"
+                  className="ml-auto size-9 rounded-full lg:size-8"
                   onClick={toggleSidebar}
                 >
                   {isSidebarExpanded ? (
@@ -109,7 +109,7 @@ export function DashboardSidebar({ links }: DashboardSidebarProps) {
                   <span className="sr-only">Toggle Sidebar</span>
                 </Button>
               </div>
-              <Separator className="mx-4" />
+              <Separator className="mx-4 bg-slate-200/70 dark:bg-white/10" />
 
               <nav className="flex flex-1 flex-col gap-8 px-4 pt-4">
                 {links.map((section) => (
@@ -118,7 +118,7 @@ export function DashboardSidebar({ links }: DashboardSidebarProps) {
                     className="flex flex-col gap-0.5"
                   >
                     {isSidebarExpanded ? (
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs font-semibold uppercase tracking-[0.3em] text-muted-foreground">
                         {section.title}
                       </p>
                     ) : (
@@ -140,7 +140,7 @@ export function DashboardSidebar({ links }: DashboardSidebarProps) {
                                         ? "secondary"
                                         : "ghost",
                                   }),
-                                  "w-full justify-start gap-3 px-2 py-2",
+                                  "w-full justify-start gap-3 rounded-xl px-3 py-2 text-sm",
                                   item.disabled &&
                                     "cursor-not-allowed opacity-80 hover:bg-transparent",
                                 )}
@@ -167,7 +167,7 @@ export function DashboardSidebar({ links }: DashboardSidebarProps) {
                                             : "ghost",
                                         size: "icon",
                                       }),
-                                      "w-full justify-center",
+                                      "w-full justify-center rounded-xl",
                                       item.disabled &&
                                         "cursor-not-allowed opacity-80 hover:bg-transparent",
                                     )}
@@ -213,13 +213,16 @@ export function MobileSheetSidebar({ links }: DashboardSidebarProps) {
           <Button
             variant="outline"
             size="icon"
-            className="size-9 shrink-0 md:hidden"
+            className="size-9 shrink-0 rounded-full md:hidden"
           >
             <Menu className="size-5" />
             <span className="sr-only">Toggle navigation menu</span>
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="flex flex-col p-0">
+        <SheetContent
+          side="left"
+          className="flex flex-col border-slate-200/70 bg-white/95 p-0 dark:border-white/10 dark:bg-slate-950/80"
+        >
           <ScrollArea className="h-full overflow-y-auto">
             <div className="flex h-screen flex-col">
               <nav className="flex flex-1 flex-col gap-y-8 p-6 text-lg font-medium">
@@ -228,7 +231,7 @@ export function MobileSheetSidebar({ links }: DashboardSidebarProps) {
                   className="flex items-center gap-2 text-lg font-semibold"
                 >
                   <Icons.logo className="size-6" />
-                  <span className="font-urban text-xl font-bold">
+                  <span className="font-urban text-xl font-bold text-foreground">
                     {siteConfig.name}
                   </span>
                 </Link>
@@ -238,7 +241,7 @@ export function MobileSheetSidebar({ links }: DashboardSidebarProps) {
                     key={section.title}
                     className="flex flex-col gap-0.5"
                   >
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs font-semibold uppercase tracking-[0.3em] text-muted-foreground">
                       {section.title}
                     </p>
 
@@ -254,10 +257,10 @@ export function MobileSheetSidebar({ links }: DashboardSidebarProps) {
                               }}
                               href={item.disabled ? "#" : item.href}
                               className={cn(
-                                "flex items-center gap-3 rounded-md p-2 text-sm font-medium hover:bg-muted",
+                                "flex items-center gap-3 rounded-xl p-2 text-sm font-medium hover:bg-slate-200/70 dark:hover:bg-white/10",
                                 path === item.href
-                                  ? "bg-muted"
-                                  : "text-muted-foreground hover:text-accent-foreground",
+                                  ? "bg-slate-200/70 text-foreground dark:bg-white/10"
+                                  : "text-muted-foreground hover:text-foreground",
                                 item.disabled &&
                                   "cursor-not-allowed opacity-80 hover:bg-transparent hover:text-muted-foreground",
                               )}

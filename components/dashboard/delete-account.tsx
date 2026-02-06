@@ -19,15 +19,15 @@ export function DeleteAccountSection() {
         title="Delete Account"
         description="This is a danger zone - Be careful !"
       >
-        <div className="flex flex-col gap-4 rounded-xl border border-red-400 p-4 dark:border-red-900">
+        <div className="flex flex-col gap-4 rounded-2xl border border-rose-500/30 bg-rose-500/10 p-5 shadow-[0_0_0_1px_rgba(255,255,255,0.03)]">
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
-              <span className="text-[15px] font-medium">Are you sure ?</span>
+              <span className="text-[15px] font-semibold">Are you sure?</span>
 
               {userPaidPlan ? (
-                <div className="flex items-center gap-1 rounded-md bg-red-600/10 p-1 pr-2 text-xs font-medium text-red-600 dark:bg-red-500/10 dark:text-red-500">
-                  <div className="m-0.5 rounded-full bg-red-600 p-[3px]">
-                    <Icons.close size={10} className="text-background" />
+                <div className="flex items-center gap-1 rounded-full border border-rose-400/40 bg-rose-500/15 px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-rose-100">
+                  <div className="rounded-full bg-rose-500 p-1">
+                    <Icons.close size={10} className="text-rose-50" />
                   </div>
                   Active Subscription
                 </div>
@@ -44,6 +44,7 @@ export function DeleteAccountSection() {
               type="submit"
               variant="destructive"
               onClick={() => setShowDeleteAccountModal(true)}
+              className="h-11 px-5 text-sm"
             >
               <Icons.trash className="mr-2 size-4" />
               <span>Delete Account</span>

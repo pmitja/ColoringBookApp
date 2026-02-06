@@ -94,15 +94,15 @@ export default function ProcessingPage({ params }: ProcessingPageProps) {
   const getStatusColor = (status: JobStatus) => {
     switch (status) {
       case "QUEUED":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400";
+        return "border-amber-400/30 bg-amber-500/15 text-amber-800 dark:text-amber-100";
       case "PROCESSING":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400";
+        return "border-sky-400/30 bg-sky-500/15 text-sky-800 dark:text-sky-100";
       case "DONE":
-        return "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400";
+        return "border-emerald-400/30 bg-emerald-500/15 text-emerald-800 dark:text-emerald-100";
       case "FAILED":
-        return "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400";
+        return "border-rose-400/30 bg-rose-500/15 text-rose-800 dark:text-rose-100";
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400";
+        return "border-slate-200/70 bg-white/80 text-muted-foreground dark:border-white/10 dark:bg-white/5";
     }
   };
 
@@ -189,9 +189,9 @@ export default function ProcessingPage({ params }: ProcessingPageProps) {
           text="Something went wrong while processing your photo."
         />
         <div className="mx-auto max-w-2xl">
-          <Alert className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20">
-            <Icons.warning className="h-4 w-4 text-red-600" />
-            <AlertDescription className="text-red-800 dark:text-red-400">
+          <Alert className="border-rose-400/30 bg-rose-500/10 text-rose-800 dark:text-rose-100">
+            <Icons.warning className="h-4 w-4 text-rose-500 dark:text-rose-200" />
+            <AlertDescription className="text-rose-700 dark:text-rose-50">
               {error || "Job not found"}
             </AlertDescription>
           </Alert>
@@ -212,13 +212,14 @@ export default function ProcessingPage({ params }: ProcessingPageProps) {
         text={`Creating coloring book from: ${jobData.inputFileName}`}
       />
 
-      <div className="mx-auto max-w-2xl space-y-6">
+      <div className="mx-auto max-w-2xl space-y-6 pb-10">
         {/* Status Card */}
-        <Card>
+        <Card className="border-slate-200/70 bg-white/80 dark:border-white/10 dark:bg-white/5">
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>Processing Status</CardTitle>
               <Badge
+                variant="outline"
                 className={cn("px-3 py-1", getStatusColor(jobData.status))}
               >
                 {jobData.status}
@@ -233,7 +234,10 @@ export default function ProcessingPage({ params }: ProcessingPageProps) {
                 <span>Progress</span>
                 <span>{Math.round(getProgressValue())}%</span>
               </div>
-              <Progress value={getProgressValue()} className="h-3" />
+              <Progress
+                value={getProgressValue()}
+                className="h-3 bg-slate-200/70 dark:bg-white/10"
+              />
               {getEstimatedTime() && (
                 <p className="text-center text-sm text-muted-foreground">
                   {getEstimatedTime()}
@@ -246,18 +250,18 @@ export default function ProcessingPage({ params }: ProcessingPageProps) {
               <h3 className="font-medium">Processing Stages</h3>
 
               {/* Stage 1: Artistic Style */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 rounded-2xl border border-slate-200/70 bg-white/80 p-4 dark:border-white/10 dark:bg-white/5">
                 <div
                   className={cn(
-                    "flex h-8 w-8 items-center justify-center rounded-full",
+                    "flex h-9 w-9 items-center justify-center rounded-full border",
                     jobData.status === "DONE" ||
                       (jobData.status === "PROCESSING" &&
                         jobData.currentStage === "lineart")
-                      ? "bg-green-100 text-green-600 dark:bg-green-900/20 dark:text-green-400"
+                      ? "border-emerald-400/40 bg-emerald-500/15 text-emerald-800 dark:text-emerald-100"
                       : jobData.status === "PROCESSING" &&
                           jobData.currentStage === "styling"
-                        ? "bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"
-                        : "bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-600",
+                        ? "border-sky-400/40 bg-sky-500/15 text-sky-800 dark:text-sky-100"
+                        : "border-slate-200/70 bg-white/80 text-muted-foreground dark:border-white/10 dark:bg-white/5",
                   )}
                 >
                   {jobData.status === "DONE" ||
@@ -280,16 +284,16 @@ export default function ProcessingPage({ params }: ProcessingPageProps) {
               </div>
 
               {/* Stage 2: Line Art */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-3 rounded-2xl border border-slate-200/70 bg-white/80 p-4 dark:border-white/10 dark:bg-white/5">
                 <div
                   className={cn(
-                    "flex h-8 w-8 items-center justify-center rounded-full",
+                    "flex h-9 w-9 items-center justify-center rounded-full border",
                     jobData.status === "DONE"
-                      ? "bg-green-100 text-green-600 dark:bg-green-900/20 dark:text-green-400"
+                      ? "border-emerald-400/40 bg-emerald-500/15 text-emerald-800 dark:text-emerald-100"
                       : jobData.status === "PROCESSING" &&
                           jobData.currentStage === "lineart"
-                        ? "bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400"
-                        : "bg-gray-100 text-gray-400 dark:bg-gray-800 dark:text-gray-600",
+                        ? "border-sky-400/40 bg-sky-500/15 text-sky-800 dark:text-sky-100"
+                        : "border-slate-200/70 bg-white/80 text-muted-foreground dark:border-white/10 dark:bg-white/5",
                   )}
                 >
                   {jobData.status === "DONE" ? (
@@ -312,9 +316,9 @@ export default function ProcessingPage({ params }: ProcessingPageProps) {
 
             {/* Error Message */}
             {jobData.status === "FAILED" && jobData.errorMessage && (
-              <Alert className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20">
-                <Icons.warning className="h-4 w-4 text-red-600" />
-                <AlertDescription className="text-red-800 dark:text-red-400">
+              <Alert className="border-rose-400/30 bg-rose-500/10 text-rose-800 dark:text-rose-100">
+                <Icons.warning className="h-4 w-4 text-rose-500 dark:text-rose-200" />
+                <AlertDescription className="text-rose-700 dark:text-rose-50">
                   <strong>Error:</strong> {jobData.errorMessage}
                 </AlertDescription>
               </Alert>
@@ -328,7 +332,12 @@ export default function ProcessingPage({ params }: ProcessingPageProps) {
                     <Button className="w-full">Try Again</Button>
                   </Link>
                   <Link href="/dashboard">
-                    <Button variant="outline">Dashboard</Button>
+                    <Button
+                      variant="outline"
+                      className="border-slate-200/70 bg-white/80 dark:border-white/10 dark:bg-white/5"
+                    >
+                      Dashboard
+                    </Button>
                   </Link>
                 </>
               ) : jobData.status === "DONE" ? (
@@ -344,7 +353,11 @@ export default function ProcessingPage({ params }: ProcessingPageProps) {
                     You can safely close this page and return later
                   </p>
                   <Link href="/dashboard" className="mt-2 inline-block">
-                    <Button variant="outline" size="sm">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-slate-200/70 bg-white/80 dark:border-white/10 dark:bg-white/5"
+                    >
                       Back to Dashboard
                     </Button>
                   </Link>
@@ -355,7 +368,7 @@ export default function ProcessingPage({ params }: ProcessingPageProps) {
         </Card>
 
         {/* Fun Animation/Message */}
-        <Card className="border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50 dark:border-purple-800 dark:from-purple-950/20 dark:to-pink-950/20">
+        <Card className="border-slate-200/70 bg-gradient-to-r from-emerald-500/15 via-sky-500/10 to-amber-500/10 dark:border-white/10">
           <CardContent className="pt-6 text-center">
             <div className="mb-4 text-4xl">
               {jobData.status === "PROCESSING" &&
@@ -368,7 +381,7 @@ export default function ProcessingPage({ params }: ProcessingPageProps) {
               {jobData.status === "DONE" && "🎉"}
               {jobData.status === "FAILED" && "😔"}
             </div>
-            <p className="text-sm text-purple-800 dark:text-purple-300">
+            <p className="text-sm text-slate-800 dark:text-slate-100">
               {jobData.status === "PROCESSING" &&
                 "Magic is happening! Our AI artists are hard at work creating your personalized coloring book."}
               {jobData.status === "QUEUED" &&

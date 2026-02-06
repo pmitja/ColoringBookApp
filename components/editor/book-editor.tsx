@@ -67,6 +67,7 @@ import { Icons } from "@/components/shared/icons";
 import { exportBookAsPdf } from "./pdf-export";
 import SimpleFlipBook, { SimpleFlipBookHandle } from "./simple-flip-book";
 import TextBox from "./text-box";
+import TextProperties from "./text-properties";
 import type { EditorTextBox } from "./types";
 
 interface AssetItem {
@@ -245,6 +246,14 @@ export default function BookEditor({
     );
   }, [selectedPage, selectedElementId]);
 
+  // Responsive: single page on small/medium screens and auto-fit zoom on very small screens
+  const { width: windowWidth } = useMediaQuery();
+  const isSingleMode = useMemo(() => containerWidth < 1100, [containerWidth]);
+  const isZoomLocked = useMemo(
+    () => (windowWidth ?? Number.POSITIVE_INFINITY) < 768,
+    [windowWidth],
+  );
+
   const { pageWidth, pageHeight } = useMemo(() => {
     const MM: Record<"A3" | "A4" | "A5", { w: number; h: number }> = {
       A3: { w: 297, h: 420 },
@@ -254,13 +263,18 @@ export default function BookEditor({
     const base = MM[pageFormat];
     const mm =
       pageOrientation === "landscape" ? { w: base.h, h: base.w } : base;
-    // Scale width relative to A3 so formats differ in size (A4<A3)
-    const BASE_W = MM.A3.w; // 297mm (portrait width baseline)
-    const baseWidth = Math.max(280, Math.min(containerWidth, 1200));
+    // Scale width relative to A3 for the active orientation
+    const BASE_W =
+      pageOrientation === "landscape" ? MM.A3.h : MM.A3.w;
+    const pageSlots = isSingleMode ? 1 : 2;
+    const spreadGutter = isSingleMode ? 0 : 24;
+    const availableWidth = Math.max(0, containerWidth - spreadGutter);
+    const slotWidth = availableWidth / pageSlots;
+    const baseWidth = Math.max(260, Math.min(slotWidth, 1200));
     const width = baseWidth * (mm.w / BASE_W);
     const height = width * (mm.h / mm.w);
     return { pageWidth: Math.round(width), pageHeight: Math.round(height) };
-  }, [pageFormat, pageOrientation, containerWidth]);
+  }, [pageFormat, pageOrientation, containerWidth, isSingleMode]);
 
   useEffect(() => {
     const el = viewportRef.current;
@@ -275,21 +289,15 @@ export default function BookEditor({
     return () => ro.disconnect();
   }, []);
 
-  // Responsive: single page on small/medium screens and auto-fit zoom on very small screens
-  const { width: windowWidth } = useMediaQuery();
-  const isSingleMode = useMemo(
-    () => (windowWidth ?? Number.POSITIVE_INFINITY) < 2000,
-    [windowWidth],
-  );
-  const isZoomLocked = useMemo(
-    () => (windowWidth ?? Number.POSITIVE_INFINITY) < 768,
-    [windowWidth],
-  );
   const renderZoom = useMemo(() => {
-    const fit = pageWidth > 0 ? (containerWidth - 32) / pageWidth : zoom;
+    const pageSlots = isSingleMode ? 1 : 2;
+    const fit =
+      pageWidth > 0
+        ? (containerWidth - 32) / (pageWidth * pageSlots)
+        : zoom;
     if (isZoomLocked) return Math.max(0.1, fit);
     return zoom;
-  }, [isZoomLocked, containerWidth, pageWidth, zoom]);
+  }, [isZoomLocked, containerWidth, pageWidth, zoom, isSingleMode]);
 
   const displayWidth = useMemo(
     () => Math.round(pageWidth * renderZoom),
@@ -318,6 +326,31 @@ export default function BookEditor({
   const contentPageHeight = useMemo(
     () => Math.max(0, pageHeight - 2 * padUnits),
     [pageHeight, padUnits],
+  );
+
+  const getCenteredPosition = useCallback(
+    (width: number, height: number) => {
+      const safeWidth = contentPageWidth || width;
+      const safeHeight = contentPageHeight || height;
+      const x = Math.max(0, Math.round((safeWidth - width) / 2));
+      const y = Math.max(0, Math.round((safeHeight - height) / 2));
+      return { x, y };
+    },
+    [contentPageWidth, contentPageHeight],
+  );
+
+  const getDragBounds = useCallback(
+    (elementWidth: number, elementHeight: number) => {
+      const maxX = Math.max(0, contentPageWidth - elementWidth);
+      const maxY = Math.max(0, contentPageHeight - elementHeight);
+      return {
+        left: workAreaPadding,
+        top: workAreaPadding,
+        right: Math.round(workAreaPadding + maxX * renderZoom),
+        bottom: Math.round(workAreaPadding + maxY * renderZoom),
+      };
+    },
+    [workAreaPadding, contentPageWidth, contentPageHeight, renderZoom],
   );
 
   const exportToPdf = useCallback(async () => {
@@ -415,12 +448,23 @@ export default function BookEditor({
   const addTextBox = useCallback(() => {
     if (!selectedPage) return;
     pushHistory();
+    const safeWidth = contentPageWidth || 360;
+    const safeHeight = contentPageHeight || 240;
+    const width = Math.min(
+      Math.max(160, Math.round(safeWidth * 0.6)),
+      safeWidth,
+    );
+    const height = Math.min(
+      Math.max(80, Math.round(safeHeight * 0.25)),
+      safeHeight,
+    );
+    const { x, y } = getCenteredPosition(width, height);
     const newText: EditorTextBox = {
       id: generateId("text"),
-      x: 40,
-      y: 40,
-      width: 200,
-      height: 80,
+      x,
+      y,
+      width,
+      height,
       text: "Double-click to edit text",
       fontSize: 18,
       bold: false,
@@ -451,19 +495,36 @@ export default function BookEditor({
     );
     setBook({ ...book, pages: newPages });
     setSelectedElementId(newText.id);
-  }, [book, selectedPage, setBook, pushHistory]);
+  }, [
+    book,
+    selectedPage,
+    setBook,
+    pushHistory,
+    contentPageWidth,
+    contentPageHeight,
+    getCenteredPosition,
+  ]);
 
   const addImage = useCallback(
-    (assetId: string) => {
+    (assetId: string, pos?: { x: number; y: number }) => {
       if (!selectedPage) return;
       pushHistory();
+      const safeWidth = contentPageWidth || 360;
+      const safeHeight = contentPageHeight || 240;
+      const base = Math.min(safeWidth, safeHeight);
+      const size = Math.min(Math.max(180, Math.round(base * 0.6)), base);
+      const centered = getCenteredPosition(size, size);
+      const maxX = Math.max(0, safeWidth - size);
+      const maxY = Math.max(0, safeHeight - size);
+      const x = Math.min(Math.max(pos?.x ?? centered.x, 0), maxX);
+      const y = Math.min(Math.max(pos?.y ?? centered.y, 0), maxY);
       const newImg: EditorImage = {
         id: generateId("img"),
         assetId,
-        x: 30,
-        y: 30,
-        width: 260,
-        height: 260,
+        x,
+        y,
+        width: size,
+        height: size,
         fit: "contain",
         rotation: 0,
         objectPosX: 50,
@@ -483,7 +544,15 @@ export default function BookEditor({
       setBook({ ...book, pages: newPages });
       setSelectedElementId(newImg.id);
     },
-    [book, selectedPage, setBook, pushHistory],
+    [
+      book,
+      selectedPage,
+      setBook,
+      pushHistory,
+      contentPageWidth,
+      contentPageHeight,
+      getCenteredPosition,
+    ],
   );
 
   const updateElementPosition = useCallback(
@@ -1508,15 +1577,21 @@ export default function BookEditor({
                                 ((el.data as EditorImage).rotation || 0) % 360;
                               const isQuarterTurn =
                                 Math.abs(rotation) % 180 !== 0;
+                              const rotatedWidth = isQuarterTurn
+                                ? el.data.height
+                                : el.data.width;
+                              const rotatedHeight = isQuarterTurn
+                                ? el.data.width
+                                : el.data.height;
                               const containerW = Math.floor(
-                                (isQuarterTurn
-                                  ? el.data.height
-                                  : el.data.width) * renderZoom,
+                                rotatedWidth * renderZoom,
                               );
                               const containerH = Math.floor(
-                                (isQuarterTurn
-                                  ? el.data.width
-                                  : el.data.height) * renderZoom,
+                                rotatedHeight * renderZoom,
+                              );
+                              const dragBounds = getDragBounds(
+                                rotatedWidth,
+                                rotatedHeight,
                               );
                               const leftPx = Math.floor(
                                 workAreaPadding + el.data.x * renderZoom,
@@ -1528,7 +1603,7 @@ export default function BookEditor({
                                 <Draggable
                                   key={el.data.id}
                                   position={{ x: leftPx, y: topPx }}
-                                  bounds="parent"
+                                  bounds={dragBounds}
                                   cancel=".object-pos-handle"
                                   onStart={() => {
                                     pushHistory();
@@ -1709,6 +1784,10 @@ export default function BookEditor({
                                   key={el.data.id}
                                   zoom={renderZoom}
                                   workAreaPadding={workAreaPadding}
+                                  dragBounds={getDragBounds(
+                                    el.data.width,
+                                    el.data.height,
+                                  )}
                                   element={el.data as EditorTextBox}
                                   isSelected={selectedElementId === el.data.id}
                                   isEditing={editingElementId === el.data.id}
@@ -1808,786 +1887,817 @@ export default function BookEditor({
             <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-12">
               {selectedElement.type === "text" ? (
                 <div className="col-span-1 sm:col-span-2 lg:col-span-12">
-                  <Label htmlFor="ctrl-text">Text</Label>
-                  <Input
-                    id="ctrl-text"
-                    value={(selectedElement.data as EditorTextBox).text}
-                    onChange={(e) =>
-                      updateElementData(selectedElement.data.id, {
-                        text: e.target.value,
-                      })
+                  <TextProperties
+                    selectedTextBox={selectedElement.data as EditorTextBox}
+                    onUpdate={(partial) =>
+                      updateElementData(selectedElement.data.id, partial)
                     }
                   />
-                  <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-12">
-                    {/* Font family and size */}
-                    <div className="sm:col-span-1 lg:col-span-6">
-                      <Label>Font family</Label>
-                      <Select
-                        value={
-                          (selectedElement.data as EditorTextBox).fontFamily ||
-                          "Inter"
-                        }
-                        onValueChange={(v) =>
-                          updateElementData(selectedElement.data.id, {
-                            fontFamily: v,
-                          })
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Choose font" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Inter">Inter</SelectItem>
-                          <SelectItem value="Georgia">Georgia</SelectItem>
-                          <SelectItem value="Times New Roman">
-                            Times New Roman
-                          </SelectItem>
-                          <SelectItem value="Arial">Arial</SelectItem>
-                          <SelectItem value="Courier New">
-                            Courier New
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="sm:col-span-1 lg:col-span-6">
-                      <Label>Font size</Label>
-                      <div className="px-1">
-                        <Slider
-                          value={[
-                            (selectedElement.data as EditorTextBox).fontSize ||
-                              18,
-                          ]}
-                          min={8}
-                          max={72}
-                          step={1}
-                          onValueChange={([v]) =>
-                            updateElementData(selectedElement.data.id, {
-                              fontSize: v,
-                            })
-                          }
-                        />
-                      </div>
-                    </div>
-
-                    {/* Font color */}
-                    <div className="sm:col-span-1 lg:col-span-6">
-                      <Label>Font color</Label>
-                      <div className="flex items-center gap-2 px-1">
-                        <input
-                          type="color"
+                  {/* Old inline text controls hidden: keep for quick fallback */}
+                  {false && <Label htmlFor="ctrl-text">Text</Label>}
+                  {false && (
+                    <Input
+                      id="ctrl-text"
+                      value={(selectedElement.data as EditorTextBox).text}
+                      onChange={(e) =>
+                        updateElementData(selectedElement.data.id, {
+                          text: e.target.value,
+                        })
+                      }
+                    />
+                  )}
+                  {false && (
+                    <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-12">
+                      {/* Font family and size */}
+                      <div className="sm:col-span-1 lg:col-span-6">
+                        <Label>Font family</Label>
+                        <Select
                           value={
-                            (selectedElement.data as EditorTextBox).fontColor ||
-                            "#111827"
+                            (selectedElement.data as EditorTextBox)
+                              .fontFamily || "Inter"
                           }
-                          onChange={(e) =>
+                          onValueChange={(v) =>
                             updateElementData(selectedElement.data.id, {
-                              fontColor: e.target.value,
+                              fontFamily: v,
                             })
                           }
-                          className="h-8 w-12 cursor-pointer rounded border bg-transparent"
-                          aria-label="Font color"
-                        />
-                        <span className="text-xs text-muted-foreground">
-                          {(selectedElement.data as EditorTextBox).fontColor ||
-                            "#111827"}
-                        </span>
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Choose font" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Inter">Inter</SelectItem>
+                            <SelectItem value="Georgia">Georgia</SelectItem>
+                            <SelectItem value="Times New Roman">
+                              Times New Roman
+                            </SelectItem>
+                            <SelectItem value="Arial">Arial</SelectItem>
+                            <SelectItem value="Courier New">
+                              Courier New
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
-                    </div>
-
-                    {/* Style buttons */}
-                    <div className="sm:col-span-2 lg:col-span-12">
-                      <Label>Style</Label>
-                      <div className="flex flex-wrap gap-2 py-1">
-                        <Button
-                          size="sm"
-                          variant={
-                            (selectedElement.data as EditorTextBox).bold
-                              ? "secondary"
-                              : "outline"
-                          }
-                          onClick={() =>
-                            updateElementData(selectedElement.data.id, {
-                              bold: !(
-                                (selectedElement.data as EditorTextBox).bold ||
-                                false
-                              ),
-                            })
-                          }
-                          className="h-8 px-3 text-xs"
-                        >
-                          B
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant={
-                            (selectedElement.data as EditorTextBox).italic
-                              ? "secondary"
-                              : "outline"
-                          }
-                          onClick={() =>
-                            updateElementData(selectedElement.data.id, {
-                              italic: !(
-                                (selectedElement.data as EditorTextBox)
-                                  .italic || false
-                              ),
-                            })
-                          }
-                          className="h-8 px-3 text-xs"
-                        >
-                          I
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant={
-                            (selectedElement.data as EditorTextBox).underline
-                              ? "secondary"
-                              : "outline"
-                          }
-                          onClick={() =>
-                            updateElementData(selectedElement.data.id, {
-                              underline: !(
-                                (selectedElement.data as EditorTextBox)
-                                  .underline || false
-                              ),
-                            })
-                          }
-                          className="h-8 px-3 text-xs"
-                        >
-                          U
-                        </Button>
-                      </div>
-                    </div>
-
-                    {/* Alignment */}
-                    <div className="sm:col-span-2 lg:col-span-12">
-                      <Label>Alignment</Label>
-                      <div className="flex flex-wrap gap-2 py-1">
-                        <Button
-                          size="sm"
-                          variant={
-                            (selectedElement.data as EditorTextBox)
-                              .textAlign === "left"
-                              ? "secondary"
-                              : "outline"
-                          }
-                          onClick={() =>
-                            updateElementData(selectedElement.data.id, {
-                              textAlign: "left",
-                            })
-                          }
-                          className="h-8 px-3 text-xs"
-                        >
-                          Left
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant={
-                            (selectedElement.data as EditorTextBox)
-                              .textAlign === "center"
-                              ? "secondary"
-                              : "outline"
-                          }
-                          onClick={() =>
-                            updateElementData(selectedElement.data.id, {
-                              textAlign: "center",
-                            })
-                          }
-                          className="h-8 px-3 text-xs"
-                        >
-                          Center
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant={
-                            (selectedElement.data as EditorTextBox)
-                              .textAlign === "right"
-                              ? "secondary"
-                              : "outline"
-                          }
-                          onClick={() =>
-                            updateElementData(selectedElement.data.id, {
-                              textAlign: "right",
-                            })
-                          }
-                          className="h-8 px-3 text-xs"
-                        >
-                          Right
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant={
-                            (selectedElement.data as EditorTextBox)
-                              .textAlign === "justify"
-                              ? "secondary"
-                              : "outline"
-                          }
-                          onClick={() =>
-                            updateElementData(selectedElement.data.id, {
-                              textAlign: "justify",
-                            })
-                          }
-                          className="h-8 px-3 text-xs"
-                        >
-                          Justify
-                        </Button>
-                      </div>
-                    </div>
-
-                    {/* Vertical alignment */}
-                    <div className="sm:col-span-2 lg:col-span-12">
-                      <Label>Vertical alignment</Label>
-                      <div className="flex flex-wrap gap-2 py-1">
-                        <Button
-                          size="sm"
-                          variant={
-                            (selectedElement.data as EditorTextBox)
-                              .verticalAlign === "top"
-                              ? "secondary"
-                              : "outline"
-                          }
-                          onClick={() =>
-                            updateElementData(selectedElement.data.id, {
-                              verticalAlign: "top",
-                            })
-                          }
-                          className="h-8 px-3 text-xs"
-                        >
-                          Top
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant={
-                            (selectedElement.data as EditorTextBox)
-                              .verticalAlign === "middle"
-                              ? "secondary"
-                              : "outline"
-                          }
-                          onClick={() =>
-                            updateElementData(selectedElement.data.id, {
-                              verticalAlign: "middle",
-                            })
-                          }
-                          className="h-8 px-3 text-xs"
-                        >
-                          Middle
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant={
-                            (selectedElement.data as EditorTextBox)
-                              .verticalAlign === "bottom"
-                              ? "secondary"
-                              : "outline"
-                          }
-                          onClick={() =>
-                            updateElementData(selectedElement.data.id, {
-                              verticalAlign: "bottom",
-                            })
-                          }
-                          className="h-8 px-3 text-xs"
-                        >
-                          Bottom
-                        </Button>
-                      </div>
-                    </div>
-
-                    {/* Background & Style Section */}
-                    <div className="sm:col-span-2 lg:col-span-12">
-                      <Label className="text-base font-medium">
-                        Background & Style
-                      </Label>
-                      <div className="mt-3 space-y-4">
-                        {/* Background Color Section */}
-                        <div className="space-y-2">
-                          <Label className="text-sm font-medium text-foreground">
-                            Background Color
-                          </Label>
-                          <div className="space-y-2">
-                            <div className="flex flex-wrap gap-1.5">
-                              {[
-                                { name: "None", value: "transparent" },
-                                { name: "White", value: "#ffffff" },
-                                { name: "Light Gray", value: "#f3f4f6" },
-                                { name: "Yellow", value: "#fef3c7" },
-                                { name: "Blue", value: "#dbeafe" },
-                                { name: "Green", value: "#d1fae5" },
-                                { name: "Pink", value: "#fce7f3" },
-                                { name: "Purple", value: "#e9d5ff" },
-                              ].map((bg) => (
-                                <Button
-                                  key={bg.value}
-                                  size="sm"
-                                  variant={
-                                    (selectedElement.data as EditorTextBox)
-                                      .backgroundColor === bg.value
-                                      ? "secondary"
-                                      : "outline"
-                                  }
-                                  onClick={() =>
-                                    updateElementData(selectedElement.data.id, {
-                                      backgroundColor: bg.value,
-                                    })
-                                  }
-                                  className="h-9 px-3 text-xs"
-                                >
-                                  <div
-                                    className="mr-2 h-3 w-3 rounded-sm border"
-                                    style={{
-                                      backgroundColor:
-                                        bg.value === "transparent"
-                                          ? "#ffffff"
-                                          : bg.value,
-                                      border:
-                                        bg.value === "transparent"
-                                          ? "1px solid #d1d5db"
-                                          : "1px solid rgba(0,0,0,0.1)",
-                                    }}
-                                  />
-                                  {bg.name}
-                                </Button>
-                              ))}
-                            </div>
-                            {/* Custom Background Color Picker */}
-                            <div className="flex items-center gap-2 rounded-md border p-2">
-                              <Label className="text-xs font-medium">
-                                Custom Color:
-                              </Label>
-                              <input
-                                type="color"
-                                value={
-                                  (selectedElement.data as EditorTextBox)
-                                    .backgroundColor === "transparent"
-                                    ? "#ffffff"
-                                    : (selectedElement.data as EditorTextBox)
-                                        .backgroundColor || "#ffffff"
-                                }
-                                onChange={(e) =>
-                                  updateElementData(selectedElement.data.id, {
-                                    backgroundColor: e.target.value,
-                                  })
-                                }
-                                className="h-8 w-16 cursor-pointer rounded border-0"
-                                title="Pick custom background color"
-                              />
-                              <span className="text-xs text-muted-foreground">
-                                {(selectedElement.data as EditorTextBox)
-                                  .backgroundColor === "transparent"
-                                  ? "Transparent"
-                                  : (selectedElement.data as EditorTextBox)
-                                      .backgroundColor || "#ffffff"}
-                              </span>
-                            </div>
-                          </div>
+                      <div className="sm:col-span-1 lg:col-span-6">
+                        <Label>Font size</Label>
+                        <div className="px-1">
+                          <Slider
+                            value={[
+                              (selectedElement.data as EditorTextBox)
+                                .fontSize || 18,
+                            ]}
+                            min={8}
+                            max={72}
+                            step={1}
+                            onValueChange={([v]) =>
+                              updateElementData(selectedElement.data.id, {
+                                fontSize: v,
+                              })
+                            }
+                          />
                         </div>
+                      </div>
 
-                        {/* Border Section */}
-                        <div className="space-y-2">
-                          <Label className="text-sm font-medium text-foreground">
-                            Border
-                          </Label>
+                      {/* Font color */}
+                      <div className="sm:col-span-1 lg:col-span-6">
+                        <Label>Font color</Label>
+                        <div className="flex items-center gap-2 px-1">
+                          <input
+                            type="color"
+                            value={
+                              (selectedElement.data as EditorTextBox)
+                                .fontColor || "#111827"
+                            }
+                            onChange={(e) =>
+                              updateElementData(selectedElement.data.id, {
+                                fontColor: e.target.value,
+                              })
+                            }
+                            className="h-8 w-12 cursor-pointer rounded border bg-transparent"
+                            aria-label="Font color"
+                          />
+                          <span className="text-xs text-muted-foreground">
+                            {(selectedElement.data as EditorTextBox)
+                              .fontColor || "#111827"}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Style buttons */}
+                      <div className="sm:col-span-2 lg:col-span-12">
+                        <Label>Style</Label>
+                        <div className="flex flex-wrap gap-2 py-1">
+                          <Button
+                            size="sm"
+                            variant={
+                              (selectedElement.data as EditorTextBox).bold
+                                ? "secondary"
+                                : "outline"
+                            }
+                            onClick={() =>
+                              updateElementData(selectedElement.data.id, {
+                                bold: !(
+                                  (selectedElement.data as EditorTextBox)
+                                    .bold || false
+                                ),
+                              })
+                            }
+                            className="h-8 px-3 text-xs"
+                          >
+                            B
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={
+                              (selectedElement.data as EditorTextBox).italic
+                                ? "secondary"
+                                : "outline"
+                            }
+                            onClick={() =>
+                              updateElementData(selectedElement.data.id, {
+                                italic: !(
+                                  (selectedElement.data as EditorTextBox)
+                                    .italic || false
+                                ),
+                              })
+                            }
+                            className="h-8 px-3 text-xs"
+                          >
+                            I
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={
+                              (selectedElement.data as EditorTextBox).underline
+                                ? "secondary"
+                                : "outline"
+                            }
+                            onClick={() =>
+                              updateElementData(selectedElement.data.id, {
+                                underline: !(
+                                  (selectedElement.data as EditorTextBox)
+                                    .underline || false
+                                ),
+                              })
+                            }
+                            className="h-8 px-3 text-xs"
+                          >
+                            U
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Alignment */}
+                      <div className="sm:col-span-2 lg:col-span-12">
+                        <Label>Alignment</Label>
+                        <div className="flex flex-wrap gap-2 py-1">
+                          <Button
+                            size="sm"
+                            variant={
+                              (selectedElement.data as EditorTextBox)
+                                .textAlign === "left"
+                                ? "secondary"
+                                : "outline"
+                            }
+                            onClick={() =>
+                              updateElementData(selectedElement.data.id, {
+                                textAlign: "left",
+                              })
+                            }
+                            className="h-8 px-3 text-xs"
+                          >
+                            Left
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={
+                              (selectedElement.data as EditorTextBox)
+                                .textAlign === "center"
+                                ? "secondary"
+                                : "outline"
+                            }
+                            onClick={() =>
+                              updateElementData(selectedElement.data.id, {
+                                textAlign: "center",
+                              })
+                            }
+                            className="h-8 px-3 text-xs"
+                          >
+                            Center
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={
+                              (selectedElement.data as EditorTextBox)
+                                .textAlign === "right"
+                                ? "secondary"
+                                : "outline"
+                            }
+                            onClick={() =>
+                              updateElementData(selectedElement.data.id, {
+                                textAlign: "right",
+                              })
+                            }
+                            className="h-8 px-3 text-xs"
+                          >
+                            Right
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={
+                              (selectedElement.data as EditorTextBox)
+                                .textAlign === "justify"
+                                ? "secondary"
+                                : "outline"
+                            }
+                            onClick={() =>
+                              updateElementData(selectedElement.data.id, {
+                                textAlign: "justify",
+                              })
+                            }
+                            className="h-8 px-3 text-xs"
+                          >
+                            Justify
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Vertical alignment */}
+                      <div className="sm:col-span-2 lg:col-span-12">
+                        <Label>Vertical alignment</Label>
+                        <div className="flex flex-wrap gap-2 py-1">
+                          <Button
+                            size="sm"
+                            variant={
+                              (selectedElement.data as EditorTextBox)
+                                .verticalAlign === "top"
+                                ? "secondary"
+                                : "outline"
+                            }
+                            onClick={() =>
+                              updateElementData(selectedElement.data.id, {
+                                verticalAlign: "top",
+                              })
+                            }
+                            className="h-8 px-3 text-xs"
+                          >
+                            Top
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={
+                              (selectedElement.data as EditorTextBox)
+                                .verticalAlign === "middle"
+                                ? "secondary"
+                                : "outline"
+                            }
+                            onClick={() =>
+                              updateElementData(selectedElement.data.id, {
+                                verticalAlign: "middle",
+                              })
+                            }
+                            className="h-8 px-3 text-xs"
+                          >
+                            Middle
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant={
+                              (selectedElement.data as EditorTextBox)
+                                .verticalAlign === "bottom"
+                                ? "secondary"
+                                : "outline"
+                            }
+                            onClick={() =>
+                              updateElementData(selectedElement.data.id, {
+                                verticalAlign: "bottom",
+                              })
+                            }
+                            className="h-8 px-3 text-xs"
+                          >
+                            Bottom
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Background & Style Section */}
+                      <div className="sm:col-span-2 lg:col-span-12">
+                        <Label className="text-base font-medium">
+                          Background & Style
+                        </Label>
+                        <div className="mt-3 space-y-4">
+                          {/* Background Color Section */}
                           <div className="space-y-2">
-                            <div className="flex flex-wrap gap-1.5">
-                              {[
-                                {
-                                  name: "None",
-                                  width: 0,
-                                  color: "transparent",
-                                },
-                                { name: "Thin", width: 1, color: "#d1d5db" },
-                                {
-                                  name: "Medium",
-                                  width: 2,
-                                  color: "#d1d5db",
-                                },
-                                { name: "Thick", width: 3, color: "#6b7280" },
-                                { name: "Black", width: 2, color: "#000000" },
-                                { name: "Blue", width: 2, color: "#3b82f6" },
-                              ].map((border) => (
-                                <Button
-                                  key={`${border.width}-${border.color}`}
-                                  size="sm"
-                                  variant={
-                                    (selectedElement.data as EditorTextBox)
-                                      .borderWidth === border.width &&
-                                    (selectedElement.data as EditorTextBox)
-                                      .borderColor === border.color
-                                      ? "secondary"
-                                      : "outline"
-                                  }
-                                  onClick={() =>
-                                    updateElementData(selectedElement.data.id, {
-                                      borderWidth: border.width,
-                                      borderColor: border.color,
-                                    })
-                                  }
-                                  className="h-9 px-3 text-xs"
-                                >
-                                  {border.name}
-                                </Button>
-                              ))}
-                            </div>
-                            {/* Custom Border Controls */}
-                            <div className="flex flex-col gap-3 rounded-md border p-2 sm:flex-row sm:items-center">
-                              <div className="flex items-center gap-2">
-                                <Label className="text-xs font-medium">
-                                  Width:
-                                </Label>
-                                <Select
-                                  value={String(
-                                    (selectedElement.data as EditorTextBox)
-                                      .borderWidth || 0,
-                                  )}
-                                  onValueChange={(value) =>
-                                    updateElementData(selectedElement.data.id, {
-                                      borderWidth: parseInt(value),
-                                    })
-                                  }
-                                >
-                                  <SelectTrigger className="h-8 w-20">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="0">None</SelectItem>
-                                    <SelectItem value="1">1px</SelectItem>
-                                    <SelectItem value="2">2px</SelectItem>
-                                    <SelectItem value="3">3px</SelectItem>
-                                    <SelectItem value="4">4px</SelectItem>
-                                    <SelectItem value="5">5px</SelectItem>
-                                  </SelectContent>
-                                </Select>
+                            <Label className="text-sm font-medium text-foreground">
+                              Background Color
+                            </Label>
+                            <div className="space-y-2">
+                              <div className="flex flex-wrap gap-1.5">
+                                {[
+                                  { name: "None", value: "transparent" },
+                                  { name: "White", value: "#ffffff" },
+                                  { name: "Light Gray", value: "#f3f4f6" },
+                                  { name: "Yellow", value: "#fef3c7" },
+                                  { name: "Blue", value: "#dbeafe" },
+                                  { name: "Green", value: "#d1fae5" },
+                                  { name: "Pink", value: "#fce7f3" },
+                                  { name: "Purple", value: "#e9d5ff" },
+                                ].map((bg) => (
+                                  <Button
+                                    key={bg.value}
+                                    size="sm"
+                                    variant={
+                                      (selectedElement.data as EditorTextBox)
+                                        .backgroundColor === bg.value
+                                        ? "secondary"
+                                        : "outline"
+                                    }
+                                    onClick={() =>
+                                      updateElementData(
+                                        selectedElement.data.id,
+                                        {
+                                          backgroundColor: bg.value,
+                                        },
+                                      )
+                                    }
+                                    className="h-9 px-3 text-xs"
+                                  >
+                                    <div
+                                      className="mr-2 h-3 w-3 rounded-sm border"
+                                      style={{
+                                        backgroundColor:
+                                          bg.value === "transparent"
+                                            ? "#ffffff"
+                                            : bg.value,
+                                        border:
+                                          bg.value === "transparent"
+                                            ? "1px solid #d1d5db"
+                                            : "1px solid rgba(0,0,0,0.1)",
+                                      }}
+                                    />
+                                    {bg.name}
+                                  </Button>
+                                ))}
                               </div>
-                              <div className="flex items-center gap-2">
+                              {/* Custom Background Color Picker */}
+                              <div className="flex items-center gap-2 rounded-md border p-2">
                                 <Label className="text-xs font-medium">
-                                  Color:
+                                  Custom Color:
                                 </Label>
                                 <input
                                   type="color"
                                   value={
                                     (selectedElement.data as EditorTextBox)
-                                      .borderColor === "transparent"
-                                      ? "#d1d5db"
+                                      .backgroundColor === "transparent"
+                                      ? "#ffffff"
                                       : (selectedElement.data as EditorTextBox)
-                                          .borderColor || "#d1d5db"
+                                          .backgroundColor || "#ffffff"
                                   }
                                   onChange={(e) =>
                                     updateElementData(selectedElement.data.id, {
-                                      borderColor: e.target.value,
-                                      borderWidth:
-                                        (selectedElement.data as EditorTextBox)
-                                          .borderWidth || 2, // Auto-set width if none
+                                      backgroundColor: e.target.value,
                                     })
                                   }
                                   className="h-8 w-16 cursor-pointer rounded border-0"
-                                  title="Pick custom border color"
+                                  title="Pick custom background color"
                                 />
                                 <span className="text-xs text-muted-foreground">
                                   {(selectedElement.data as EditorTextBox)
-                                    .borderColor === "transparent"
-                                    ? "None"
+                                    .backgroundColor === "transparent"
+                                    ? "Transparent"
                                     : (selectedElement.data as EditorTextBox)
-                                        .borderColor || "#d1d5db"}
+                                        .backgroundColor || "#ffffff"}
                                 </span>
                               </div>
                             </div>
                           </div>
-                        </div>
 
-                        {/* Shadow Section */}
-                        <div className="space-y-2">
-                          <Label className="text-sm font-medium text-foreground">
-                            Shadow
-                          </Label>
-                          <div className="flex flex-wrap gap-1.5">
-                            {[
-                              { name: "None", value: "none" },
-                              {
-                                name: "Small",
-                                value: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
-                              },
-                              {
-                                name: "Medium",
-                                value: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-                              },
-                              {
-                                name: "Large",
-                                value: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
-                              },
-                              {
-                                name: "Glow",
-                                value: "0 0 15px rgba(59, 130, 246, 0.3)",
-                              },
-                            ].map((shadow) => (
-                              <Button
-                                key={shadow.value}
-                                size="sm"
-                                variant={
-                                  (selectedElement.data as EditorTextBox)
-                                    .boxShadow === shadow.value
-                                    ? "secondary"
-                                    : "outline"
-                                }
-                                onClick={() =>
-                                  updateElementData(selectedElement.data.id, {
-                                    boxShadow: shadow.value,
-                                  })
-                                }
-                                className="h-9 px-3 text-xs"
-                              >
-                                {shadow.name}
-                              </Button>
-                            ))}
+                          {/* Border Section */}
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium text-foreground">
+                              Border
+                            </Label>
+                            <div className="space-y-2">
+                              <div className="flex flex-wrap gap-1.5">
+                                {[
+                                  {
+                                    name: "None",
+                                    width: 0,
+                                    color: "transparent",
+                                  },
+                                  { name: "Thin", width: 1, color: "#d1d5db" },
+                                  {
+                                    name: "Medium",
+                                    width: 2,
+                                    color: "#d1d5db",
+                                  },
+                                  { name: "Thick", width: 3, color: "#6b7280" },
+                                  { name: "Black", width: 2, color: "#000000" },
+                                  { name: "Blue", width: 2, color: "#3b82f6" },
+                                ].map((border) => (
+                                  <Button
+                                    key={`${border.width}-${border.color}`}
+                                    size="sm"
+                                    variant={
+                                      (selectedElement.data as EditorTextBox)
+                                        .borderWidth === border.width &&
+                                      (selectedElement.data as EditorTextBox)
+                                        .borderColor === border.color
+                                        ? "secondary"
+                                        : "outline"
+                                    }
+                                    onClick={() =>
+                                      updateElementData(
+                                        selectedElement.data.id,
+                                        {
+                                          borderWidth: border.width,
+                                          borderColor: border.color,
+                                        },
+                                      )
+                                    }
+                                    className="h-9 px-3 text-xs"
+                                  >
+                                    {border.name}
+                                  </Button>
+                                ))}
+                              </div>
+                              {/* Custom Border Controls */}
+                              <div className="flex flex-col gap-3 rounded-md border p-2 sm:flex-row sm:items-center">
+                                <div className="flex items-center gap-2">
+                                  <Label className="text-xs font-medium">
+                                    Width:
+                                  </Label>
+                                  <Select
+                                    value={String(
+                                      (selectedElement.data as EditorTextBox)
+                                        .borderWidth || 0,
+                                    )}
+                                    onValueChange={(value) =>
+                                      updateElementData(
+                                        selectedElement.data.id,
+                                        {
+                                          borderWidth: parseInt(value),
+                                        },
+                                      )
+                                    }
+                                  >
+                                    <SelectTrigger className="h-8 w-20">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="0">None</SelectItem>
+                                      <SelectItem value="1">1px</SelectItem>
+                                      <SelectItem value="2">2px</SelectItem>
+                                      <SelectItem value="3">3px</SelectItem>
+                                      <SelectItem value="4">4px</SelectItem>
+                                      <SelectItem value="5">5px</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Label className="text-xs font-medium">
+                                    Color:
+                                  </Label>
+                                  <input
+                                    type="color"
+                                    value={
+                                      (selectedElement.data as EditorTextBox)
+                                        .borderColor === "transparent"
+                                        ? "#d1d5db"
+                                        : (
+                                            selectedElement.data as EditorTextBox
+                                          ).borderColor || "#d1d5db"
+                                    }
+                                    onChange={(e) =>
+                                      updateElementData(
+                                        selectedElement.data.id,
+                                        {
+                                          borderColor: e.target.value,
+                                          borderWidth:
+                                            (
+                                              selectedElement.data as EditorTextBox
+                                            ).borderWidth || 2, // Auto-set width if none
+                                        },
+                                      )
+                                    }
+                                    className="h-8 w-16 cursor-pointer rounded border-0"
+                                    title="Pick custom border color"
+                                  />
+                                  <span className="text-xs text-muted-foreground">
+                                    {(selectedElement.data as EditorTextBox)
+                                      .borderColor === "transparent"
+                                      ? "None"
+                                      : (selectedElement.data as EditorTextBox)
+                                          .borderColor || "#d1d5db"}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
                           </div>
-                        </div>
 
-                        {/* Corner Radius Section */}
-                        <div className="space-y-2">
-                          <Label className="text-sm font-medium text-foreground">
-                            Corner Style
-                          </Label>
-                          <div className="flex flex-wrap gap-1.5">
-                            {[
-                              { name: "Square", value: 0, preview: "⬜" },
-                              { name: "Rounded", value: 8, preview: "▢" },
-                              { name: "Very Round", value: 16, preview: "◯" },
-                              { name: "Pill", value: 999, preview: "⬭" },
-                            ].map((radius) => (
-                              <Button
-                                key={radius.value}
-                                size="sm"
-                                variant={
-                                  (selectedElement.data as EditorTextBox)
-                                    .borderRadius === radius.value
-                                    ? "secondary"
-                                    : "outline"
-                                }
-                                onClick={() =>
-                                  updateElementData(selectedElement.data.id, {
-                                    borderRadius: radius.value,
-                                  })
-                                }
-                                className="h-9 px-3 text-xs"
-                              >
-                                <span className="mr-1">{radius.preview}</span>
-                                {radius.name}
-                              </Button>
-                            ))}
+                          {/* Shadow Section */}
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium text-foreground">
+                              Shadow
+                            </Label>
+                            <div className="flex flex-wrap gap-1.5">
+                              {[
+                                { name: "None", value: "none" },
+                                {
+                                  name: "Small",
+                                  value: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
+                                },
+                                {
+                                  name: "Medium",
+                                  value: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
+                                },
+                                {
+                                  name: "Large",
+                                  value: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+                                },
+                                {
+                                  name: "Glow",
+                                  value: "0 0 15px rgba(59, 130, 246, 0.3)",
+                                },
+                              ].map((shadow) => (
+                                <Button
+                                  key={shadow.value}
+                                  size="sm"
+                                  variant={
+                                    (selectedElement.data as EditorTextBox)
+                                      .boxShadow === shadow.value
+                                      ? "secondary"
+                                      : "outline"
+                                  }
+                                  onClick={() =>
+                                    updateElementData(selectedElement.data.id, {
+                                      boxShadow: shadow.value,
+                                    })
+                                  }
+                                  className="h-9 px-3 text-xs"
+                                >
+                                  {shadow.name}
+                                </Button>
+                              ))}
+                            </div>
                           </div>
-                        </div>
 
-                        {/* Padding Section */}
-                        <div className="space-y-2">
-                          <Label className="text-sm font-medium text-foreground">
-                            Inner Spacing
-                          </Label>
-                          <div className="flex flex-wrap gap-1.5">
-                            {[
-                              {
-                                name: "None",
-                                value: 0,
-                                description: "No space",
-                              },
-                              { name: "Small", value: 4, description: "4px" },
-                              {
-                                name: "Medium",
-                                value: 8,
-                                description: "8px",
-                              },
-                              {
-                                name: "Large",
-                                value: 16,
-                                description: "16px",
-                              },
-                            ].map((pad) => (
-                              <Button
-                                key={pad.value}
-                                size="sm"
-                                variant={
-                                  (selectedElement.data as EditorTextBox)
-                                    .padding === pad.value
-                                    ? "secondary"
-                                    : "outline"
-                                }
-                                onClick={() =>
-                                  updateElementData(selectedElement.data.id, {
-                                    padding: pad.value,
-                                  })
-                                }
-                                className="flex h-9 flex-col items-center px-3 text-xs"
-                                title={pad.description}
-                              >
-                                <span>{pad.name}</span>
-                                <span className="text-xs text-muted-foreground">
-                                  {pad.description}
-                                </span>
-                              </Button>
-                            ))}
+                          {/* Corner Radius Section */}
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium text-foreground">
+                              Corner Style
+                            </Label>
+                            <div className="flex flex-wrap gap-1.5">
+                              {[
+                                { name: "Square", value: 0, preview: "⬜" },
+                                { name: "Rounded", value: 8, preview: "▢" },
+                                { name: "Very Round", value: 16, preview: "◯" },
+                                { name: "Pill", value: 999, preview: "⬭" },
+                              ].map((radius) => (
+                                <Button
+                                  key={radius.value}
+                                  size="sm"
+                                  variant={
+                                    (selectedElement.data as EditorTextBox)
+                                      .borderRadius === radius.value
+                                      ? "secondary"
+                                      : "outline"
+                                  }
+                                  onClick={() =>
+                                    updateElementData(selectedElement.data.id, {
+                                      borderRadius: radius.value,
+                                    })
+                                  }
+                                  className="h-9 px-3 text-xs"
+                                >
+                                  <span className="mr-1">{radius.preview}</span>
+                                  {radius.name}
+                                </Button>
+                              ))}
+                            </div>
                           </div>
-                        </div>
 
-                        {/* Chat Bubble Section */}
-                        <div className="space-y-2">
-                          <Label className="text-sm font-medium text-foreground">
-                            Chat Bubble
-                          </Label>
-                          <div className="space-y-3">
-                            {/* Enable/Disable Chat Bubble */}
-                            <div className="flex items-center gap-2">
-                              <Button
-                                size="sm"
-                                variant={
-                                  (selectedElement.data as EditorTextBox)
-                                    .chatBubble
-                                    ? "secondary"
-                                    : "outline"
-                                }
-                                onClick={() => {
-                                  if (
+                          {/* Padding Section */}
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium text-foreground">
+                              Inner Spacing
+                            </Label>
+                            <div className="flex flex-wrap gap-1.5">
+                              {[
+                                {
+                                  name: "None",
+                                  value: 0,
+                                  description: "No space",
+                                },
+                                { name: "Small", value: 4, description: "4px" },
+                                {
+                                  name: "Medium",
+                                  value: 8,
+                                  description: "8px",
+                                },
+                                {
+                                  name: "Large",
+                                  value: 16,
+                                  description: "16px",
+                                },
+                              ].map((pad) => (
+                                <Button
+                                  key={pad.value}
+                                  size="sm"
+                                  variant={
+                                    (selectedElement.data as EditorTextBox)
+                                      .padding === pad.value
+                                      ? "secondary"
+                                      : "outline"
+                                  }
+                                  onClick={() =>
+                                    updateElementData(selectedElement.data.id, {
+                                      padding: pad.value,
+                                    })
+                                  }
+                                  className="flex h-9 flex-col items-center px-3 text-xs"
+                                  title={pad.description}
+                                >
+                                  <span>{pad.name}</span>
+                                  <span className="text-xs text-muted-foreground">
+                                    {pad.description}
+                                  </span>
+                                </Button>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Chat Bubble Section */}
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium text-foreground">
+                              Chat Bubble
+                            </Label>
+                            <div className="space-y-3">
+                              {/* Enable/Disable Chat Bubble */}
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  size="sm"
+                                  variant={
                                     (selectedElement.data as EditorTextBox)
                                       .chatBubble
-                                  ) {
-                                    updateElementData(selectedElement.data.id, {
-                                      chatBubble: undefined,
-                                    });
-                                  } else {
-                                    updateElementData(selectedElement.data.id, {
-                                      chatBubble: {
-                                        trianglePosition: "bottom",
-                                        triangleOffset: 50,
-                                        triangleSize: 12,
-                                      },
-                                    });
+                                      ? "secondary"
+                                      : "outline"
                                   }
-                                }}
-                                className="h-8 px-3 text-xs"
-                              >
-                                {(selectedElement.data as EditorTextBox)
-                                  .chatBubble
-                                  ? "Remove Bubble"
-                                  : "Add Bubble"}
-                              </Button>
-                            </div>
+                                  onClick={() => {
+                                    if (
+                                      (selectedElement.data as EditorTextBox)
+                                        .chatBubble
+                                    ) {
+                                      updateElementData(
+                                        selectedElement.data.id,
+                                        {
+                                          chatBubble: undefined,
+                                        },
+                                      );
+                                    } else {
+                                      updateElementData(
+                                        selectedElement.data.id,
+                                        {
+                                          chatBubble: {
+                                            trianglePosition: "bottom",
+                                            triangleOffset: 50,
+                                            triangleSize: 12,
+                                          },
+                                        },
+                                      );
+                                    }
+                                  }}
+                                  className="h-8 px-3 text-xs"
+                                >
+                                  {(selectedElement.data as EditorTextBox)
+                                    .chatBubble
+                                    ? "Remove Bubble"
+                                    : "Add Bubble"}
+                                </Button>
+                              </div>
 
-                            {/* Chat Bubble Controls */}
-                            {(selectedElement.data as EditorTextBox)
-                              .chatBubble && (
-                              <>
-                                {/* Triangle Position */}
-                                <div className="space-y-2">
-                                  <Label className="text-xs font-medium">
-                                    Triangle Position
-                                  </Label>
-                                  <div className="flex flex-wrap gap-1.5">
-                                    {[
-                                      { value: "top", label: "Top" },
-                                      { value: "right", label: "Right" },
-                                      { value: "bottom", label: "Bottom" },
-                                      { value: "left", label: "Left" },
-                                    ].map((pos) => (
-                                      <Button
-                                        key={pos.value}
-                                        size="sm"
-                                        variant={
-                                          (
-                                            selectedElement.data as EditorTextBox
-                                          ).chatBubble?.trianglePosition ===
-                                          pos.value
-                                            ? "secondary"
-                                            : "outline"
-                                        }
-                                        onClick={() =>
-                                          updateElementData(
-                                            selectedElement.data.id,
-                                            {
-                                              chatBubble: {
-                                                ...(
-                                                  selectedElement.data as EditorTextBox
-                                                ).chatBubble!,
-                                                trianglePosition:
-                                                  pos.value as any,
+                              {/* Chat Bubble Controls */}
+                              {(selectedElement.data as EditorTextBox)
+                                .chatBubble && (
+                                <>
+                                  {/* Triangle Position */}
+                                  <div className="space-y-2">
+                                    <Label className="text-xs font-medium">
+                                      Triangle Position
+                                    </Label>
+                                    <div className="flex flex-wrap gap-1.5">
+                                      {[
+                                        { value: "top", label: "Top" },
+                                        { value: "right", label: "Right" },
+                                        { value: "bottom", label: "Bottom" },
+                                        { value: "left", label: "Left" },
+                                      ].map((pos) => (
+                                        <Button
+                                          key={pos.value}
+                                          size="sm"
+                                          variant={
+                                            (
+                                              selectedElement.data as EditorTextBox
+                                            ).chatBubble?.trianglePosition ===
+                                            pos.value
+                                              ? "secondary"
+                                              : "outline"
+                                          }
+                                          onClick={() =>
+                                            updateElementData(
+                                              selectedElement.data.id,
+                                              {
+                                                chatBubble: {
+                                                  ...(
+                                                    selectedElement.data as EditorTextBox
+                                                  ).chatBubble!,
+                                                  trianglePosition:
+                                                    pos.value as any,
+                                                },
                                               },
-                                            },
-                                          )
-                                        }
-                                        className="h-7 px-2 text-xs"
-                                      >
-                                        {pos.label}
-                                      </Button>
-                                    ))}
+                                            )
+                                          }
+                                          className="h-7 px-2 text-xs"
+                                        >
+                                          {pos.label}
+                                        </Button>
+                                      ))}
+                                    </div>
                                   </div>
-                                </div>
 
-                                {/* Triangle Offset */}
-                                <div className="space-y-2">
-                                  <Label className="text-xs font-medium">
-                                    Triangle Position:{" "}
-                                    {Math.round(
-                                      (selectedElement.data as EditorTextBox)
-                                        .chatBubble?.triangleOffset || 50,
-                                    )}
-                                    %
-                                  </Label>
-                                  <Slider
-                                    value={[
-                                      (selectedElement.data as EditorTextBox)
-                                        .chatBubble?.triangleOffset || 50,
-                                    ]}
-                                    min={0}
-                                    max={100}
-                                    step={1}
-                                    onValueChange={([val]) =>
-                                      updateElementData(
-                                        selectedElement.data.id,
-                                        {
-                                          chatBubble: {
-                                            ...(
-                                              selectedElement.data as EditorTextBox
-                                            ).chatBubble!,
-                                            triangleOffset: val,
+                                  {/* Triangle Offset */}
+                                  <div className="space-y-2">
+                                    <Label className="text-xs font-medium">
+                                      Triangle Position:{" "}
+                                      {Math.round(
+                                        (selectedElement.data as EditorTextBox)
+                                          .chatBubble?.triangleOffset || 50,
+                                      )}
+                                      %
+                                    </Label>
+                                    <Slider
+                                      value={[
+                                        (selectedElement.data as EditorTextBox)
+                                          .chatBubble?.triangleOffset || 50,
+                                      ]}
+                                      min={0}
+                                      max={100}
+                                      step={1}
+                                      onValueChange={([val]) =>
+                                        updateElementData(
+                                          selectedElement.data.id,
+                                          {
+                                            chatBubble: {
+                                              ...(
+                                                selectedElement.data as EditorTextBox
+                                              ).chatBubble!,
+                                              triangleOffset: val,
+                                            },
                                           },
-                                        },
-                                      )
-                                    }
-                                  />
-                                </div>
+                                        )
+                                      }
+                                    />
+                                  </div>
 
-                                {/* Triangle Size */}
-                                <div className="space-y-2">
-                                  <Label className="text-xs font-medium">
-                                    Triangle Size:{" "}
-                                    {(selectedElement.data as EditorTextBox)
-                                      .chatBubble?.triangleSize || 12}
-                                    px
-                                  </Label>
-                                  <Slider
-                                    value={[
-                                      (selectedElement.data as EditorTextBox)
-                                        .chatBubble?.triangleSize || 12,
-                                    ]}
-                                    min={6}
-                                    max={24}
-                                    step={1}
-                                    onValueChange={([val]) =>
-                                      updateElementData(
-                                        selectedElement.data.id,
-                                        {
-                                          chatBubble: {
-                                            ...(
-                                              selectedElement.data as EditorTextBox
-                                            ).chatBubble!,
-                                            triangleSize: val,
+                                  {/* Triangle Size */}
+                                  <div className="space-y-2">
+                                    <Label className="text-xs font-medium">
+                                      Triangle Size:{" "}
+                                      {(selectedElement.data as EditorTextBox)
+                                        .chatBubble?.triangleSize || 12}
+                                      px
+                                    </Label>
+                                    <Slider
+                                      value={[
+                                        (selectedElement.data as EditorTextBox)
+                                          .chatBubble?.triangleSize || 12,
+                                      ]}
+                                      min={6}
+                                      max={24}
+                                      step={1}
+                                      onValueChange={([val]) =>
+                                        updateElementData(
+                                          selectedElement.data.id,
+                                          {
+                                            chatBubble: {
+                                              ...(
+                                                selectedElement.data as EditorTextBox
+                                              ).chatBubble!,
+                                              triangleSize: val,
+                                            },
                                           },
-                                        },
-                                      )
-                                    }
-                                  />
-                                </div>
-                              </>
-                            )}
+                                        )
+                                      }
+                                    />
+                                  </div>
+                                </>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               ) : null}
 

@@ -4,10 +4,36 @@ import Draggable from "react-draggable";
 
 import type { EditorTextBox } from "./types";
 
+const resolveFontFamily = (value?: string) => {
+  if (!value) return "var(--font-sans)";
+  const raw = value.toLowerCase();
+  if (raw.includes("var(--font-geist)") || raw.includes("geist")) {
+    return "var(--font-geist)";
+  }
+  if (raw.includes("var(--font-urban)") || raw.includes("urbanist")) {
+    return "var(--font-urban)";
+  }
+  if (raw.includes("var(--font-heading)") || raw.includes("cal")) {
+    return "var(--font-heading)";
+  }
+  if (raw.includes("var(--font-sans)") || raw.includes("inter")) {
+    return "var(--font-sans)";
+  }
+  return value;
+};
+
 interface TextBoxProps {
   element: EditorTextBox;
   zoom: number;
   workAreaPadding: number;
+  dragBounds?:
+    | "parent"
+    | {
+        left: number;
+        top: number;
+        right: number;
+        bottom: number;
+      };
   isSelected: boolean;
   isEditing: boolean;
   onSelect: () => void;
@@ -25,6 +51,7 @@ export default function TextBox(props: TextBoxProps) {
     element,
     zoom,
     workAreaPadding,
+    dragBounds,
     isSelected,
     isEditing,
     onSelect,
@@ -46,6 +73,7 @@ export default function TextBox(props: TextBoxProps) {
   const fontStyle = element.italic ? "italic" : "normal";
   const textDecoration = element.underline ? "underline" : "none";
   const fontSizePx = (element.fontSize ?? 18) * zoom;
+  const fontFamily = resolveFontFamily(element.fontFamily);
   const textAlign = element.textAlign || "left";
   const verticalAlign = element.verticalAlign || "top";
   const alignItems =
@@ -72,7 +100,7 @@ export default function TextBox(props: TextBoxProps) {
     <Draggable
       position={{ x: left, y: top }}
       disabled={isEditing}
-      bounds="parent"
+      bounds={dragBounds ?? "parent"}
       onStart={() => {
         onDragStart();
       }}
@@ -229,8 +257,7 @@ export default function TextBox(props: TextBoxProps) {
                 fontWeight,
                 fontStyle,
                 textDecoration,
-                fontFamily:
-                  element.fontFamily || "Inter, system-ui, sans-serif",
+                fontFamily,
                 fontSize: `${fontSizePx}px`,
                 lineHeight: 1.25,
                 textAlign,
@@ -255,8 +282,7 @@ export default function TextBox(props: TextBoxProps) {
                 fontWeight,
                 fontStyle,
                 textDecoration,
-                fontFamily:
-                  element.fontFamily || "Inter, system-ui, sans-serif",
+                fontFamily,
                 fontSize: `${fontSizePx}px`,
                 lineHeight: 1.25,
                 textAlign,

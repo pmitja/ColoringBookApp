@@ -9,15 +9,14 @@ export default function Testimonials() {
       <div className="container flex max-w-6xl flex-col gap-10 py-32 sm:gap-y-16">
         <HeaderSection
           label="Testimonials"
-          title="What our clients are sharing."
-          subtitle="Discover the glowing feedback from our delighted customers
-            worldwide."
+          title="Parents love the results"
+          subtitle="Kids get pages they can color easily, and grownups get clean, print-ready files."
         />
 
-        <div className="column-1 gap-5 space-y-5 md:columns-2 lg:columns-3 ">
+        <div className="column-1 gap-5 space-y-5 md:columns-2 lg:columns-3">
           {testimonials.map((item) => (
             <div className="break-inside-avoid" key={item.name}>
-              <div className="relative rounded-xl border bg-muted/25">
+              <div className="relative rounded-2xl border border-slate-200/70 bg-white/80 shadow-sm dark:border-white/10 dark:bg-white/5">
                 <div className="flex flex-col px-4 py-5 sm:p-6">
                   <div>
                     <div className="relative mb-4 flex items-center gap-3">
@@ -25,7 +24,7 @@ export default function Testimonials() {
                         <Image
                           width={100}
                           height={100}
-                          className="size-full rounded-full border"
+                          className="size-full rounded-full border border-slate-200/70 dark:border-white/10"
                           src={item.image}
                           alt={item.name}
                         />

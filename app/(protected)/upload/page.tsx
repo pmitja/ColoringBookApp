@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useDropzone } from "react-dropzone";
 
-import { BASE_STYLES, FACE_ADDONS } from "@/config/prompts";
+import { BASE_STYLES } from "@/config/prompts";
 import { cn } from "@/lib/utils";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -38,9 +37,6 @@ export default function UploadPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedStyle, setSelectedStyle] =
     useState<keyof typeof BASE_STYLES>("INTO_PIXAR");
-  const [selectedAddons, setSelectedAddons] = useState<
-    (keyof typeof FACE_ADDONS)[]
-  >([]);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
@@ -97,7 +93,6 @@ export default function UploadPage() {
       const formData = new FormData();
       formData.append("image", selectedFile);
       formData.append("style", selectedStyle);
-      formData.append("addons", JSON.stringify(selectedAddons));
 
       const response = await fetch("/api/upload", {
         method: "POST",
@@ -141,248 +136,258 @@ export default function UploadPage() {
         text="Choose a family photo to transform into a coloring book."
       />
 
-      <div className="mx-auto max-w-2xl space-y-6">
-        {/* Privacy Reminder */}
-        <Alert className="border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20">
-          <Icons.warning className="h-4 w-4 text-green-600" />
-          <AlertDescription className="text-green-800 dark:text-green-400">
-            <strong>Privacy Promise:</strong> Your photo is processed instantly
-            and never stored on our servers.
-          </AlertDescription>
-        </Alert>
-
-        {!selectedFile ? (
-          /* Upload Zone */
-          <Card>
-            <CardHeader>
-              <CardTitle>Choose Your Photo</CardTitle>
-              <CardDescription>
-                Upload a family photo to create a magical coloring book. Best
-                results with 1-4 people and good lighting.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div
-                {...getRootProps()}
-                className={cn(
-                  "cursor-pointer rounded-lg border-2 border-dashed p-8 text-center transition-colors",
-                  isDragActive
-                    ? "bg-primary/5 border-primary"
-                    : "border-muted-foreground/25 hover:border-primary/50",
-                )}
-              >
-                <input {...getInputProps()} />
-                <div className="bg-primary/10 mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full">
-                  <Icons.media className="h-8 w-8 text-primary" />
-                </div>
-                {isDragActive ? (
-                  <p className="text-lg font-medium">Drop your photo here</p>
-                ) : (
-                  <div className="space-y-2">
-                    <p className="text-lg font-medium">
-                      Drag & drop your photo here, or{" "}
-                      <span className="text-primary">click to browse</span>
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Supports JPG, PNG, HEIC up to 10MB
-                    </p>
-                  </div>
-                )}
+      <div className="mx-auto max-w-6xl space-y-6 pb-10">
+        <Card className="border-slate-200/70 bg-white/80 shadow-[0_0_0_1px_rgba(15,23,42,0.05)] dark:border-white/10 dark:bg-white/5 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.04)]">
+          <CardHeader className="space-y-2">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <CardTitle>Upload Your Photo</CardTitle>
+                <CardDescription>
+                  Best results with 1-4 people, clear faces, and good lighting.
+                </CardDescription>
               </div>
-
-              {error && (
-                <Alert className="mt-4 border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20">
-                  <Icons.warning className="h-4 w-4 text-red-600" />
-                  <AlertDescription className="text-red-800 dark:text-red-400">
-                    {error}
-                  </AlertDescription>
-                </Alert>
-              )}
-            </CardContent>
-          </Card>
-        ) : (
-          /* Preview and Confirm */
-          <Card>
-            <CardHeader>
-              <CardTitle>Preview Your Photo</CardTitle>
-              <CardDescription>
-                Review your photo before creating the coloring book.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Image Preview */}
-              <div className="relative mx-auto aspect-square max-w-md overflow-hidden rounded-lg">
-                {previewUrl && (
-                  <Image
-                    src={previewUrl}
-                    alt="Upload preview"
-                    fill
-                    className="object-cover"
-                  />
-                )}
+              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700 dark:text-emerald-100">
+                Privacy Promise
               </div>
-
-              {/* File Info */}
-              <div className="space-y-1 text-sm text-muted-foreground">
-                <p>
-                  <strong>File:</strong> {selectedFile.name}
-                </p>
-                <p>
-                  <strong>Size:</strong>{" "}
-                  {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                </p>
-                <p>
-                  <strong>Type:</strong> {selectedFile.type}
-                </p>
-              </div>
-
-              {/* Style Selection */}
-              <div className="space-y-4 border-t pt-4">
-                <div className="space-y-3">
-                  <Label
-                    htmlFor="style-select"
-                    className="text-base font-medium"
-                  >
-                    Choose Art Style
-                  </Label>
-                  <Select
-                    value={selectedStyle}
-                    onValueChange={(value) =>
-                      setSelectedStyle(value as keyof typeof BASE_STYLES)
-                    }
-                  >
-                    <SelectTrigger id="style-select">
-                      <SelectValue placeholder="Select a style" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(BASE_STYLES).map(([key, description]) => (
-                        <SelectItem key={key} value={key}>
-                          {key
-                            .replace(/_/g, " ")
-                            .replace("INTO ", "")
-                            .toLowerCase()
-                            .replace(/\b\w/g, (l) => l.toUpperCase())}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Face Enhancement Options */}
-                <div className="space-y-3">
-                  <Label className="text-base font-medium">
-                    Face Enhancements (Optional)
-                  </Label>
-                  <div className="grid grid-cols-1 gap-3">
-                    {Object.entries(FACE_ADDONS).map(([key, description]) => (
-                      <div key={key} className="flex items-start space-x-3">
-                        <Checkbox
-                          id={key}
-                          checked={selectedAddons.includes(
-                            key as keyof typeof FACE_ADDONS,
-                          )}
-                          onCheckedChange={(checked) => {
-                            if (checked) {
-                              setSelectedAddons([
-                                ...selectedAddons,
-                                key as keyof typeof FACE_ADDONS,
-                              ]);
-                            } else {
-                              setSelectedAddons(
-                                selectedAddons.filter((addon) => addon !== key),
-                              );
-                            }
-                          }}
-                        />
-                        <div className="grid gap-1.5 leading-none">
-                          <Label
-                            htmlFor={key}
-                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                          >
-                            {key
-                              .replace(/_/g, " ")
-                              .toLowerCase()
-                              .replace(/\b\w/g, (l) => l.toUpperCase())}
-                          </Label>
-                          <p className="text-xs text-muted-foreground">
-                            {description}
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-6 lg:grid-cols-[1.4fr_0.6fr]">
+              <div>
+                {!selectedFile ? (
+                  <div className="rounded-2xl border border-slate-200/70 bg-white/80 p-6 dark:border-white/10 dark:bg-white/5">
+                    <div
+                      {...getRootProps()}
+                      className={cn(
+                        "flex cursor-pointer flex-col items-start rounded-2xl border-2 border-dashed border-slate-200/70 bg-slate-50 p-8 text-left transition-colors dark:border-white/10 dark:bg-slate-950/40",
+                        isDragActive
+                          ? "border-primary/70 bg-emerald-500/10"
+                          : "hover:border-primary/60 hover:bg-slate-100 dark:hover:bg-white/5",
+                      )}
+                    >
+                      <input {...getInputProps()} />
+                      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-200/70 dark:bg-white/10">
+                        <Icons.media className="h-8 w-8 text-primary" />
+                      </div>
+                      {isDragActive ? (
+                        <p className="text-lg font-medium">
+                          Drop your photo here
+                        </p>
+                      ) : (
+                        <div className="space-y-2">
+                          <p className="text-lg font-medium">
+                            Drag & drop your photo, or{" "}
+                            <span className="text-primary">
+                              click to browse
+                            </span>
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            Supports JPG, PNG, HEIC up to 10MB
                           </p>
                         </div>
+                      )}
+                    </div>
+
+                    {error && (
+                      <Alert className="mt-4 border-rose-500/30 bg-rose-500/10 text-rose-800 dark:text-rose-100">
+                        <Icons.warning className="h-4 w-4 text-rose-500 dark:text-rose-200" />
+                        <AlertDescription className="text-rose-700 dark:text-rose-50">
+                          {error}
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-6 rounded-2xl border border-slate-200/70 bg-white/80 p-6 dark:border-white/10 dark:bg-white/5">
+                    {/* Image Preview */}
+                    <div className="relative aspect-square w-full max-w-md overflow-hidden rounded-2xl border border-slate-200/70 bg-slate-100 dark:border-white/10 dark:bg-slate-950/40">
+                      {previewUrl && (
+                        <Image
+                          src={previewUrl}
+                          alt="Upload preview"
+                          fill
+                          className="object-cover"
+                        />
+                      )}
+                    </div>
+
+                    {/* File Info */}
+                    <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                      <span className="rounded-full border border-slate-200/70 bg-white/80 px-3 py-1 dark:border-white/10 dark:bg-white/5">
+                        File: {selectedFile.name}
+                      </span>
+                      <span className="rounded-full border border-slate-200/70 bg-white/80 px-3 py-1 dark:border-white/10 dark:bg-white/5">
+                        Size: {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                      </span>
+                      <span className="rounded-full border border-slate-200/70 bg-white/80 px-3 py-1 dark:border-white/10 dark:bg-white/5">
+                        Type: {selectedFile.type}
+                      </span>
+                    </div>
+
+                    {/* Style Selection */}
+                    <div className="space-y-4 rounded-2xl border border-slate-200/70 bg-white/80 p-4 dark:border-white/10 dark:bg-white/5">
+                      <div className="space-y-3">
+                        <Label
+                          htmlFor="style-select"
+                          className="text-base font-medium"
+                        >
+                          Choose Art Style
+                        </Label>
+                        <Select
+                          value={selectedStyle}
+                          onValueChange={(value) =>
+                            setSelectedStyle(value as keyof typeof BASE_STYLES)
+                          }
+                        >
+                          <SelectTrigger
+                            id="style-select"
+                            className="border-slate-200/70 bg-white/80 text-foreground dark:border-white/10 dark:bg-white/5 dark:text-foreground"
+                          >
+                            <SelectValue placeholder="Select a style" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Object.entries(BASE_STYLES).map(
+                              ([key, description]) => (
+                                <SelectItem key={key} value={key}>
+                                  {key
+                                    .replace(/_/g, " ")
+                                    .replace("INTO ", "")
+                                    .toLowerCase()
+                                    .replace(/\b\w/g, (l) =>
+                                      l.toUpperCase(),
+                                    )}
+                                </SelectItem>
+                              ),
+                            )}
+                          </SelectContent>
+                        </Select>
                       </div>
-                    ))}
+                    </div>
+
+                    {/* Upload Progress */}
+                    {isUploading && (
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span>Processing your photo...</span>
+                          <span>{uploadProgress}%</span>
+                        </div>
+                        <Progress value={uploadProgress} className="h-2" />
+                      </div>
+                    )}
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-4">
+                      <Button
+                        onClick={handleUpload}
+                        disabled={isUploading}
+                        className="flex-1 gap-2"
+                        size="lg"
+                      >
+                        {isUploading ? (
+                          <>
+                            <Icons.spinner className="h-4 w-4 animate-spin" />
+                            Processing...
+                          </>
+                        ) : (
+                          <>
+                            <Icons.package className="h-4 w-4" />
+                            Process Photo
+                          </>
+                        )}
+                      </Button>
+                      <Button
+                        onClick={resetUpload}
+                        variant="outline"
+                        disabled={isUploading}
+                        size="lg"
+                        className="border-slate-200/70 bg-white/80 dark:border-white/10 dark:bg-white/5"
+                      >
+                        <Icons.close className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
 
-              {/* Upload Progress */}
-              {isUploading && (
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>Processing your photo...</span>
-                    <span>{uploadProgress}%</span>
-                  </div>
-                  <Progress value={uploadProgress} className="h-2" />
+              <div className="space-y-4 rounded-2xl border border-slate-200/70 bg-slate-50 p-5 dark:border-white/10 dark:bg-slate-950/40">
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                    What You’ll Get
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Clean line art made for printing and coloring.
+                  </p>
                 </div>
-              )}
-
-              {/* Action Buttons */}
-              <div className="flex gap-4">
-                <Button
-                  onClick={handleUpload}
-                  disabled={isUploading}
-                  className="flex-1 gap-2"
-                  size="lg"
-                >
-                  {isUploading ? (
-                    <>
-                      <Icons.spinner className="h-4 w-4 animate-spin" />
-                      Processing...
-                    </>
-                  ) : (
-                    <>
-                      <Icons.package className="h-4 w-4" />
-                      Process Photo
-                    </>
-                  )}
-                </Button>
-                <Button
-                  onClick={resetUpload}
-                  variant="outline"
-                  disabled={isUploading}
-                  size="lg"
-                >
-                  <Icons.close className="h-4 w-4" />
-                </Button>
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+                  <div className="rounded-2xl border border-slate-200/70 bg-white/80 p-3 text-left dark:border-white/10 dark:bg-white/5">
+                    <div className="relative aspect-square w-full overflow-hidden rounded-xl">
+                      <Image
+                        src="/illustrations/lineart-sample.svg"
+                        alt="Line art sample"
+                        fill
+                        className="object-contain"
+                      />
+                    </div>
+                    <p className="mt-2 text-xs font-medium">Line Art PNG</p>
+                  </div>
+                  <div className="rounded-2xl border border-slate-200/70 bg-white/80 p-3 text-left dark:border-white/10 dark:bg-white/5">
+                    <div className="relative aspect-square w-full overflow-hidden rounded-xl">
+                      <Image
+                        src="/illustrations/color-sample.svg"
+                        alt="Print ready preview"
+                        fill
+                        className="object-contain"
+                      />
+                    </div>
+                    <p className="mt-2 text-xs font-medium">Print-ready PDF</p>
+                  </div>
+                </div>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li className="flex items-center gap-2">
+                    <span className="text-primary">•</span>
+                    Crisp outlines that kids can color easily.
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="text-primary">•</span>
+                    Great for home printers and classrooms.
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="text-primary">•</span>
+                    Safe and private by default.
+                  </li>
+                </ul>
               </div>
-            </CardContent>
-          </Card>
-        )}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Tips */}
-        <Card className="border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950/20">
+        <Card className="border-amber-400/30 bg-amber-500/10">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-blue-900 dark:text-blue-100">
+            <CardTitle className="flex items-center gap-2 text-amber-900 dark:text-amber-50">
               <Icons.help className="h-5 w-5" />
               Tips for Best Results
             </CardTitle>
           </CardHeader>
-          <CardContent className="text-blue-800 dark:text-blue-200">
+          <CardContent className="text-amber-800 dark:text-amber-100">
             <ul className="space-y-2 text-sm">
               <li className="flex items-start gap-2">
-                <span className="text-blue-500">📸</span>
-                Use photos with clear faces and good lighting
+                <span className="text-amber-500 dark:text-amber-300">📸</span>
+                Use photos with clear faces and good lighting.
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-blue-500">👨‍👩‍👧‍👦</span>
-                Photos with 1-4 people work best
+                <span className="text-amber-500 dark:text-amber-300">
+                  👨‍👩‍👧‍👦
+                </span>
+                Photos with 1-4 people work best.
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-blue-500">🖼️</span>
-                Avoid busy backgrounds for cleaner line art
+                <span className="text-amber-500 dark:text-amber-300">🖼️</span>
+                Avoid busy backgrounds for cleaner line art.
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-blue-500">📱</span>
-                High-resolution photos create better details
+                <span className="text-amber-500 dark:text-amber-300">📱</span>
+                High-resolution photos create better details.
               </li>
             </ul>
           </CardContent>

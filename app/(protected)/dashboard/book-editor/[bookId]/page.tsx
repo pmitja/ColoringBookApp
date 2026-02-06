@@ -3,9 +3,7 @@ import dynamic from "next/dynamic";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { constructMetadata } from "@/lib/utils";
-import { DashboardHeader } from "@/components/dashboard/header";
-
-const BookEditor = dynamic(() => import("@/components/editor/book-editor"), {
+const BookEditor = dynamic(() => import("@/components/editor/book-editor-v2"), {
   ssr: false,
 });
 
@@ -72,16 +70,10 @@ export default async function EditBookPage({
     : null;
 
   return (
-    <>
-      <DashboardHeader
-        heading={book ? `Editing: ${book.title}` : "Book Editor"}
-        text="Build your own book with draggable text boxes and your generated coloring pages."
-      />
-      <BookEditor
-        assets={assets}
-        initialBookId={book?.id || null}
-        initialBook={initialBook}
-      />
-    </>
+    <BookEditor
+      assets={assets}
+      initialBookId={book?.id || null}
+      initialBook={initialBook}
+    />
   );
 }

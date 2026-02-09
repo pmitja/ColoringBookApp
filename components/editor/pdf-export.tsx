@@ -14,14 +14,52 @@ interface ExportFromDomParams {
   scale?: number;
 }
 
-export async function exportBookAsPdf({
-  elements,
+interface ExportFromImagesParams {
+  images: string[];
+  pageFormat: PageFormat;
+  orientation: Orientation;
+  fileName?: string;
+}
+
+export async function captureElementAsPng(
+  element: HTMLElement,
+  scale = 2,
+): Promise<string> {
+  const canvas = await html2canvas(element, {
+    scale,
+    allowTaint: true,
+    useCORS: true,
+    ignoreElements: (node) => {
+      return (
+        node instanceof HTMLElement &&
+        node.dataset.ignoreExport === "true"
+      );
+    },
+    onclone: (doc) => {
+      doc.querySelectorAll('[data-export-page-root="true"]').forEach((node) => {
+        if (!(node instanceof HTMLElement)) return;
+        node.style.border = "none";
+        node.style.boxShadow = "none";
+        node.style.borderRadius = "0";
+      });
+      doc.querySelectorAll('[data-export-clean-frame="true"]').forEach((node) => {
+        if (!(node instanceof HTMLElement)) return;
+        node.style.border = "none";
+        node.style.boxShadow = "none";
+      });
+    },
+  });
+
+  return canvas.toDataURL("image/png");
+}
+
+export function exportImagesAsPdf({
+  images,
   pageFormat,
   orientation,
   fileName,
-  scale = 2,
-}: ExportFromDomParams) {
-  if (!elements || elements.length === 0) return;
+}: ExportFromImagesParams) {
+  if (!images || images.length === 0) return;
 
   const doc = new jsPDF({
     orientation,
@@ -32,23 +70,37 @@ export async function exportBookAsPdf({
   const pageW = doc.internal.pageSize.getWidth();
   const pageH = doc.internal.pageSize.getHeight();
 
-  for (let i = 0; i < elements.length; i++) {
-    const el = elements[i];
-    if (!el) {
-      return;
-    }
-
-    const canvas = await html2canvas(el, {
-      scale: 2,
-      allowTaint: true,
-      useCORS: true,
-    });
-    const data = canvas.toDataURL("image/png");
-
+  for (let i = 0; i < images.length; i++) {
+    const data = images[i];
+    if (!data) continue;
     if (i > 0) doc.addPage();
     doc.addImage(data, "PNG", 0, 0, pageW, pageH);
   }
 
   const safeName = (fileName || "book").replace(/\s+/g, "-");
   doc.save(`${safeName}.pdf`);
+}
+
+export async function exportBookAsPdf({
+  elements,
+  pageFormat,
+  orientation,
+  fileName,
+  scale = 2,
+}: ExportFromDomParams) {
+  if (!elements || elements.length === 0) return;
+
+  const images: string[] = [];
+
+  for (const el of elements) {
+    if (!el) continue;
+    images.push(await captureElementAsPng(el, scale));
+  }
+
+  exportImagesAsPdf({
+    images,
+    pageFormat,
+    orientation,
+    fileName,
+  });
 }

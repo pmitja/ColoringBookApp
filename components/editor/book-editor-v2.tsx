@@ -58,7 +58,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Icons } from "@/components/shared/icons";
 
-import { exportBookAsPdf } from "./pdf-export";
+import { captureElementAsPng, exportImagesAsPdf } from "./pdf-export";
 import SimpleFlipBook, { SimpleFlipBookHandle } from "./simple-flip-book";
 import TextBoxRnd from "./text-box-rnd";
 import TextProperties from "./text-properties";
@@ -179,6 +179,7 @@ export default function BookEditorV2({
   const [workAreaPaddingEnabled, setWorkAreaPaddingEnabled] =
     useLocalStorage<boolean>("book-editor:v2:work-padding", true);
   const bookRef = useRef<SimpleFlipBookHandle | null>(null);
+  const isExportingRef = useRef(false);
   const stageRef = useRef<HTMLDivElement | null>(null);
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const pageRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -356,36 +357,62 @@ export default function BookEditorV2({
   );
 
   const exportToPdf = useCallback(async () => {
+    const waitForPaint = async () => {
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() => resolve()),
+      );
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() => resolve()),
+      );
+    };
+
+    const prevSelectedEl = selectedElementId;
+    const prevSelectedPage = selectedPageId;
+    const prevFlipIndex = bookRef.current?.getCurrentPage() ?? 0;
+
     try {
       toast.info("Generating PDF...");
-      const prevSelectedEl = selectedElementId;
-      const prevSelectedPage = selectedPageId;
+      isExportingRef.current = true;
       setSelectedElementId(null);
       setSelectedPageId(undefined as any);
-      await new Promise((r) => requestAnimationFrame(() => r(undefined)));
-      await new Promise((r) => requestAnimationFrame(() => r(undefined)));
+      await waitForPaint();
 
-      const elements = book.pages
-        .map((p) => pageRefs.current[p.id])
-        .filter(Boolean) as HTMLElement[];
+      const images: string[] = [];
+      for (let i = 0; i < book.pages.length; i++) {
+        bookRef.current?.turnToPage(i);
+        await waitForPaint();
+        const pageId = book.pages[i]?.id;
+        if (!pageId) continue;
+        const pageEl = pageRefs.current[pageId];
+        if (!pageEl) continue;
+        const imageData = await captureElementAsPng(pageEl, 2);
+        images.push(imageData);
+      }
 
-      await exportBookAsPdf({
-        elements,
+      if (images.length === 0) {
+        throw new Error("No pages available for export");
+      }
+
+      exportImagesAsPdf({
+        images,
         pageFormat,
         orientation: pageOrientation,
         fileName: book.title,
-        scale: 2,
       });
 
-      setSelectedElementId(prevSelectedEl);
-      setSelectedPageId(prevSelectedPage as any);
       toast.success("PDF saved");
     } catch (e) {
       console.error(e);
       toast.error("Failed to export PDF");
+    } finally {
+      isExportingRef.current = false;
+      bookRef.current?.turnToPage(prevFlipIndex);
+      setSelectedElementId(prevSelectedEl);
+      setSelectedPageId(prevSelectedPage);
     }
   }, [
     book.pages,
+    book.title,
     pageFormat,
     pageOrientation,
     selectedElementId,
@@ -1723,6 +1750,7 @@ export default function BookEditorV2({
                       mode={isSingleMode ? "single" : "spread"}
                       cover
                       onPageChange={(idx) => {
+                        if (isExportingRef.current) return;
                         const leftId = book.pages[idx]?.id;
                         const rightId = book.pages[idx + 1]?.id;
                         if (
@@ -1743,6 +1771,7 @@ export default function BookEditorV2({
                                 ref={(el) => {
                                   pageRefs.current[page.id] = el;
                                 }}
+                                data-export-page-root="true"
                                 className="relative overflow-hidden rounded-md border bg-white shadow-sm"
                                 style={{
                                   height: displayHeight,
@@ -1796,6 +1825,7 @@ export default function BookEditorV2({
                                         ? workAreaPadding + 8
                                         : undefined,
                                   }}
+                                  data-ignore-export="true"
                                 >
                                   Page {pageIndex + 1}
                                 </div>
@@ -1897,7 +1927,10 @@ export default function BookEditorV2({
                                               }}
                                               title="Drag to position image"
                                             >
-                                              <div className="relative h-full w-full overflow-hidden rounded border bg-white shadow-sm">
+                                              <div
+                                                data-export-clean-frame="true"
+                                                className="relative h-full w-full overflow-hidden rounded border bg-white shadow-sm"
+                                              >
                                                 <Image
                                                   src={asset.url}
                                                   alt={asset.name || "image"}

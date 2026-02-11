@@ -103,7 +103,7 @@ export default function ResultsPage({ params }: ResultsPageProps) {
       if (format === "png") {
         const imageBlob = await fetchBlob(
           `/api/download/lineart/${params.jobId}`,
-          "Failed to fetch line art"
+          "Failed to fetch line art",
         );
         downloadBlob(imageBlob, `${fileBaseName}-coloring-page.png`);
         return;
@@ -111,7 +111,7 @@ export default function ResultsPage({ params }: ResultsPageProps) {
 
       const pdfBlob = await fetchBlob(
         `/api/download/lineart-pdf/${params.jobId}`,
-        "Failed to generate PDF"
+        "Failed to generate PDF",
       );
       downloadBlob(pdfBlob, `${fileBaseName}-coloring-page.pdf`);
     } catch (err) {
@@ -131,12 +131,12 @@ export default function ResultsPage({ params }: ResultsPageProps) {
           jobData.inputFileName.split(".")[0] || "coloring-page";
         const pdfBlob = await fetchBlob(
           `/api/download/lineart-pdf/${params.jobId}`,
-          "Failed to generate PDF"
+          "Failed to generate PDF",
         );
         const pdfFile = new File(
           [pdfBlob],
           `${fileBaseName}-coloring-page.pdf`,
-          { type: "application/pdf" }
+          { type: "application/pdf" },
         );
 
         if (navigator.canShare && !navigator.canShare({ files: [pdfFile] })) {
@@ -207,6 +207,13 @@ export default function ResultsPage({ params }: ResultsPageProps) {
     hour: "2-digit",
     minute: "2-digit",
   });
+  const normalizedInputFileName = jobData.inputFileName.toLowerCase();
+  const isPromptGeneratedJob =
+    normalizedInputFileName.startsWith("ai-generator-") ||
+    normalizedInputFileName.startsWith("consistent-character-");
+  const consistentGeneratorHref = `/ai-generator?mode=consistent&referenceJobId=${encodeURIComponent(
+    jobData.id,
+  )}`;
 
   return (
     <>
@@ -304,6 +311,24 @@ export default function ResultsPage({ params }: ResultsPageProps) {
                 Share Coloring Page
               </Button>
             </div>
+
+            {isPromptGeneratedJob ? (
+              <div className="rounded-2xl border border-slate-200/70 bg-slate-50/70 p-4 dark:border-white/10 dark:bg-slate-900/40">
+                <p className="text-sm font-medium">
+                  Keep this character and generate new scenes
+                </p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  We&apos;ll open Consistent Characters with this result already
+                  added as the reference image.
+                </p>
+                <Link href={consistentGeneratorHref}>
+                  <Button className="mt-3 gap-2">
+                    <Icons.arrowRight className="h-4 w-4" />
+                    Continue with this character
+                  </Button>
+                </Link>
+              </div>
+            ) : null}
           </CardContent>
         </Card>
 
@@ -360,7 +385,8 @@ export default function ResultsPage({ params }: ResultsPageProps) {
               <ul className="space-y-2">
                 <li className="flex items-start gap-2">
                   <span className="text-amber-500 dark:text-amber-300">✨</span>
-                  Don't worry about staying in the lines - creativity is key!
+                  Don&apos;t worry about staying in the lines - creativity is
+                  key!
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-amber-500 dark:text-amber-300">👨‍👩‍👧‍👦</span>

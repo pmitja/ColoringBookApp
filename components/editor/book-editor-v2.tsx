@@ -902,11 +902,6 @@ export default function BookEditorV2({
     [book, selectedPage, setBook, selectedElementId, pushHistory],
   );
 
-  // Auto-open properties when an element is selected
-  useEffect(() => {
-    setPropertiesOpen(!!selectedElementId);
-  }, [selectedElementId]);
-
   const duplicateSelected = useCallback(() => {
     if (!selectedPage || !selectedElement) return;
     pushHistory();

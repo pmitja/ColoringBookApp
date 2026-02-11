@@ -49,7 +49,6 @@ import {
 } from "@/components/ui/sheet";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Tooltip,
   TooltipContent,
@@ -1360,23 +1359,10 @@ export default function BookEditorV2({
     </div>
   );
 
-  const inspectorTabs = (
-    <Tabs defaultValue="element" className="w-full">
-      <TabsList className="grid w-full grid-cols-2">
-        <TabsTrigger value="element">Inspector</TabsTrigger>
-        <TabsTrigger value="document">Document</TabsTrigger>
-      </TabsList>
-      <TabsContent value="element" className="mt-4">
-        <ScrollArea className="h-[50vh] pr-3 sm:h-[420px] xl:h-[calc(100vh-420px)]">
-          {elementInspectorContent}
-        </ScrollArea>
-      </TabsContent>
-      <TabsContent value="document" className="mt-4">
-        <ScrollArea className="h-[50vh] pr-3 sm:h-[420px] xl:h-[calc(100vh-420px)]">
-          {documentInspectorContent}
-        </ScrollArea>
-      </TabsContent>
-    </Tabs>
+  const renderInspectorContent = (scrollAreaClassName: string) => (
+    <ScrollArea className={`pr-3 ${scrollAreaClassName}`.trim()}>
+      {elementInspectorContent}
+    </ScrollArea>
   );
 
   return (
@@ -1661,56 +1647,6 @@ export default function BookEditorV2({
               </ScrollArea>
               <div className="rounded-2xl border border-dashed bg-white/50 p-3 text-xs text-muted-foreground dark:bg-slate-900/60">
                 Tip: Double-click text to edit. Drag corners to resize.
-              </div>
-
-              <div className="border-t pt-4">
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium">Pages</Label>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={addPage}
-                      className="h-8 px-2 text-xs"
-                    >
-                      <Icons.add className="mr-1 h-3 w-3" />
-                      Add
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={removePage}
-                      className="h-8 px-2 text-xs"
-                    >
-                      <Icons.trash className="mr-1 h-3 w-3" />
-                      Remove
-                    </Button>
-                  </div>
-                </div>
-                <div className="mt-3 space-y-1">
-                  {book.pages.map((p, idx) => (
-                    <button
-                      key={p.id}
-                      type="button"
-                      onClick={() => {
-                        setSelectedPageId(p.id);
-                        flipToIndex(idx);
-                      }}
-                      className={`flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm transition ${
-                        p.id === selectedPageId
-                          ? "bg-muted text-foreground shadow-sm"
-                          : "text-muted-foreground hover:bg-muted/50"
-                      }`}
-                    >
-                      <span>Page {idx + 1}</span>
-                      {p.id === selectedPageId ? (
-                        <span className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
-                          Active
-                        </span>
-                      ) : null}
-                    </button>
-                  ))}
-                </div>
               </div>
             </CardContent>
           </Card>
@@ -2105,6 +2041,10 @@ export default function BookEditorV2({
                   </button>
                 ))}
               </div>
+              <div className="mt-4 border-t pt-4">
+                <Label className="text-sm font-medium">Document settings</Label>
+                <div className="mt-3">{documentInspectorContent}</div>
+              </div>
             </div>
           </div>
 
@@ -2126,7 +2066,7 @@ export default function BookEditorV2({
                   {selectedElement ? "Selected" : "No selection"}
                 </Badge>
               </div>
-              {inspectorTabs}
+              {renderInspectorContent("h-[50vh] sm:h-[420px] xl:h-[calc(100vh-420px)]")}
             </CardContent>
           </Card>
         </div>
@@ -2134,13 +2074,15 @@ export default function BookEditorV2({
 
       <Sheet open={propertiesOpen} onOpenChange={setPropertiesOpen}>
         <SheetContent
-          side="bottom"
-          className="max-h-[80vh] w-full overflow-y-auto 2xl:hidden"
+          side="left"
+          className="flex h-full w-[92vw] max-w-[460px] flex-col overflow-hidden sm:max-w-[520px] 2xl:hidden"
         >
           <SheetHeader>
             <SheetTitle>Inspector</SheetTitle>
           </SheetHeader>
-          <div className="mt-4">{inspectorTabs}</div>
+          <div className="mt-4 min-h-0 flex-1">
+            {renderInspectorContent("h-full")}
+          </div>
         </SheetContent>
       </Sheet>
     </div>

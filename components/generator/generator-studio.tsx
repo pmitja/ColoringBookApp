@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
+import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { DashboardHeader } from "@/components/dashboard/header";
@@ -25,6 +26,9 @@ import { Icons } from "@/components/shared/icons";
 
 type UploadMode = "photo" | "ai" | "consistent";
 type AspectRatio = "auto";
+const BATCH_MIN = 1;
+const BATCH_MAX = 5;
+
 type JobReferenceResponse = {
   id: string;
   status: "QUEUED" | "PROCESSING" | "DONE" | "FAILED";
@@ -37,6 +41,7 @@ export interface GeneratorStudioProps {
   text: string;
   enabledModes: UploadMode[];
   defaultMode?: UploadMode;
+  isPaidUser?: boolean;
 }
 
 function getStyleKeys(): StyleId[] {
@@ -48,6 +53,7 @@ export default function GeneratorStudio({
   text,
   enabledModes,
   defaultMode,
+  isPaidUser = false,
 }: GeneratorStudioProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -66,6 +72,9 @@ export default function GeneratorStudio({
   const [uploadProgress, setUploadProgress] = useState(0);
   const [selectedStyle, setSelectedStyle] = useState<StyleId>("FAST");
   const [aspectRatio] = useState<AspectRatio>("auto");
+  const [batchCount, setBatchCount] = useState(BATCH_MIN);
+  const [isPrivateMode, setIsPrivateMode] = useState(isPaidUser);
+  const [isUpscaleEnabled, setIsUpscaleEnabled] = useState(false);
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -93,6 +102,16 @@ export default function GeneratorStudio({
       setMode(resolvedDefaultMode);
     }
   }, [availableModes, mode, resolvedDefaultMode]);
+
+  useEffect(() => {
+    if (!isPaidUser) {
+      setIsPrivateMode(false);
+      setIsUpscaleEnabled(false);
+      return;
+    }
+
+    setIsPrivateMode(true);
+  }, [isPaidUser]);
 
   useEffect(() => {
     const requestedMode = searchParams.get("mode");
@@ -281,11 +300,19 @@ export default function GeneratorStudio({
           throw new Error(payload?.error || "Request failed");
         }
 
-        const { jobId } = await response.json();
+        const payload = (await response.json()) as {
+          jobId: string;
+          jobIds?: string[];
+          batchCount?: number;
+        };
         setUploadProgress(100);
 
         setTimeout(() => {
-          router.push(`/processing/${jobId}`);
+          if ((payload.batchCount ?? payload.jobIds?.length ?? 1) > 1) {
+            router.push("/creations");
+            return;
+          }
+          router.push(`/processing/${payload.jobId}`);
         }, 450);
       } catch (err) {
         console.error("Generation error:", err);
@@ -312,9 +339,20 @@ export default function GeneratorStudio({
     const formData = new FormData();
     formData.append("image", selectedFile);
     formData.append("style", selectedStyle);
+    formData.append("batchCount", String(batchCount));
+    formData.append("private", String(isPaidUser ? isPrivateMode : false));
+    formData.append("upscale", String(isPaidUser ? isUpscaleEnabled : false));
 
     await submitJob("/api/upload", formData);
-  }, [selectedFile, selectedStyle, submitJob]);
+  }, [
+    batchCount,
+    isPaidUser,
+    isPrivateMode,
+    isUpscaleEnabled,
+    selectedFile,
+    selectedStyle,
+    submitJob,
+  ]);
 
   const handleAIGenerator = useCallback(async () => {
     if (generatorPrompt.trim().length < 12) {
@@ -327,9 +365,19 @@ export default function GeneratorStudio({
     formData.append("prompt", generatorPrompt.trim());
     formData.append("style", selectedStyle);
     formData.append("aspectRatio", aspectRatio);
+    formData.append("private", String(isPaidUser ? isPrivateMode : false));
+    formData.append("upscale", String(isPaidUser ? isUpscaleEnabled : false));
 
     await submitJob("/api/generate", formData);
-  }, [aspectRatio, generatorPrompt, selectedStyle, submitJob]);
+  }, [
+    aspectRatio,
+    generatorPrompt,
+    isPaidUser,
+    isPrivateMode,
+    isUpscaleEnabled,
+    selectedStyle,
+    submitJob,
+  ]);
 
   const handleConsistentCharacters = useCallback(async () => {
     if (!referenceFile && !referenceJobId) {
@@ -354,11 +402,16 @@ export default function GeneratorStudio({
     formData.append("prompt", consistentPrompt.trim());
     formData.append("style", selectedStyle);
     formData.append("aspectRatio", aspectRatio);
+    formData.append("private", String(isPaidUser ? isPrivateMode : false));
+    formData.append("upscale", String(isPaidUser ? isUpscaleEnabled : false));
 
     await submitJob("/api/generate", formData);
   }, [
     aspectRatio,
     consistentPrompt,
+    isPaidUser,
+    isPrivateMode,
+    isUpscaleEnabled,
     referenceFile,
     referenceJobId,
     selectedStyle,
@@ -408,7 +461,7 @@ export default function GeneratorStudio({
   const renderAspectPicker = () => (
     <div className="space-y-3 rounded-2xl border border-slate-200/70 bg-white/80 p-4 dark:border-white/10 dark:bg-white/5">
       <Label className="text-base font-medium">Aspect ratio</Label>
-      <div className="rounded-xl border border-primary/30 bg-primary/5 px-3 py-2">
+      <div className="border-primary/30 bg-primary/5 rounded-xl border px-3 py-2">
         <p className="text-sm font-semibold">Auto</p>
         <p className="text-xs text-muted-foreground">
           The model picks the best framing automatically.
@@ -433,7 +486,7 @@ export default function GeneratorStudio({
                 </CardDescription>
               </div>
               <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700 dark:text-emerald-100">
-                Privacy Promise
+                Original Upload Not Saved
               </div>
             </div>
           </CardHeader>
@@ -550,7 +603,9 @@ export default function GeneratorStudio({
                           ) : (
                             <>
                               <Icons.package className="h-4 w-4" />
-                              Process Photo
+                              {batchCount > 1
+                                ? `Process ${batchCount} Photos`
+                                : "Process Photo"}
                             </>
                           )}
                         </Button>
@@ -748,6 +803,86 @@ export default function GeneratorStudio({
                     </TabsContent>
                   ) : null}
                 </Tabs>
+
+                <div className="space-y-4 rounded-2xl border border-slate-200/70 bg-white/80 p-4 dark:border-white/10 dark:bg-white/5">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <p className="text-sm font-semibold">Output Settings</p>
+                      <p className="text-xs text-muted-foreground">
+                        Private mode and upscale are paid-only features.
+                      </p>
+                    </div>
+                    <span
+                      className={cn(
+                        "rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.2em]",
+                        isPaidUser
+                          ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-200"
+                          : "bg-amber-500/15 text-amber-700 dark:text-amber-100",
+                      )}
+                    >
+                      {isPaidUser ? "Paid Active" : "Upgrade Required"}
+                    </span>
+                  </div>
+
+                  {mode === "photo" ? (
+                    <div className="space-y-2 rounded-xl border border-slate-200/70 bg-slate-50/70 p-3 dark:border-white/10 dark:bg-slate-900/40">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-sm font-medium">
+                          Batch Generation ({batchCount})
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Generate multiple variations in one run
+                        </p>
+                      </div>
+                      <input
+                        type="range"
+                        min={BATCH_MIN}
+                        max={BATCH_MAX}
+                        step={1}
+                        value={batchCount}
+                        disabled={isUploading}
+                        onChange={(event) =>
+                          setBatchCount(
+                            Number.parseInt(event.target.value, 10) ||
+                              BATCH_MIN,
+                          )
+                        }
+                        className="h-2 w-full cursor-pointer accent-primary disabled:cursor-not-allowed"
+                      />
+                    </div>
+                  ) : null}
+
+                  <div className="flex items-start justify-between gap-3 rounded-xl border border-slate-200/70 bg-slate-50/70 p-3 dark:border-white/10 dark:bg-slate-900/40">
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium">Private</p>
+                      <p className="text-xs text-muted-foreground">
+                        Paid users default to private mode. Private jobs are
+                        hidden from public listings.
+                      </p>
+                    </div>
+                    <Switch
+                      checked={isPrivateMode}
+                      onCheckedChange={setIsPrivateMode}
+                      disabled={!isPaidUser || isUploading}
+                      aria-label="Toggle private mode"
+                    />
+                  </div>
+
+                  <div className="flex items-start justify-between gap-3 rounded-xl border border-slate-200/70 bg-slate-50/70 p-3 dark:border-white/10 dark:bg-slate-900/40">
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium">Upscale</p>
+                      <p className="text-xs text-muted-foreground">
+                        Increase export resolution for cleaner print quality.
+                      </p>
+                    </div>
+                    <Switch
+                      checked={isUpscaleEnabled}
+                      onCheckedChange={setIsUpscaleEnabled}
+                      disabled={!isPaidUser || isUploading}
+                      aria-label="Toggle upscale"
+                    />
+                  </div>
+                </div>
 
                 {isUploading ? (
                   <div className="space-y-2">

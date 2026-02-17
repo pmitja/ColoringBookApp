@@ -8,8 +8,9 @@ export const infos: InfoLdg[] = [
     image: "/illustrations/landing-story.svg",
     list: [
       {
-        title: "Private by default",
-        description: "Your images are processed instantly and never stored.",
+        title: "Original upload not saved",
+        description:
+          "We process your photo to create line art, but we do not save the original uploaded image.",
         icon: "settings",
       },
       {
@@ -51,9 +52,9 @@ export const infos: InfoLdg[] = [
 
 export const features: FeatureLdg[] = [
   {
-    title: "Privacy-first processing",
+    title: "Original upload not saved",
     description:
-      "Photos are processed instantly and never stored, so family moments stay yours.",
+      "We process your photo to create line art, but we do not save the original uploaded image.",
     link: "/",
     icon: "settings",
   },

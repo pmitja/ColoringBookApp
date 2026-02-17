@@ -5,18 +5,18 @@ import { HeaderSection } from "@/components/shared/header-section";
 
 export default function Testimonials() {
   return (
-    <section>
-      <div className="container flex max-w-6xl flex-col gap-10 py-32 sm:gap-y-16">
+    <section className="pb-20 pt-16 sm:pt-24">
+      <div className="container flex max-w-6xl flex-col gap-10 sm:gap-y-14">
         <HeaderSection
-          label="Testimonials"
-          title="Parents love the results"
-          subtitle="Kids get pages they can color easily, and grownups get clean, print-ready files."
+          label="Happy Families"
+          title="Parents and teachers keep coming back"
+          subtitle="The pages are easy to color, quick to print, and fun for all ages."
         />
 
         <div className="column-1 gap-5 space-y-5 md:columns-2 lg:columns-3">
           {testimonials.map((item) => (
             <div className="break-inside-avoid" key={item.name}>
-              <div className="relative rounded-2xl border border-slate-200/70 bg-white/80 shadow-sm dark:border-white/10 dark:bg-white/5">
+              <div className="border-border/80 bg-card/95 relative rounded-3xl border shadow-sm">
                 <div className="flex flex-col px-4 py-5 sm:p-6">
                   <div>
                     <div className="relative mb-4 flex items-center gap-3">
@@ -24,7 +24,7 @@ export default function Testimonials() {
                         <Image
                           width={100}
                           height={100}
-                          className="size-full rounded-full border border-slate-200/70 dark:border-white/10"
+                          className="border-border/70 size-full rounded-full border"
                           src={item.image}
                           alt={item.name}
                         />

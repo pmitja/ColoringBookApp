@@ -8,7 +8,7 @@ const BookEditor = dynamic(() => import("@/components/editor/book-editor-v2"), {
 });
 
 export const metadata = constructMetadata({
-  title: "New Book – Coloring Book Creator",
+  title: "New Book – Colorline AI",
   description: "Create a new coloring book.",
 });
 

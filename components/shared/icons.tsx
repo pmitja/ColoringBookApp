@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 import {
   AlertTriangle,
   ArrowRight,
@@ -13,7 +15,7 @@ import {
   FileText,
   HelpCircle,
   Home,
-  Image,
+  Image as ImageIcon,
   Laptop,
   LayoutPanelLeft,
   LineChart,
@@ -23,9 +25,9 @@ import {
   MessagesSquare,
   Moon,
   MoreVertical,
+  Palette,
   Package,
   Plus,
-  Puzzle,
   Redo2,
   Search,
   Settings,
@@ -35,8 +37,28 @@ import {
   User,
   X,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export type Icon = LucideIcon;
+
+const BrandLogo = ({ className }: LucideProps) => (
+  <>
+    <Image
+      src="/_static/colorlineai-logo-trim.webp"
+      alt="Colorline AI"
+      width={900}
+      height={199}
+      className={cn(className, "w-auto dark:hidden")}
+    />
+    <Image
+      src="/_static/colorlineai-dark-logo-trim.webp"
+      alt="Colorline AI"
+      width={887}
+      height={199}
+      className={cn(className, "hidden w-auto dark:block")}
+    />
+  </>
+);
 
 export const Icons = {
   add: Plus,
@@ -106,10 +128,11 @@ export const Icons = {
   home: Home,
   laptop: Laptop,
   lineChart: LineChart,
-  logo: Puzzle,
-  media: Image,
+  logo: BrandLogo,
+  media: ImageIcon,
   messages: MessagesSquare,
   moon: Moon,
+  palette: Palette,
   package: Package,
   page: File,
   download: Download,

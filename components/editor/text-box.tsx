@@ -2,6 +2,7 @@
 
 import Draggable from "react-draggable";
 
+import { resolveTextHolderBorderRadius } from "./text-holder-shapes";
 import type { EditorTextBox } from "./types";
 
 const resolveFontFamily = (value?: string) => {
@@ -15,6 +16,18 @@ const resolveFontFamily = (value?: string) => {
   }
   if (raw.includes("var(--font-heading)") || raw.includes("cal")) {
     return "var(--font-heading)";
+  }
+  if (
+    raw.includes("var(--font-playful-heading)") ||
+    raw.includes("baloo")
+  ) {
+    return "var(--font-playful-heading)";
+  }
+  if (
+    raw.includes("var(--font-playful-body)") ||
+    raw.includes("nunito")
+  ) {
+    return "var(--font-playful-body)";
   }
   if (raw.includes("var(--font-sans)") || raw.includes("inter")) {
     return "var(--font-sans)";
@@ -93,6 +106,11 @@ export default function TextBox(props: TextBoxProps) {
   const borderColor = element.borderColor || "transparent";
   const borderWidth = element.borderWidth || 0;
   const borderRadius = element.borderRadius || 8;
+  const holderShape = element.holderShape || "none";
+  const holderBorderRadius = resolveTextHolderBorderRadius(
+    holderShape,
+    borderRadius,
+  );
   const boxShadow = element.boxShadow || "none";
   const padding = element.padding || 8;
 
@@ -126,7 +144,7 @@ export default function TextBox(props: TextBoxProps) {
           backgroundColor,
           border:
             borderWidth > 0 ? `${borderWidth}px solid ${borderColor}` : "none",
-          borderRadius: `${borderRadius}px`,
+          borderRadius: holderBorderRadius,
           boxShadow: isSelected
             ? `${boxShadow === "none" ? "" : boxShadow + ", "}0 0 0 2px var(--primary)`
             : boxShadow,
@@ -233,7 +251,7 @@ export default function TextBox(props: TextBoxProps) {
             position: "relative",
             zIndex: 1,
             backgroundColor,
-            borderRadius: `${borderRadius}px`,
+            borderRadius: holderBorderRadius,
             overflow: "hidden",
           }}
         >

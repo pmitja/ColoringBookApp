@@ -19,13 +19,16 @@ export function BillingFormButton({
   subscriptionPlan,
 }: BillingFormButtonProps) {
   let [isPending, startTransition] = useTransition();
-  const generateUserStripeSession = generateUserStripe.bind(
-    null,
-    offer.stripeIds[year ? "yearly" : "monthly"],
-  );
+  const priceId = offer.stripeIds[year ? "yearly" : "monthly"];
+  const generateUserStripeSession = priceId
+    ? generateUserStripe.bind(null, priceId)
+    : null;
 
   const stripeSessionAction = () =>
-    startTransition(async () => await generateUserStripeSession());
+    startTransition(async () => {
+      if (!generateUserStripeSession) return;
+      await generateUserStripeSession();
+    });
 
   const userOffer =
     subscriptionPlan.stripePriceId ===
@@ -36,7 +39,7 @@ export function BillingFormButton({
       variant={userOffer ? "default" : "outline"}
       rounded="full"
       className="w-full"
-      disabled={isPending}
+      disabled={isPending || (!userOffer && !priceId)}
       onClick={stripeSessionAction}
     >
       {isPending ? (
@@ -44,7 +47,7 @@ export function BillingFormButton({
           <Icons.spinner className="mr-2 size-4 animate-spin" /> Loading...
         </>
       ) : (
-        <>{userOffer ? "Manage Subscription" : "Upgrade"}</>
+        <>{userOffer ? "Manage Subscription" : priceId ? "Upgrade" : "Unavailable"}</>
       )}
     </Button>
   );

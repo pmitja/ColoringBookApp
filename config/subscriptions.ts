@@ -1,20 +1,40 @@
 import { PlansRow, SubscriptionPlan } from "types";
+
 import { env } from "@/env.mjs";
+
+const starterMonthlyStripeId =
+  env.NEXT_PUBLIC_STRIPE_STARTER_MONTHLY_PLAN_ID ??
+  env.NEXT_PUBLIC_STRIPE_PRO_MONTHLY_PLAN_ID;
+const starterYearlyStripeId =
+  env.NEXT_PUBLIC_STRIPE_STARTER_YEARLY_PLAN_ID ??
+  env.NEXT_PUBLIC_STRIPE_PRO_YEARLY_PLAN_ID;
+
+const hobbyMonthlyStripeId =
+  env.NEXT_PUBLIC_STRIPE_HOBBY_MONTHLY_PLAN_ID ??
+  env.NEXT_PUBLIC_STRIPE_BUSINESS_MONTHLY_PLAN_ID;
+const hobbyYearlyStripeId =
+  env.NEXT_PUBLIC_STRIPE_HOBBY_YEARLY_PLAN_ID ??
+  env.NEXT_PUBLIC_STRIPE_BUSINESS_YEARLY_PLAN_ID;
+
+const proMonthlyStripeId =
+  env.NEXT_PUBLIC_STRIPE_SCALE_PRO_MONTHLY_PLAN_ID ?? null;
+const proYearlyStripeId =
+  env.NEXT_PUBLIC_STRIPE_SCALE_PRO_YEARLY_PLAN_ID ?? null;
 
 export const pricingData: SubscriptionPlan[] = [
   {
-    title: "Starter",
-    description: "For Beginners",
+    title: "Free",
+    description: "For families and testers",
+    monthlyGenerationLimit: 10,
     benefits: [
-      "Up to 100 monthly posts",
-      "Basic analytics and reporting",
-      "Access to standard templates",
+      "5-10 generations per month from a shared pool",
+      "Basic styles and standard processing",
+      "Printable 1-5 page PDF exports",
     ],
     limitations: [
-      "No priority access to new features.",
-      "Limited customer support",
-      "No custom branding",
-      "Limited access to business resources.",
+      "No private mode",
+      "No upscale exports",
+      "No priority queue",
     ],
     prices: {
       monthly: 0,
@@ -26,138 +46,129 @@ export const pricingData: SubscriptionPlan[] = [
     },
   },
   {
-    title: "Pro",
-    description: "Unlock Advanced Features",
+    title: "Starter",
+    description: "For casual parents",
+    monthlyGenerationLimit: 80,
     benefits: [
-      "Up to 500 monthly posts",
-      "Advanced analytics and reporting",
-      "Access to business templates",
-      "Priority customer support",
-      "Exclusive webinars and training.",
+      "80 coloring pages per month",
+      "HD exports",
+      "Basic editor",
+      "Personal-use license",
+      "Private mode and upscale access",
     ],
-    limitations: [
-      "No custom branding",
-      "Limited access to business resources.",
-    ],
+    limitations: ["No priority queue", "No commercial license"],
     prices: {
-      monthly: 15,
-      yearly: 144,
+      monthly: 9.99,
+      yearly: 79,
     },
     stripeIds: {
-      monthly: env.NEXT_PUBLIC_STRIPE_PRO_MONTHLY_PLAN_ID,
-      yearly: env.NEXT_PUBLIC_STRIPE_PRO_YEARLY_PLAN_ID,
+      monthly: starterMonthlyStripeId,
+      yearly: starterYearlyStripeId,
     },
   },
   {
-    title: "Business",
-    description: "For Power Users",
+    title: "Hobby",
+    description: "For frequent home use",
+    monthlyGenerationLimit: 250,
     benefits: [
-      "Unlimited posts",
-      "Real-time analytics and reporting",
-      "Access to all templates, including custom branding",
-      "24/7 business customer support",
-      "Personalized onboarding and account management.",
+      "250 coloring pages per month",
+      "Priority queue",
+      "Up to 10-page generator",
+      "Text overlays",
+      "Private mode and upscale access",
+    ],
+    limitations: ["No commercial license", "No consistency regen"],
+    prices: {
+      monthly: 19.99,
+      yearly: 179,
+    },
+    stripeIds: {
+      monthly: hobbyMonthlyStripeId,
+      yearly: hobbyYearlyStripeId,
+    },
+  },
+  {
+    title: "Pro",
+    description: "For creators and sellers",
+    monthlyGenerationLimit: 800,
+    benefits: [
+      "800 coloring pages per month",
+      "High print quality exports",
+      "20+ page books",
+      "Consistency regeneration",
+      "Commercial license",
     ],
     limitations: [],
     prices: {
-      monthly: 30,
-      yearly: 300,
+      monthly: 39.99,
+      yearly: 349,
     },
     stripeIds: {
-      monthly: env.NEXT_PUBLIC_STRIPE_BUSINESS_MONTHLY_PLAN_ID,
-      yearly: env.NEXT_PUBLIC_STRIPE_BUSINESS_YEARLY_PLAN_ID,
+      monthly: proMonthlyStripeId,
+      yearly: proYearlyStripeId,
     },
   },
 ];
 
-export const plansColumns = [
-  "starter",
-  "pro",
-  "business",
-  "enterprise",
-] as const;
+export const plansColumns = ["free", "starter", "hobby", "pro"] as const;
 
 export const comparePlans: PlansRow[] = [
   {
-    feature: "Access to Analytics",
+    feature: "Monthly generations",
+    free: "5-10",
+    starter: "80",
+    hobby: "250",
+    pro: "800",
+  },
+  {
+    feature: "Private mode",
+    free: false,
     starter: true,
+    hobby: true,
     pro: true,
-    business: true,
-    enterprise: "Custom",
-    tooltip: "All plans include basic analytics for tracking performance.",
+    tooltip: "Paid plans can keep generated images private by default.",
   },
   {
-    feature: "Custom Branding",
-    starter: null,
-    pro: "500/mo",
-    business: "1,500/mo",
-    enterprise: "Unlimited",
-    tooltip: "Custom branding is available from the Pro plan onwards.",
-  },
-  {
-    feature: "Priority Support",
-    starter: null,
-    pro: "Email",
-    business: "Email & Chat",
-    enterprise: "24/7 Support",
-  },
-  {
-    feature: "Advanced Reporting",
-    starter: null,
-    pro: null,
-    business: true,
-    enterprise: "Custom",
-    tooltip:
-      "Advanced reporting is available in Business and Enterprise plans.",
-  },
-  {
-    feature: "Dedicated Manager",
-    starter: null,
-    pro: null,
-    business: null,
-    enterprise: true,
-    tooltip: "Enterprise plan includes a dedicated account manager.",
-  },
-  {
-    feature: "API Access",
-    starter: "Limited",
-    pro: "Standard",
-    business: "Enhanced",
-    enterprise: "Full",
-  },
-  {
-    feature: "Monthly Webinars",
-    starter: false,
+    feature: "Upscale exports",
+    free: false,
+    starter: true,
+    hobby: true,
     pro: true,
-    business: true,
-    enterprise: "Custom",
-    tooltip: "Pro and higher plans include access to monthly webinars.",
+    tooltip: "Upscale increases output resolution for cleaner prints.",
   },
   {
-    feature: "Custom Integrations",
+    feature: "Max pages per PDF/book",
+    free: "1-5",
+    starter: "1-10",
+    hobby: "10",
+    pro: "20+",
+  },
+  {
+    feature: "Priority queue",
+    free: false,
     starter: false,
-    pro: false,
-    business: "Available",
-    enterprise: "Available",
-    tooltip:
-      "Custom integrations are available in Business and Enterprise plans.",
+    hobby: true,
+    pro: true,
   },
   {
-    feature: "Roles and Permissions",
-    starter: null,
-    pro: "Basic",
-    business: "Advanced",
-    enterprise: "Advanced",
-    tooltip:
-      "User roles and permissions management improves with higher plans.",
-  },
-  {
-    feature: "Onboarding Assistance",
+    feature: "Text overlays",
+    free: false,
     starter: false,
-    pro: "Self-service",
-    business: "Assisted",
-    enterprise: "Full Service",
-    tooltip: "Higher plans include more comprehensive onboarding assistance.",
+    hobby: true,
+    pro: true,
   },
-  // Add more rows as needed
+  {
+    feature: "Consistency regeneration",
+    free: false,
+    starter: false,
+    hobby: false,
+    pro: true,
+  },
+  {
+    feature: "Commercial license",
+    free: false,
+    starter: false,
+    hobby: false,
+    pro: true,
+  },
 ];

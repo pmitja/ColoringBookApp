@@ -91,12 +91,15 @@ model ImageJob {
   inputUrl      String? // URL to the uploaded input image
   cartoonUrl    String? // URL to cartoon version
   lineartUrl    String? // URL to line art version
+  isPublic      Boolean   @default(true)
+  isUpscaled    Boolean   @default(false)
   status        JobStatus @default(QUEUED)
   errorMessage  String? // Store error details if failed
   createdAt     DateTime  @default(now()) @map(name: "created_at")
   updatedAt     DateTime  @updatedAt @map(name: "updated_at")
 
   @@index([userId])
+  @@index([userId, isPublic])
   @@index([status])
   @@map(name: "image_jobs")
 }

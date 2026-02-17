@@ -6,12 +6,13 @@ import { getCurrentUser } from "@/lib/session";
 import { cn, constructMetadata } from "@/lib/utils";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { DeleteBookButton } from "@/components/dashboard/delete-book-button";
 import { DashboardHeader } from "@/components/dashboard/header";
 import { EmptyPlaceholder } from "@/components/shared/empty-placeholder";
 import { Icons } from "@/components/shared/icons";
 
 export const metadata = constructMetadata({
-  title: "My Books – Coloring Book Creator",
+  title: "My Books – Colorline AI",
   description: "Make a book, then download and print the PDF.",
 });
 
@@ -120,7 +121,7 @@ const startSteps = [
     detail: "Tap Make New Book.",
     icon: Icons.add,
     iconTone:
-      "bg-sky-100 text-sky-700 dark:bg-sky-500/20 dark:text-sky-200",
+      "bg-[rgba(199,219,235,0.72)] text-[#365066] dark:bg-[rgba(163,189,212,0.3)] dark:text-[#dce9f6]",
   },
   {
     id: "2",
@@ -128,7 +129,7 @@ const startSteps = [
     detail: "Choose the book you want.",
     icon: Icons.bookOpen,
     iconTone:
-      "bg-teal-100 text-teal-700 dark:bg-teal-500/20 dark:text-teal-200",
+      "bg-[rgba(194,221,206,0.72)] text-[#3e5f50] dark:bg-[rgba(153,198,176,0.3)] dark:text-[#dcf0e6]",
   },
   {
     id: "3",
@@ -136,7 +137,7 @@ const startSteps = [
     detail: "Get the PDF and print it.",
     icon: Icons.check,
     iconTone:
-      "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-200",
+      "bg-[rgba(236,220,194,0.75)] text-[#6a5541] dark:bg-[rgba(231,200,146,0.3)] dark:text-[#f2e3c5]",
   },
 ] as const;
 
@@ -154,7 +155,9 @@ export default async function BookChooserPage() {
         <div className="mx-auto max-w-2xl">
           <EmptyPlaceholder>
             <EmptyPlaceholder.Icon name="warning" />
-            <EmptyPlaceholder.Title>Authentication Required</EmptyPlaceholder.Title>
+            <EmptyPlaceholder.Title>
+              Authentication Required
+            </EmptyPlaceholder.Title>
             <EmptyPlaceholder.Description>
               Please sign in to view your books.
             </EmptyPlaceholder.Description>
@@ -195,16 +198,16 @@ export default async function BookChooserPage() {
         </Link>
       </div>
 
-      <section className="relative overflow-hidden rounded-3xl border border-sky-200/70 bg-gradient-to-br from-sky-50 via-cyan-50 to-amber-50 p-4 dark:border-sky-400/20 dark:from-sky-500/10 dark:via-cyan-500/10 dark:to-amber-500/10 sm:p-5">
-        <div className="pointer-events-none absolute inset-y-0 right-0 w-44 bg-gradient-to-l from-white/30 to-transparent dark:from-white/5" />
+      <section className="border-border/80 dark:border-border/70 relative overflow-hidden rounded-3xl border bg-[linear-gradient(135deg,rgba(242,213,187,0.34)_0%,rgba(187,213,233,0.32)_50%,rgba(232,203,215,0.34)_100%)] p-4 dark:bg-[linear-gradient(135deg,rgba(214,181,166,0.2)_0%,rgba(163,189,212,0.16)_50%,rgba(205,176,190,0.2)_100%)] sm:p-5">
+        <div className="from-background/45 dark:from-background/10 pointer-events-none absolute inset-y-0 right-0 w-44 bg-gradient-to-l to-transparent" />
         <div className="relative">
-          <div className="inline-flex items-center rounded-full border border-sky-300/60 bg-white/70 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-sky-700 dark:border-sky-300/30 dark:bg-slate-900/30 dark:text-sky-200">
+          <div className="border-border/80 bg-background/70 inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
             Easy steps
           </div>
-          <h2 className="mt-2 text-lg font-semibold text-slate-900 dark:text-slate-100">
+          <h2 className="mt-2 text-lg font-semibold text-foreground">
             What can I do here?
           </h2>
-          <p className="mt-1 text-sm text-slate-700 dark:text-slate-300">
+          <p className="mt-1 text-sm text-muted-foreground">
             Follow these three steps.
           </p>
 
@@ -215,10 +218,10 @@ export default async function BookChooserPage() {
               return (
                 <li
                   key={step.id}
-                  className="rounded-2xl border border-slate-200/70 bg-white/85 p-3 dark:border-white/10 dark:bg-slate-900/40"
+                  className="border-border/70 bg-background/80 rounded-2xl border p-3"
                 >
                   <div className="flex items-center gap-2">
-                    <span className="inline-flex size-6 items-center justify-center rounded-full bg-slate-800 text-xs font-semibold text-white dark:bg-slate-200 dark:text-slate-900">
+                    <span className="inline-flex size-6 items-center justify-center rounded-full bg-foreground text-xs font-semibold text-background">
                       {step.id}
                     </span>
                     <span
@@ -230,10 +233,10 @@ export default async function BookChooserPage() {
                       <StepIcon className="size-4" />
                     </span>
                   </div>
-                  <p className="mt-3 text-sm font-semibold text-slate-900 dark:text-slate-100">
+                  <p className="mt-3 text-sm font-semibold text-foreground">
                     {step.title}
                   </p>
-                  <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">
+                  <p className="mt-1 text-xs text-muted-foreground">
                     {step.detail}
                   </p>
                 </li>
@@ -293,7 +296,8 @@ export default async function BookChooserPage() {
                       {formatLastEdited(book.updatedAt)}
                     </p>
                   </div>
-                  <div className="flex items-center justify-end">
+                  <div className="flex items-center justify-between gap-2">
+                    <DeleteBookButton bookId={book.id} bookTitle={title} />
                     <Link href={`/dashboard/book-editor/${book.id}`}>
                       <Button size="sm" className="gap-2 rounded-xl">
                         Open Book

@@ -1,7 +1,11 @@
 "use client";
 
+import { useEffect, useRef } from "react";
+import { EditorContent, useEditor } from "@tiptap/react";
 import { Rnd } from "react-rnd";
 
+import { resolveTextHolderBorderRadius } from "./text-holder-shapes";
+import { richTextExtensions, resolveRichTextContent } from "./rich-text";
 import type { EditorTextBox } from "./types";
 
 const resolveFontFamily = (value?: string) => {
@@ -15,6 +19,18 @@ const resolveFontFamily = (value?: string) => {
   }
   if (raw.includes("var(--font-heading)") || raw.includes("cal")) {
     return "var(--font-heading)";
+  }
+  if (
+    raw.includes("var(--font-playful-heading)") ||
+    raw.includes("baloo")
+  ) {
+    return "var(--font-playful-heading)";
+  }
+  if (
+    raw.includes("var(--font-playful-body)") ||
+    raw.includes("nunito")
+  ) {
+    return "var(--font-playful-body)";
   }
   if (raw.includes("var(--font-sans)") || raw.includes("inter")) {
     return "var(--font-sans)";
@@ -35,7 +51,7 @@ interface TextBoxRndProps {
   onDragStart: () => void;
   onDragTo: (x: number, y: number) => void;
   onResizeTo: (x: number, y: number, width: number, height: number) => void;
-  onChangeText: (text: string) => void;
+  onChangeText: (text: string, richText?: string) => void;
   onRemove: () => void;
 }
 
@@ -86,8 +102,84 @@ export default function TextBoxRnd(props: TextBoxRndProps) {
   const borderColor = element.borderColor || "transparent";
   const borderWidth = element.borderWidth || 0;
   const borderRadius = element.borderRadius || 8;
+  const holderShape = element.holderShape || "none";
+  const holderBorderRadius = resolveTextHolderBorderRadius(
+    holderShape,
+    borderRadius,
+  );
   const boxShadow = element.boxShadow || "none";
   const padding = element.padding || 8;
+  const richTextContent = resolveRichTextContent(element.text, element.richText);
+  const onChangeTextRef = useRef(onChangeText);
+  const onFocusEditRef = useRef(onFocusEdit);
+  const onBlurEditRef = useRef(onBlurEdit);
+
+  useEffect(() => {
+    onChangeTextRef.current = onChangeText;
+    onFocusEditRef.current = onFocusEdit;
+    onBlurEditRef.current = onBlurEdit;
+  }, [onChangeText, onFocusEdit, onBlurEdit]);
+
+  const editor = useEditor(
+    {
+      extensions: richTextExtensions,
+      content: richTextContent,
+      editable: isEditing,
+      immediatelyRender: false,
+      onFocus: () => {
+        onFocusEditRef.current();
+      },
+      onBlur: () => {
+        onBlurEditRef.current();
+      },
+      onUpdate: ({ editor: nextEditor }) => {
+        onChangeTextRef.current(nextEditor.getText(), nextEditor.getHTML());
+      },
+      editorProps: {
+        handleDOMEvents: {
+          keydown: (_view, event) => {
+            event.stopPropagation();
+            if (event.key === "Escape") {
+              (event.target as HTMLElement | null)?.blur();
+              return true;
+            }
+            return false;
+          },
+          mousedown: (_view, event) => {
+            event.stopPropagation();
+            return false;
+          },
+          touchstart: (_view, event) => {
+            event.stopPropagation();
+            return false;
+          },
+        },
+        attributes: {
+          class:
+            "h-full w-full overflow-auto whitespace-pre-wrap break-words rounded-md focus:outline-none",
+        },
+      },
+    },
+    [element.id],
+  );
+
+  useEffect(() => {
+    if (!editor) return;
+    editor.setEditable(isEditing);
+  }, [editor, isEditing]);
+
+  useEffect(() => {
+    if (!editor || !isEditing) return;
+    editor.commands.focus("end");
+  }, [editor, isEditing]);
+
+  useEffect(() => {
+    if (!editor) return;
+    const current = editor.getHTML();
+    if (current !== richTextContent) {
+      editor.commands.setContent(richTextContent, { emitUpdate: false });
+    }
+  }, [editor, richTextContent]);
 
   return (
     <Rnd
@@ -131,7 +223,7 @@ export default function TextBoxRnd(props: TextBoxRndProps) {
           backgroundColor,
           border:
             borderWidth > 0 ? `${borderWidth}px solid ${borderColor}` : "none",
-          borderRadius: `${borderRadius}px`,
+          borderRadius: holderBorderRadius,
           boxShadow: isSelected
             ? `${boxShadow === "none" ? "" : boxShadow + ", "}0 0 0 2px var(--primary)`
             : boxShadow,
@@ -234,26 +326,12 @@ export default function TextBoxRnd(props: TextBoxRndProps) {
             position: "relative",
             zIndex: 1,
             backgroundColor,
-            borderRadius: `${borderRadius}px`,
+            borderRadius: holderBorderRadius,
             overflow: "hidden",
           }}
         >
           {isEditing ? (
-            <textarea
-              id={`text-${element.id}`}
-              value={element.text}
-              onChange={(e) => onChangeText(e.target.value)}
-              onMouseDown={(e) => e.stopPropagation()}
-              onTouchStart={(e) => e.stopPropagation()}
-              onFocus={onFocusEdit}
-              onBlur={onBlurEdit}
-              onKeyDown={(e) => {
-                e.stopPropagation();
-                if (e.key === "Escape") {
-                  (e.target as HTMLTextAreaElement).blur();
-                }
-              }}
-              autoFocus
+            <div
               style={{
                 fontWeight,
                 fontStyle,
@@ -265,18 +343,15 @@ export default function TextBoxRnd(props: TextBoxRndProps) {
                 color,
                 width: "100%",
                 height: "100%",
-                border: "none",
-                outline: "none",
-                resize: "none",
-                background: "transparent",
-                padding: 0,
-                margin: 0,
                 direction: "ltr",
                 overflow: "auto",
                 wordWrap: "break-word",
                 wordBreak: "break-word",
               }}
-            />
+              className="[&_h1]:m-0 [&_h2]:m-0 [&_h3]:m-0 [&_ol]:m-0 [&_ol]:pl-5 [&_p]:m-0 [&_ul]:m-0 [&_ul]:pl-5"
+            >
+              <EditorContent editor={editor} />
+            </div>
           ) : (
             <div
               style={{
@@ -298,8 +373,9 @@ export default function TextBoxRnd(props: TextBoxRndProps) {
                 alignItems,
                 justifyContent,
               }}
+              className="[&_h1]:m-0 [&_h2]:m-0 [&_h3]:m-0 [&_ol]:m-0 [&_ol]:pl-5 [&_p]:m-0 [&_ul]:m-0 [&_ul]:pl-5"
+              dangerouslySetInnerHTML={{ __html: richTextContent }}
             >
-              {element.text}
             </div>
           )}
         </div>

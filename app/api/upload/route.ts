@@ -4,9 +4,15 @@ import { fal } from "@fal-ai/client";
 import { BASE_STYLES, INTO_LINEART, type StyleId } from "@/config/prompts";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
+import {
+  getCurrentMonthStartUtc,
+  getUserMonthlyGenerationUsage,
+  resolveGenerationPlanLimit,
+} from "@/lib/subscription";
 
 type UploadVariant = "styled" | "lineart";
 const EDIT_MODEL = "xai/grok-imagine-image/edit";
+const MAX_BATCH_COUNT = 5;
 
 function getFalErrorDetails(error: unknown): string | null {
   const falError = error as any;
@@ -44,6 +50,7 @@ async function processJob(
   originalImageBuffer: Buffer,
   fileType: string,
   style: StyleId,
+  isUpscaled: boolean,
 ) {
   try {
     // Get the job
@@ -127,6 +134,8 @@ async function processJob(
     const styledUrl = await fetchAndUploadToUploadThing(
       styledImageUrl,
       `styled-${jobId}.jpg`,
+      "styled",
+      isUpscaled,
     );
     if (!styledUrl)
       throw new Error("Failed to upload styled image to UploadThing");
@@ -135,6 +144,7 @@ async function processJob(
       lineartImageUrl,
       `lineart-${jobId}.png`,
       "lineart",
+      isUpscaled,
     );
     if (!lineartUrl)
       throw new Error("Failed to upload lineart image to UploadThing");
@@ -147,6 +157,7 @@ async function processJob(
         inputUrl: null, // No original image URL stored
         cartoonUrl: styledUrl,
         lineartUrl: lineartUrl,
+        isUpscaled,
         errorMessage: null,
       },
     });
@@ -177,6 +188,7 @@ async function fetchAndUploadToUploadThing(
   imageUrl: string,
   filename: string,
   variant: UploadVariant = "styled",
+  isUpscaled = false,
 ): Promise<string | null> {
   try {
     // Import UTApi and sharp only when needed
@@ -193,11 +205,17 @@ async function fetchAndUploadToUploadThing(
     const buffer = Buffer.from(arrayBuffer);
 
     // 2. Optimize image for storage and downstream print quality
+    const targetResolution = isUpscaled ? 2200 : 1200;
+
     const processedBuffer =
       variant === "lineart"
         ? await sharp
             .default(buffer)
-            .resize({ width: 1200, height: 1200, fit: "inside" })
+            .resize({
+              width: targetResolution,
+              height: targetResolution,
+              fit: "inside",
+            })
             .flatten({ background: "#ffffff" })
             .grayscale()
             .normalise()
@@ -206,7 +224,11 @@ async function fetchAndUploadToUploadThing(
             .toBuffer()
         : await sharp
             .default(buffer)
-            .resize({ width: 1200, height: 1200, fit: "inside" })
+            .resize({
+              width: targetResolution,
+              height: targetResolution,
+              fit: "inside",
+            })
             .jpeg({ quality: 80, progressive: true })
             .toBuffer();
 
@@ -225,23 +247,51 @@ async function fetchAndUploadToUploadThing(
   }
 }
 
+function parseBooleanField(value: FormDataEntryValue | null): boolean | null {
+  if (typeof value !== "string") return null;
+  const normalized = value.trim().toLowerCase();
+
+  if (normalized === "true" || normalized === "1") return true;
+  if (normalized === "false" || normalized === "0") return false;
+  return null;
+}
+
+function parseBatchCount(value: FormDataEntryValue | null): number {
+  if (typeof value !== "string") return 1;
+  const parsed = Number.parseInt(value, 10);
+  if (!Number.isFinite(parsed)) return 1;
+  return Math.max(1, Math.min(parsed, MAX_BATCH_COUNT));
+}
+
 export async function POST(request: NextRequest) {
   try {
     // Check authentication
     const user = await getCurrentUser();
-    if (!user || !user.id) {
+    const userId = user?.id;
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Verify user exists in database
     const dbUser = await prisma.user.findUnique({
-      where: { id: user.id },
+      where: { id: userId },
+      select: {
+        id: true,
+        stripePriceId: true,
+        stripeCurrentPeriodEnd: true,
+      },
     });
 
     if (!dbUser) {
-      console.error("User not found in database:", user.id);
+      console.error("User not found in database:", userId);
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
+
+    const isPaidUser =
+      Boolean(dbUser.stripePriceId) &&
+      Boolean(dbUser.stripeCurrentPeriodEnd) &&
+      (dbUser.stripeCurrentPeriodEnd?.getTime() ?? 0) + 86_400_000 >
+        Date.now();
 
     // Check if FAL API key is configured
     if (!process.env.FAL_API_KEY) {
@@ -255,6 +305,9 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const file = formData.get("image") as File;
     const style = (formData.get("style") as string) || "FAST";
+    const requestedPrivate = parseBooleanField(formData.get("private"));
+    const requestedUpscale = parseBooleanField(formData.get("upscale"));
+    const batchCount = parseBatchCount(formData.get("batchCount"));
 
     if (!file) {
       return NextResponse.json(
@@ -287,29 +340,91 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const isPrivate =
+      requestedPrivate === null ? isPaidUser : requestedPrivate;
+    if (isPrivate && !isPaidUser) {
+      return NextResponse.json(
+        { error: "Private mode is available for paid plans only." },
+        { status: 403 },
+      );
+    }
+
+    const isUpscaled = requestedUpscale ?? false;
+    if (isUpscaled && !isPaidUser) {
+      return NextResponse.json(
+        { error: "Upscale is available for paid plans only." },
+        { status: 403 },
+      );
+    }
+
+    const planLimits = resolveGenerationPlanLimit(dbUser);
+    const usedThisMonth = await getUserMonthlyGenerationUsage(
+      userId,
+      getCurrentMonthStartUtc(),
+    );
+    const remainingThisMonth = Math.max(
+      planLimits.monthlyGenerationLimit - usedThisMonth,
+      0,
+    );
+
+    if (batchCount > remainingThisMonth) {
+      return NextResponse.json(
+        {
+          error:
+            remainingThisMonth <= 0
+              ? `You have no generations left this month on the ${planLimits.planTitle} plan. Upgrade to a higher plan to keep generating.`
+              : `You only have ${remainingThisMonth} generation${remainingThisMonth === 1 ? "" : "s"} left this month on the ${planLimits.planTitle} plan. Reduce batch size or upgrade to a higher plan.`,
+        },
+        { status: 403 },
+      );
+    }
+
     // Convert file to buffer for processing
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Create job in database without storing original image URL
-    const job = await prisma.imageJob.create({
-      data: {
-        userId: user.id,
-        inputFileName: file.name,
-        inputUrl: null, // No original image URL stored
-        status: "QUEUED",
-      },
-    });
+    const fileBaseName = file.name.replace(/\.[^/.]+$/, "");
+    const fileExtension = file.name.split(".").pop() || "png";
+    const jobs = await Promise.all(
+      Array.from({ length: batchCount }).map((_, index) =>
+        prisma.imageJob.create({
+          data: {
+            userId,
+            inputFileName:
+              batchCount > 1
+                ? `${fileBaseName}-${index + 1}.${fileExtension}`
+                : file.name,
+            inputUrl: null, // No original image URL stored
+            status: "QUEUED",
+            isPublic: !isPrivate,
+            isUpscaled,
+          },
+        }),
+      ),
+    );
 
-    // Start processing the job immediately in the background
-    process.nextTick(() => {
-      processJob(job.id, buffer, file.type, style as StyleId);
-    });
+    for (const job of jobs) {
+      process.nextTick(() => {
+        processJob(job.id, buffer, file.type, style as StyleId, isUpscaled);
+      });
+    }
 
-    // Return job ID immediately for redirect to processing page
+    const [firstJob] = jobs;
+    if (!firstJob) {
+      return NextResponse.json(
+        { error: "Failed to create generation job." },
+        { status: 500 },
+      );
+    }
+
     return NextResponse.json({
-      jobId: job.id,
-      message: "Job created successfully. Processing will begin shortly.",
+      jobId: firstJob.id,
+      jobIds: jobs.map((job) => job.id),
+      batchCount: jobs.length,
+      message:
+        jobs.length > 1
+          ? `${jobs.length} jobs created successfully. Processing started.`
+          : "Job created successfully. Processing will begin shortly.",
     });
   } catch (error) {
     console.error("Upload error:", error);

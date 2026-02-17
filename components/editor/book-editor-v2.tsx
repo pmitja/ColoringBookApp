@@ -58,6 +58,7 @@ import {
 import { Icons } from "@/components/shared/icons";
 
 import { captureElementAsPng, exportImagesAsPdf } from "./pdf-export";
+import { plainTextToRichText } from "./rich-text";
 import SimpleFlipBook, { SimpleFlipBookHandle } from "./simple-flip-book";
 import TextBoxRnd from "./text-box-rnd";
 import TextProperties from "./text-properties";
@@ -494,6 +495,7 @@ export default function BookEditorV2({
       width,
       height,
       text: "Double-click to edit text",
+      richText: plainTextToRichText("Double-click to edit text"),
       fontSize: 18,
       bold: false,
       italic: false,
@@ -506,6 +508,7 @@ export default function BookEditorV2({
       borderColor: "transparent",
       borderWidth: 0,
       borderRadius: 8,
+      holderShape: "none",
       boxShadow: "none",
       padding: 8,
       chatBubble: undefined, // No chat bubble by default
@@ -635,7 +638,7 @@ export default function BookEditorV2({
   );
 
   const updateText = useCallback(
-    (elementId: string, text: string) => {
+    (elementId: string, text: string, richText?: string) => {
       // Do not push history on every keystroke; snapshot when entering edit mode
       const newPages = book.pages.map((p) => {
         if (p.id !== selectedPage?.id) return p;
@@ -643,7 +646,14 @@ export default function BookEditorV2({
           ...p,
           elements: p.elements.map((el) =>
             el.type === "text" && el.data.id === elementId
-              ? ({ type: "text", data: { ...el.data, text } } as PageElement)
+              ? ({
+                  type: "text",
+                  data: {
+                    ...el.data,
+                    text,
+                    ...(typeof richText === "string" ? { richText } : {}),
+                  },
+                } as PageElement)
               : el,
           ),
         };
@@ -971,8 +981,21 @@ export default function BookEditorV2({
 
   // Keyboard shortcuts for undo/redo
   useEffect(() => {
+    const isTypingTarget = (target: EventTarget | null) => {
+      if (!(target instanceof HTMLElement)) return false;
+      const tagName = target.tagName;
+      return (
+        target.isContentEditable ||
+        tagName === "INPUT" ||
+        tagName === "TEXTAREA" ||
+        tagName === "SELECT"
+      );
+    };
+
     const onKeyDown = (e: KeyboardEvent) => {
       if (editingElementId) return; // let textarea handle its own undo
+      if (isTypingTarget(e.target)) return;
+
       const isMeta = e.metaKey || e.ctrlKey;
       const key = e.key.toLowerCase();
       if (isMeta && key === "z" && !e.shiftKey) {
@@ -999,6 +1022,12 @@ export default function BookEditorV2({
         }
         return;
       }
+      if (!isMeta && (key === "delete" || key === "backspace")) {
+        if (selectedElement) {
+          e.preventDefault();
+          removeElement(selectedElement.data.id);
+        }
+      }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
@@ -1011,6 +1040,7 @@ export default function BookEditorV2({
     selectedElement,
     copyElement,
     pasteClipboard,
+    removeElement,
   ]);
 
   // Using react-rnd for drag/resize interactions
@@ -1118,6 +1148,23 @@ export default function BookEditorV2({
 
   const elementInspectorContent = selectedElement ? (
     <div className="space-y-4">
+      <div className={inspectorCardClass}>
+        <div className="flex items-center justify-between">
+          <Label className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+            Selection
+          </Label>
+          <span className="text-xs text-muted-foreground">Delete / Backspace</span>
+        </div>
+        <Button
+          variant="destructive"
+          onClick={() => removeElement(selectedElement.data.id)}
+          className="mt-3 h-11 w-full rounded-xl text-xs"
+        >
+          <Icons.trash className="mr-2 h-4 w-4" />
+          Delete selected
+        </Button>
+      </div>
+
       {selectedElement.type === "text" ? (
         <div className={inspectorCardClass}>
           <TextProperties
@@ -1241,16 +1288,6 @@ export default function BookEditorV2({
           >
             <Icons.chevronRight className="mr-2 h-4 w-4 rotate-180" />
             Send to back
-          </Button>
-          <Button
-            variant="destructive"
-            onClick={() =>
-              selectedElement && removeElement(selectedElement.data.id)
-            }
-            className="h-11 rounded-xl text-xs sm:col-span-2"
-          >
-            <Icons.trash className="mr-2 h-4 w-4" />
-            Delete selected
           </Button>
         </div>
       </div>
@@ -1927,8 +1964,8 @@ export default function BookEditorV2({
                                                 height,
                                               })
                                             }
-                                            onChangeText={(text) =>
-                                              updateElementData(el.data.id, { text })
+                                            onChangeText={(text, richText) =>
+                                              updateText(el.data.id, text, richText)
                                             }
                                             onRemove={() =>
                                               removeElement(el.data.id)

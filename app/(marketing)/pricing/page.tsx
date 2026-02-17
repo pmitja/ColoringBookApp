@@ -9,8 +9,8 @@ import { PricingCards } from "@/components/pricing/pricing-cards";
 import { PricingFaq } from "@/components/pricing/pricing-faq";
 
 export const metadata = constructMetadata({
-  title: "Pricing – SaaS Starter",
-  description: "Explore our subscription plans.",
+  title: "Pricing – Colorline AI",
+  description: "Compare Free, Starter, Hobby, and Pro plans.",
 });
 
 export default async function PricingPage() {
@@ -31,7 +31,7 @@ export default async function PricingPage() {
           You are an {user.role}. Back to{" "}
           <Link
             href="/admin"
-            className="text-muted-foreground underline underline-offset-4 hover:text-purple-500"
+            className="text-muted-foreground underline underline-offset-4 hover:text-primary"
           >
             Dashboard
           </Link>

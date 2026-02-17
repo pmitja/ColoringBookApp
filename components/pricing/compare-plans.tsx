@@ -23,7 +23,7 @@ export function ComparePlans() {
       <HeaderSection
         label="Plans"
         title="Compare Our Plans"
-        subtitle="Find the perfect plan tailored for your business needs!"
+        subtitle="Choose the tier that matches your family or creator workflow."
       />
 
       <div className="my-10 overflow-x-scroll max-lg:mx-[-0.8rem] md:overflow-x-visible">
@@ -34,7 +34,7 @@ export function ComparePlans() {
               {plansColumns.map((col) => (
                 <th
                   key={col}
-                  className="sticky z-10 w-40 bg-accent p-5 font-heading text-xl capitalize tracking-wide md:w-auto lg:top-14 lg:text-2xl"
+                  className="font-heading sticky z-10 w-40 bg-accent p-5 text-xl capitalize tracking-wide md:w-auto lg:top-14 lg:text-2xl"
                 >
                   {col}
                 </th>

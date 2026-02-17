@@ -41,6 +41,7 @@ export type SidebarNavItem = {
 export type SubscriptionPlan = {
   title: string;
   description: string;
+  monthlyGenerationLimit: number;
   benefits: string[];
   limitations: string[];
   prices: {

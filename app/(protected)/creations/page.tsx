@@ -22,7 +22,7 @@ import { EmptyPlaceholder } from "@/components/shared/empty-placeholder";
 import { Icons } from "@/components/shared/icons";
 
 export const metadata = constructMetadata({
-  title: "My Creations – Coloring Book Creator",
+  title: "My Creations – Colorline AI",
   description: "Browse all your coloring book creations.",
 });
 

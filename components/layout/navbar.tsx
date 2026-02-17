@@ -6,7 +6,6 @@ import { useSelectedLayoutSegment } from "next/navigation";
 import { useSession } from "next-auth/react";
 
 import { marketingConfig } from "@/config/marketing";
-import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
 import { useScroll } from "@/hooks/use-scroll";
 import { Button } from "@/components/ui/button";
@@ -30,34 +29,38 @@ export function NavBar({ scroll = false }: NavBarProps) {
 
   return (
     <header
-      className={`sticky top-0 z-40 flex w-full justify-center bg-background/60 backdrop-blur-xl transition-all ${
-        scroll ? (scrolled ? "border-b" : "bg-transparent") : "border-b"
+      className={`sticky top-0 z-40 flex w-full justify-center backdrop-blur-xl transition-all ${
+        scroll
+          ? scrolled
+            ? "border-border/70 bg-background/85 border-b"
+            : "bg-transparent"
+          : "border-border/70 bg-background/85 border-b"
       }`}
     >
       <MaxWidthWrapper
-        className="flex h-14 items-center justify-between py-4"
+        className="flex h-16 items-center justify-between py-4"
         large={false}
       >
         <div className="flex gap-6 md:gap-10">
-          <Link href="/" className="flex items-center space-x-1.5">
-            <Icons.logo />
-            <span className="font-urban text-xl font-bold">
-              {siteConfig.name}
-            </span>
+          <Link
+            href="/"
+            className="flex items-center rounded-full bg-white/70 px-3.5 py-2 dark:bg-white/10"
+          >
+            <Icons.logo className="h-9 w-auto" />
           </Link>
 
           {links && links.length > 0 ? (
-            <nav className="hidden gap-6 md:flex">
+            <nav className="hidden gap-2 md:flex">
               {links.map((item, index) => (
                 <Link
                   key={index}
                   href={item.disabled ? "#" : item.href}
                   prefetch={true}
                   className={cn(
-                    "flex items-center text-lg font-medium transition-colors hover:text-foreground/80 sm:text-sm",
+                    "flex items-center rounded-full px-4 text-sm font-semibold transition-colors",
                     item.href.startsWith(`/${selectedLayout}`)
-                      ? "text-foreground"
-                      : "text-foreground/60",
+                      ? "bg-secondary/80 text-foreground"
+                      : "text-foreground/70 hover:bg-white/70 hover:text-foreground dark:hover:bg-white/10",
                     item.disabled && "cursor-not-allowed opacity-80",
                   )}
                 >
@@ -75,7 +78,7 @@ export function NavBar({ scroll = false }: NavBarProps) {
               className="hidden md:block"
             >
               <Button
-                className="gap-2 px-5"
+                className="shadow-primary/30 gap-2 px-5 shadow-sm"
                 variant="default"
                 size="sm"
                 rounded="full"
@@ -85,7 +88,7 @@ export function NavBar({ scroll = false }: NavBarProps) {
             </Link>
           ) : status === "unauthenticated" ? (
             <Button
-              className="hidden gap-2 px-5 md:flex"
+              className="shadow-primary/30 hidden gap-2 px-5 shadow-sm md:flex"
               variant="default"
               size="sm"
               rounded="full"

@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useSelectedLayoutSegment } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 
@@ -16,7 +15,6 @@ import { ModeToggle } from "./mode-toggle";
 export function NavMobile() {
   const { data: session } = useSession();
   const [open, setOpen] = useState(false);
-  const selectedLayout = useSelectedLayoutSegment();
   const links = marketingConfig.mainNav;
 
   // prevent body scroll when modal is open
@@ -32,8 +30,9 @@ export function NavMobile() {
     <>
       <button
         onClick={() => setOpen(!open)}
+        aria-label={open ? "Close navigation menu" : "Open navigation menu"}
         className={cn(
-          "fixed right-2 top-2.5 z-50 rounded-full p-2 transition-colors duration-200 hover:bg-muted focus:outline-none active:bg-muted md:hidden",
+          "border-border/70 bg-background/90 hover:bg-secondary/80 active:bg-secondary/80 fixed right-3 top-3 z-50 rounded-full border p-2.5 transition-colors duration-200 focus:outline-none md:hidden",
           open && "hover:bg-muted active:bg-muted",
         )}
       >
@@ -46,11 +45,11 @@ export function NavMobile() {
 
       <nav
         className={cn(
-          "fixed inset-0 z-20 hidden w-full overflow-auto bg-background px-5 py-16 lg:hidden",
+          "bg-background fixed inset-0 z-20 hidden w-full overflow-auto px-5 py-16 lg:hidden",
           open && "block",
         )}
       >
-        <ul className="grid divide-y divide-muted">
+        <ul className="divide-border/50 grid divide-y">
           {links &&
             links.length > 0 &&
             links.map(({ title, href }) => (
@@ -58,7 +57,7 @@ export function NavMobile() {
                 <Link
                   href={href}
                   onClick={() => setOpen(false)}
-                  className="flex w-full font-medium capitalize"
+                  className="hover:bg-secondary/70 flex w-full rounded-full px-4 py-2 font-semibold capitalize"
                 >
                   {title}
                 </Link>
@@ -72,7 +71,7 @@ export function NavMobile() {
                   <Link
                     href="/admin"
                     onClick={() => setOpen(false)}
-                    className="flex w-full font-medium capitalize"
+                    className="hover:bg-secondary/70 flex w-full rounded-full px-4 py-2 font-semibold capitalize"
                   >
                     Admin
                   </Link>
@@ -83,7 +82,7 @@ export function NavMobile() {
                 <Link
                   href="/dashboard"
                   onClick={() => setOpen(false)}
-                  className="flex w-full font-medium capitalize"
+                  className="hover:bg-secondary/70 flex w-full rounded-full px-4 py-2 font-semibold capitalize"
                 >
                   Dashboard
                 </Link>
@@ -95,7 +94,7 @@ export function NavMobile() {
                 <Link
                   href="/login"
                   onClick={() => setOpen(false)}
-                  className="flex w-full font-medium capitalize"
+                  className="hover:bg-secondary/70 flex w-full rounded-full px-4 py-2 font-semibold capitalize"
                 >
                   Login
                 </Link>
@@ -105,7 +104,7 @@ export function NavMobile() {
                 <Link
                   href="/register"
                   onClick={() => setOpen(false)}
-                  className="flex w-full font-medium capitalize"
+                  className="hover:bg-secondary/70 flex w-full rounded-full px-4 py-2 font-semibold capitalize"
                 >
                   Sign up
                 </Link>

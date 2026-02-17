@@ -341,6 +341,15 @@ export default function ResultsPage({ params }: ResultsPageProps) {
                 <p>Processing time: ~2 minutes</p>
               </div>
               <div className="flex gap-2">
+                <Link href={`/dashboard/coloring?jobId=${jobData.id}`}>
+                  <Button
+                    variant="outline"
+                    className="gap-2 border-slate-200/70 bg-white/80 dark:border-white/10 dark:bg-white/5"
+                  >
+                    <Icons.palette className="size-4" />
+                    Color Online
+                  </Button>
+                </Link>
                 <Link href="/upload">
                   <Button className="gap-2">
                     <Icons.media className="h-4 w-4" />

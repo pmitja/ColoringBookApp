@@ -10,33 +10,33 @@ import { HeaderSection } from "../shared/header-section";
 const pricingFaqData = [
   {
     id: "item-1",
-    question: "What is the cost of the free plan?",
+    question: "What is included in the Free tier?",
     answer:
-      "Our free plan is completely free, with no monthly or annual charges. It's a great way to get started and explore our basic features.",
+      "The Free tier includes 5-10 generations per month from a shared pool, basic styles, and 1-5 page PDF exports.",
   },
   {
     id: "item-2",
-    question: "How much does the Basic Monthly plan cost?",
+    question: "How much is Starter?",
     answer:
-      "The Basic Monthly plan is priced at $15 per month. It provides access to our core features and is billed on a monthly basis.",
+      "Starter is $9.99/month or $79/year. It includes 80 pages per month, HD exports, private mode, and upscale access.",
   },
   {
     id: "item-3",
-    question: "What is the price of the Pro Monthly plan?",
+    question: "How much is Hobby?",
     answer:
-      "The Pro Monthly plan is available for $25 per month. It offers advanced features and is billed on a monthly basis for added flexibility.",
+      "Hobby is $19.99/month or $179/year with 250 pages monthly, priority queue, 10-page generation, and text overlays.",
   },
   {
     id: "item-4",
-    question: "Do you offer any annual subscription plans?",
+    question: "What does Pro unlock?",
     answer:
-      "Yes, we offer annual subscription plans for even more savings. The Basic Annual plan is $144 per year, and the Pro Annual plan is $300 per year.",
+      "Pro is $39.99/month or $349/year and includes 800 pages per month, high print quality exports, 20+ page books, consistency regeneration, and a commercial license.",
   },
   {
     id: "item-5",
-    question: "Is there a trial period for the paid plans?",
+    question: "Can I switch plans later?",
     answer:
-      "We offer a 14-day free trial for both the Pro Monthly and Pro Annual plans. It's a great way to experience all the features before committing to a paid subscription.",
+      "Yes. You can upgrade, downgrade, or cancel from billing any time, and your access updates with your Stripe subscription period.",
   },
 ];
 

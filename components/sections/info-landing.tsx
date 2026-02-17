@@ -15,25 +15,28 @@ export default function InfoLanding({
   reverse = false,
 }: InfoLandingProps) {
   return (
-    <div className="py-10 sm:py-20">
+    <div className="py-10 sm:py-16">
       <MaxWidthWrapper className="grid gap-10 px-2.5 lg:grid-cols-2 lg:items-center lg:px-7">
         <div className={cn(reverse ? "lg:order-2" : "lg:order-1")}>
-          <h2 className="font-heading text-2xl text-foreground md:text-4xl lg:text-[40px]">
+          <h2 className="font-heading text-3xl text-foreground md:text-4xl lg:text-[42px]">
             {data.title}
           </h2>
-          <p className="mt-4 text-base text-muted-foreground">
+          <p className="mt-4 text-lg text-muted-foreground">
             {data.description}
           </p>
-          <dl className="mt-6 space-y-4 leading-7">
+          <dl className="mt-6 space-y-3 leading-7">
             {data.list.map((item, index) => {
               const Icon = Icons[item.icon || "arrowRight"];
               return (
-                <div className="relative pl-8" key={index}>
-                  <dt className="font-semibold">
+                <div
+                  className="border-border/70 bg-card/85 rounded-2xl border p-4"
+                  key={index}
+                >
+                  <dt className="relative pl-8 font-semibold">
                     <Icon className="absolute left-0 top-1 size-5 stroke-primary" />
                     <span>{item.title}</span>
                   </dt>
-                  <dd className="text-sm text-muted-foreground">
+                  <dd className="mt-1 text-sm text-muted-foreground">
                     {item.description}
                   </dd>
                 </div>
@@ -43,11 +46,11 @@ export default function InfoLanding({
         </div>
         <div
           className={cn(
-            "overflow-hidden rounded-xl border lg:-m-4",
+            "playful-card overflow-hidden p-3 lg:-m-4",
             reverse ? "order-1" : "order-2",
           )}
         >
-          <div className="aspect-video">
+          <div className="border-border/70 aspect-video overflow-hidden rounded-[20px] border">
             <Image
               className="size-full object-cover object-center"
               src={data.image}

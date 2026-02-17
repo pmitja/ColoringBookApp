@@ -55,7 +55,7 @@ export async function GET(req: Request) {
               color: 'transparent'
             }}
           >
-            SaaS Starter
+            Colorline AI
           </div>
 
           <div tw="flex flex-col flex-1 py-16">
@@ -126,7 +126,7 @@ export async function GET(req: Request) {
                   stroke-linejoin="round"
                 />
               </svg>
-              <div tw="flex ml-2">github.com/mickasmt/next-saas-stripe-starter</div>
+              <div tw="flex ml-2">github.com/pmitja/ColoringBookApp</div>
             </div>
           </div>
         </div>

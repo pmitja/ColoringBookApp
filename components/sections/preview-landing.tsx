@@ -4,10 +4,18 @@ import MaxWidthWrapper from "@/components/shared/max-width-wrapper";
 
 export default function PreviewLanding() {
   return (
-    <div className="pb-6 sm:pb-16">
+    <div id="examples" className="pb-8 pt-2 sm:pb-16">
       <MaxWidthWrapper>
-        <div className="rounded-2xl border border-slate-200/70 bg-white/80 p-3.5 shadow-sm dark:border-white/10 dark:bg-white/5">
-          <div className="relative aspect-video overflow-hidden rounded-2xl border border-slate-200/70 bg-slate-50 dark:border-white/10 dark:bg-slate-950/40">
+        <div className="playful-card p-4 sm:p-5">
+          <div className="mb-3 flex flex-wrap gap-2">
+            <span className="playful-pill bg-white/90 text-xs font-bold dark:bg-white/10">
+              Before and After
+            </span>
+            <span className="playful-pill bg-white/90 text-xs font-bold dark:bg-white/10">
+              Crayon-Ready Detail
+            </span>
+          </div>
+          <div className="border-border/70 relative aspect-video overflow-hidden rounded-[22px] border bg-white/70 dark:bg-slate-950/30">
             <Image
               className="size-full object-cover object-center"
               src="/illustrations/preview-coloring.svg"

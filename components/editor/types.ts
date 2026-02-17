@@ -5,6 +5,7 @@ export interface EditorTextBox {
   width: number
   height: number
   text: string
+  richText?: string
   fontSize?: number
   bold?: boolean
   italic?: boolean
@@ -17,6 +18,7 @@ export interface EditorTextBox {
   borderColor?: string
   borderWidth?: number
   borderRadius?: number
+  holderShape?: 'none' | 'rounded' | 'pill' | 'blob-soft' | 'blob-playful' | 'blob-organic'
   boxShadow?: string
   padding?: number
   chatBubble?: {
@@ -25,5 +27,3 @@ export interface EditorTextBox {
     triangleSize: number // size of triangle in pixels
   }
 }
-
-

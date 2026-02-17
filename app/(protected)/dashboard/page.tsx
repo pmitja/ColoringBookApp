@@ -3,6 +3,10 @@ import Link from "next/link";
 
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
+import {
+  getCurrentMonthStartUtc,
+  resolveGenerationPlanLimit,
+} from "@/lib/subscription";
 import { cn, constructMetadata } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,11 +19,12 @@ import {
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { DashboardHeader } from "@/components/dashboard/header";
+import { ReactBitsSpotlightCard } from "@/components/dashboard/reactbits-spotlight-card";
 import { EmptyPlaceholder } from "@/components/shared/empty-placeholder";
 import { Icons } from "@/components/shared/icons";
 
 export const metadata = constructMetadata({
-  title: "Dashboard – Coloring Book Creator",
+  title: "Dashboard – Colorline AI",
   description: "Create magical coloring books from your family photos.",
 });
 
@@ -33,158 +38,314 @@ interface ImageJob {
   updatedAt: Date;
 }
 
+const stylePresets = [
+  { label: "General", hint: "Balanced line detail" },
+  { label: "Simple", hint: "Bigger spaces for kids" },
+  { label: "Detailed", hint: "More contours & texture" },
+  { label: "Cartoon", hint: "Friendly soft edges" },
+] as const;
+
 export default async function DashboardPage() {
   const user = await getCurrentUser();
+  const userId = user?.id;
+  if (!userId) {
+    return null;
+  }
 
-  // Fetch actual user creations from database
-  const recentCreations = await prisma.imageJob.findMany({
-    where: {
-      userId: user?.id,
+  const [recentCreations, totalCreations, groupedStatus, dbUser, generationsUsed] =
+    await Promise.all([
+    prisma.imageJob.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+      take: 6,
+    }),
+    prisma.imageJob.count({
+      where: { userId },
+    }),
+    prisma.imageJob.groupBy({
+      by: ["status"],
+      where: { userId },
+      _count: {
+        status: true,
+      },
+    }),
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        stripePriceId: true,
+        stripeCurrentPeriodEnd: true,
+      },
+    }),
+    prisma.imageJob.count({
+      where: {
+        userId,
+        createdAt: {
+          gte: getCurrentMonthStartUtc(),
+        },
+      },
+    }),
+  ]);
+
+  const statusCount = groupedStatus.reduce<Record<string, number>>(
+    (accumulator, statusGroup) => {
+      accumulator[statusGroup.status] = statusGroup._count.status;
+      return accumulator;
     },
-    orderBy: {
-      createdAt: "desc",
-    },
-    take: 6, // Show 6 most recent creations on dashboard
-  });
+    {},
+  );
 
-  // Mock data - in real app, fetch from database
-  const creditsUsed = (user as any)?.creditsUsed || 0;
-  const creditsAllocated = (user as any)?.creditsAllocated || 3;
+  const planLimits = resolveGenerationPlanLimit(dbUser ?? {});
+  const generationsAllocated = planLimits.monthlyGenerationLimit;
 
-  const creditsRemaining = creditsAllocated - creditsUsed;
-  const progressPercentage = (creditsUsed / creditsAllocated) * 100;
+  const displayGenerationsUsed = Math.min(
+    generationsUsed,
+    generationsAllocated,
+  );
+  const overLimitCount = Math.max(generationsUsed - generationsAllocated, 0);
+  const generationsRemaining = Math.max(
+    generationsAllocated - generationsUsed,
+    0,
+  );
+  const progressPercentage = Math.min(
+    generationsAllocated > 0 ? (generationsUsed / generationsAllocated) * 100 : 0,
+    100,
+  );
+
+  const processingCount =
+    (statusCount["QUEUED"] ?? 0) + (statusCount["PROCESSING"] ?? 0);
+  const finishedCount = statusCount["DONE"] ?? 0;
+  const failedCount = statusCount["FAILED"] ?? 0;
 
   return (
     <>
       <DashboardHeader
-        heading="Create Coloring Books"
-        text="Turn family photos into coloring pages kids can’t wait to color."
-      />
+        heading="Your Creative Playground"
+        text="Build coloring pages and books with big playful controls that are easy for both kids and adults."
+      >
+        <Link href="/upload">
+          <Button className="shadow-primary/30 rounded-full px-5 shadow-sm">
+            <Icons.media className="mr-2 size-4" />
+            New Coloring Page
+          </Button>
+        </Link>
+      </DashboardHeader>
 
-      <div className="grid gap-6 lg:grid-cols-[1.4fr_0.8fr]">
-        <Card className="relative overflow-hidden border-slate-200/70 bg-white/80 dark:border-white/10 dark:bg-white/5">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(14,165,164,0.15),_transparent_55%)] dark:bg-[radial-gradient(circle_at_top,_rgba(20,184,166,0.15),_transparent_55%)]" />
-          <CardHeader className="relative z-10 space-y-3 pb-2">
-            <div className="inline-flex w-fit items-center gap-2 rounded-full border border-slate-200/70 bg-slate-100/80 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.3em] text-slate-500 dark:border-white/10 dark:bg-white/10 dark:text-muted-foreground">
-              New Project
-            </div>
-            <CardTitle className="text-2xl sm:text-3xl">
-              Start with a photo
-            </CardTitle>
-            <CardDescription className="text-sm text-muted-foreground">
-              Upload one family photo and we’ll turn it into a clean, printable
-              coloring page.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="relative z-10 space-y-4">
-            {creditsRemaining > 0 ? (
-              <div className="flex flex-wrap items-center gap-3">
+      <div className="grid gap-5 xl:grid-cols-[1.3fr_0.7fr]">
+        <ReactBitsSpotlightCard
+          spotlightColor="rgba(235, 205, 184, 0.42)"
+          className="bg-card/95 border-border shadow-sm"
+        >
+          <div className="grid gap-5 lg:grid-cols-[1.05fr_0.95fr]">
+            <div className="space-y-4">
+              <span className="bg-background/90 inline-flex items-center rounded-full border border-border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                Market Pattern: Photo + Prompt Modes
+              </span>
+              <h2 className="font-heading text-3xl leading-tight text-foreground">
+                Generate pages from photos or text prompts
+              </h2>
+              <p className="max-w-2xl text-sm text-muted-foreground sm:text-base">
+                Most top coloring apps offer both flows, so your dashboard now
+                starts with either photo upload or prompt-based generation.
+              </p>
+
+              <div className="grid gap-2 sm:grid-cols-2">
                 <Link href="/upload">
-                  <Button size="lg" className="gap-2 rounded-2xl">
-                    <Icons.media className="h-4 w-4" />
-                    Choose Photo
+                  <Button className="w-full rounded-full" size="lg">
+                    <Icons.media className="mr-2 size-4" />
+                    Photo to Line Art
                   </Button>
                 </Link>
-                <span className="text-xs text-muted-foreground">
-                  {creditsRemaining} credits left this month
-                </span>
+                <Link href="/ai-generator">
+                  <Button
+                    className="w-full rounded-full"
+                    size="lg"
+                    variant="outline"
+                  >
+                    <Icons.add className="mr-2 size-4" />
+                    Prompt to Page
+                  </Button>
+                </Link>
               </div>
-            ) : (
-              <div className="space-y-4">
-                <p className="text-sm text-muted-foreground">
-                  You’ve used all your free credits this month.
+
+              <div className="space-y-2">
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                  Style Presets
                 </p>
-                <Link href="/dashboard/billing">
-                  <Button size="lg" variant="outline" className="gap-2 rounded-2xl">
-                    <Icons.billing className="h-4 w-4" />
-                    Get More Credits
-                  </Button>
-                </Link>
-              </div>
-            )}
-
-            <div className="grid gap-2 text-xs text-muted-foreground sm:grid-cols-3">
-              <div className="flex items-center gap-2">
-                <span className="flex size-6 items-center justify-center rounded-full bg-slate-200/70 text-[10px] font-semibold dark:bg-white/10">
-                  1
-                </span>
-                Upload photo
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="flex size-6 items-center justify-center rounded-full bg-slate-200/70 text-[10px] font-semibold dark:bg-white/10">
-                  2
-                </span>
-                Pick pages
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="flex size-6 items-center justify-center rounded-full bg-slate-200/70 text-[10px] font-semibold dark:bg-white/10">
-                  3
-                </span>
-                Print & color
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {stylePresets.map((preset) => (
+                    <div
+                      key={preset.label}
+                      className="bg-background/80 rounded-2xl border border-border p-3"
+                    >
+                      <p className="font-semibold text-foreground">
+                        {preset.label}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {preset.hint}
+                      </p>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
 
-        <Card className="border-slate-200/70 bg-white/80 dark:border-white/10 dark:bg-white/5">
-          <CardHeader className="space-y-2">
-            <CardTitle className="flex items-center justify-between text-lg">
-              <span>Credits</span>
-              <Badge variant={creditsRemaining > 0 ? "default" : "destructive"}>
-                {creditsRemaining} left
+            <div className="bg-background/75 space-y-3 rounded-3xl border border-border p-4">
+              <div className="flex items-center justify-between">
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                  Preview Quality
+                </p>
+                <Badge variant="secondary" className="rounded-full">
+                  PDF + PNG
+                </Badge>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="bg-background/85 space-y-1 rounded-2xl border border-border p-2">
+                  <p className="text-[11px] font-semibold text-muted-foreground">
+                    Input
+                  </p>
+                  <Image
+                    src="/illustrations/color-sample.svg"
+                    alt="Colorful input image sample"
+                    width={420}
+                    height={280}
+                    className="h-auto w-full rounded-xl"
+                  />
+                </div>
+                <div className="bg-background/85 space-y-1 rounded-2xl border border-border p-2">
+                  <p className="text-[11px] font-semibold text-muted-foreground">
+                    Output
+                  </p>
+                  <Image
+                    src="/illustrations/lineart-sample.svg"
+                    alt="Line art output sample"
+                    width={420}
+                    height={280}
+                    className="h-auto w-full rounded-xl"
+                  />
+                </div>
+              </div>
+              <div className="grid gap-2 text-xs text-muted-foreground sm:grid-cols-3">
+                <span className="bg-background/85 rounded-xl border border-border px-2 py-1 text-center">
+                  1. Upload / Prompt
+                </span>
+                <span className="bg-background/85 rounded-xl border border-border px-2 py-1 text-center">
+                  2. Pick Preset
+                </span>
+                <span className="bg-background/85 rounded-xl border border-border px-2 py-1 text-center">
+                  3. Print & Color
+                </span>
+              </div>
+            </div>
+          </div>
+        </ReactBitsSpotlightCard>
+
+        <ReactBitsSpotlightCard
+          spotlightColor="rgba(191, 216, 234, 0.4)"
+          className="bg-card/95 border-border shadow-sm"
+        >
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-heading text-2xl">Generations</h3>
+                <p className="text-sm text-muted-foreground">
+                  Current plan: {planLimits.planTitle}
+                </p>
+              </div>
+              <Badge variant={generationsRemaining > 0 ? "default" : "destructive"}>
+                {generationsRemaining} left
               </Badge>
-            </CardTitle>
-            <CardDescription className="text-xs text-muted-foreground">
-              {creditsUsed} of {creditsAllocated} used this month
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Progress value={progressPercentage} className="h-2" />
-            <div className="rounded-2xl border border-slate-200/70 bg-white/80 p-3 text-xs text-muted-foreground dark:border-white/10 dark:bg-white/5">
-              {creditsRemaining > 0
-                ? `You can create ${creditsRemaining} more books this month.`
-                : "Credits reset next month."}
             </div>
-            {creditsRemaining <= 1 && (
-              <Link href="/dashboard/billing">
-                <Button variant="outline" size="sm" className="w-full rounded-xl">
-                  Upgrade for unlimited
+            <p className="text-sm text-muted-foreground">
+              {displayGenerationsUsed} of {generationsAllocated} used this month.
+            </p>
+            <Progress value={progressPercentage} className="h-3 rounded-full" />
+            <div className="bg-background/80 rounded-2xl border border-border p-3 text-sm text-muted-foreground">
+              {generationsRemaining > 0
+                ? `You can still generate ${generationsRemaining} more page${generationsRemaining > 1 ? "s" : ""}.`
+                : "You reached your plan limit for this month. Upgrade to a higher plan to keep generating."}
+            </div>
+            {overLimitCount > 0 ? (
+              <p className="text-xs text-muted-foreground">
+                {overLimitCount} extra generation
+                {overLimitCount === 1 ? "" : "s"} were created earlier this
+                month before the current limits were applied.
+              </p>
+            ) : null}
+            <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+              <span className="bg-background/85 rounded-xl border border-border px-2 py-1 text-center">
+                Fast Queue
+              </span>
+              <span className="bg-background/85 rounded-xl border border-border px-2 py-1 text-center">
+                Batch Friendly
+              </span>
+            </div>
+            {generationsRemaining <= 1 ? (
+              <Link href="/dashboard/billing" className="block">
+                <Button variant="outline" className="w-full rounded-full">
+                  Upgrade Plan
                 </Button>
               </Link>
-            )}
-          </CardContent>
-        </Card>
+            ) : null}
+          </div>
+        </ReactBitsSpotlightCard>
       </div>
 
-      <div className="mt-8 space-y-4">
+      <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <PlayfulMetric
+          label="Pages Created"
+          value={totalCreations}
+          color="bg-secondary/80 text-secondary-foreground"
+          icon={<Icons.bookOpen className="size-4" />}
+        />
+        <PlayfulMetric
+          label="Ready to Print"
+          value={finishedCount}
+          color="bg-emerald-100/80 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
+          icon={<Icons.download className="size-4" />}
+        />
+        <PlayfulMetric
+          label="Processing"
+          value={processingCount}
+          color="bg-sky-100/80 text-sky-700 dark:bg-sky-900/30 dark:text-sky-300"
+          icon={<Icons.spinner className="size-4" />}
+        />
+        <PlayfulMetric
+          label="Needs Retry"
+          value={failedCount}
+          color="bg-rose-100/80 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300"
+          icon={<Icons.warning className="size-4" />}
+        />
+      </div>
+
+      <section className="mt-8 space-y-4">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold">Your Creations</h2>
-            <p className="text-xs text-muted-foreground">
-              Recent pages you can open, edit, or print.
+            <h2 className="font-heading text-2xl">Your Creations</h2>
+            <p className="text-sm text-muted-foreground">
+              Open recent pages to print, review, or keep editing.
             </p>
           </div>
-          {recentCreations.length > 0 && (
+          {recentCreations.length > 0 ? (
             <Link href="/creations">
-              <Button variant="ghost" size="sm" className="rounded-xl">
+              <Button variant="ghost" size="sm" className="rounded-full">
                 View all
-                <Icons.arrowRight className="ml-2 h-4 w-4" />
+                <Icons.arrowRight className="ml-2 size-4" />
               </Button>
             </Link>
-          )}
+          ) : null}
         </div>
 
         {recentCreations.length === 0 ? (
           <EmptyPlaceholder>
             <EmptyPlaceholder.Icon name="media" />
             <EmptyPlaceholder.Title>
-              No coloring books yet
+              No coloring pages yet
             </EmptyPlaceholder.Title>
             <EmptyPlaceholder.Description>
-              Upload your first family photo to create a magical coloring book.
+              Upload your first family photo to generate a printable page.
             </EmptyPlaceholder.Description>
             <Link href="/upload">
-              <Button className="rounded-xl">Upload First Photo</Button>
+              <Button className="rounded-full">Upload First Photo</Button>
             </Link>
           </EmptyPlaceholder>
         ) : (
@@ -194,40 +355,34 @@ export default async function DashboardPage() {
             ))}
           </div>
         )}
-      </div>
-
-      <Card className="mt-8 border-slate-200/70 bg-white/80 dark:border-white/10 dark:bg-white/5">
-        <CardHeader className="space-y-2">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Icons.help className="h-5 w-5 text-primary" />
-            Tips for the best pages
-          </CardTitle>
-          <CardDescription className="text-xs text-muted-foreground">
-            Simple tweaks can make the line art look extra clean.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="text-sm text-muted-foreground">
-          <ul className="space-y-2">
-            <li className="flex items-start gap-2">
-              <span className="text-primary">•</span>
-              Use photos with clear faces and good lighting.
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary">•</span>
-              1–4 people in the frame gives the best detail.
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary">•</span>
-              Simple backgrounds create cleaner line art.
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary">•</span>
-              Your files stay private and are not stored.
-            </li>
-          </ul>
-        </CardContent>
-      </Card>
+      </section>
     </>
+  );
+}
+
+function PlayfulMetric({
+  label,
+  value,
+  icon,
+  color,
+}: {
+  label: string;
+  value: number;
+  icon: React.ReactNode;
+  color: string;
+}) {
+  return (
+    <Card className="border-border/75 bg-card/95 rounded-3xl">
+      <CardContent className="flex items-center justify-between p-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            {label}
+          </p>
+          <p className="font-heading mt-2 text-3xl leading-none">{value}</p>
+        </div>
+        <span className={cn("rounded-2xl p-2.5", color)}>{icon}</span>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -251,14 +406,13 @@ function CreationCard({ creation }: CreationCardProps) {
     }
   };
 
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString("en-US", {
+  const formatDate = (date: Date) =>
+    date.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
     });
-  };
 
   const getCardLink = () => {
     switch (creation.status) {
@@ -273,8 +427,8 @@ function CreationCard({ creation }: CreationCardProps) {
   };
 
   return (
-    <Card className="overflow-hidden border-slate-200/70 bg-white/80 transition hover:bg-slate-100/80 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10">
-      <div className="relative aspect-[4/3] bg-slate-100 dark:bg-white/5">
+    <Card className="border-border/80 bg-card/95 overflow-hidden rounded-3xl transition hover:-translate-y-0.5 hover:shadow-md">
+      <div className="bg-secondary/45 relative aspect-[4/3] dark:bg-white/5">
         {creation.status === "DONE" && creation.lineartUrl ? (
           <Image
             src={creation.lineartUrl}
@@ -286,13 +440,13 @@ function CreationCard({ creation }: CreationCardProps) {
           <div className="flex h-full items-center justify-center">
             <div className="text-center">
               {creation.status === "PROCESSING" ? (
-                <Icons.spinner className="mx-auto mb-2 h-8 w-8 animate-spin text-muted-foreground" />
+                <Icons.spinner className="mx-auto mb-2 size-8 animate-spin text-muted-foreground" />
               ) : creation.status === "QUEUED" ? (
-                <Icons.help className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
+                <Icons.help className="mx-auto mb-2 size-8 text-muted-foreground" />
               ) : creation.status === "FAILED" ? (
-                <Icons.warning className="mx-auto mb-2 h-8 w-8 text-red-500" />
+                <Icons.warning className="mx-auto mb-2 size-8 text-red-500" />
               ) : (
-                <Icons.media className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
+                <Icons.media className="mx-auto mb-2 size-8 text-muted-foreground" />
               )}
               <p className="text-sm text-muted-foreground">
                 {creation.status === "PROCESSING" && "Processing..."}
@@ -304,7 +458,6 @@ function CreationCard({ creation }: CreationCardProps) {
           </div>
         )}
 
-        {/* Status Badge */}
         <div className="absolute right-2 top-2">
           <Badge className={cn("text-xs", getStatusColor(creation.status))}>
             {creation.status}
@@ -328,19 +481,19 @@ function CreationCard({ creation }: CreationCardProps) {
       <CardContent className="p-4 pt-0">
         <div className="flex gap-2">
           <Link href={getCardLink()} className="flex-1">
-            <Button size="sm" className="h-8 w-full rounded-xl text-xs">
+            <Button size="sm" className="h-8 w-full rounded-full text-xs">
               {creation.status === "DONE" ? "View Results" : "View Details"}
             </Button>
           </Link>
-          {creation.status === "DONE" && (
+          {creation.status === "DONE" ? (
             <Button
               size="sm"
               variant="outline"
-              className="h-8 rounded-xl px-2"
+              className="h-8 rounded-full px-2"
             >
-              <Icons.arrowUpRight className="h-4 w-4" />
+              <Icons.arrowUpRight className="size-4" />
             </Button>
-          )}
+          ) : null}
         </div>
       </CardContent>
     </Card>

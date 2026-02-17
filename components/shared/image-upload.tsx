@@ -141,10 +141,10 @@ export function ImageUpload({
         </Alert>
       )}
 
-      {/* Privacy Notice */}
+      {/* Upload Notice */}
       <div className="text-center">
         <p className="text-xs text-muted-foreground">
-          🔒 Your photos are processed instantly and never stored on our servers
+          🔒 We do not save your original uploaded image
         </p>
       </div>
     </div>

@@ -10,11 +10,13 @@ import { Icons } from "../shared/icons";
 
 export function SiteFooter({ className }: React.HTMLAttributes<HTMLElement>) {
   return (
-    <footer className={cn("border-t", className)}>
+    <footer
+      className={cn("border-border/70 bg-background/70 border-t", className)}
+    >
       <div className="container grid max-w-6xl grid-cols-2 gap-6 py-14 md:grid-cols-5">
         {footerLinks.map((section) => (
           <div key={section.title}>
-            <span className="text-sm font-medium text-foreground">
+            <span className="font-heading text-lg text-foreground">
               {section.title}
             </span>
             <ul className="mt-4 list-inside space-y-3">
@@ -22,7 +24,7 @@ export function SiteFooter({ className }: React.HTMLAttributes<HTMLElement>) {
                 <li key={link.title}>
                   <Link
                     href={link.href}
-                    className="text-sm text-muted-foreground hover:text-primary"
+                    className="text-sm text-muted-foreground transition-colors hover:text-primary"
                   >
                     {link.title}
                   </Link>
@@ -38,9 +40,6 @@ export function SiteFooter({ className }: React.HTMLAttributes<HTMLElement>) {
 
       <div className="border-t py-4">
         <div className="container flex max-w-6xl items-center justify-between">
-          {/* <span className="text-muted-foreground text-sm">
-            Copyright &copy; 2024. All rights reserved.
-          </span> */}
           <p className="text-left text-sm text-muted-foreground">
             Built by{" "}
             <Link

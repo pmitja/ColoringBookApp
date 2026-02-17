@@ -6,12 +6,13 @@ import { getCurrentUser } from "@/lib/session";
 import { constructMetadata } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { DeleteBookButton } from "@/components/dashboard/delete-book-button";
 import { DashboardHeader } from "@/components/dashboard/header";
 import { EmptyPlaceholder } from "@/components/shared/empty-placeholder";
 import { Icons } from "@/components/shared/icons";
 
 export const metadata = constructMetadata({
-  title: "Books – Coloring Book Creator",
+  title: "Books – Colorline AI",
   description: "Create a new coloring book or continue editing an existing one.",
 });
 
@@ -194,19 +195,26 @@ export default async function BookChooserPage() {
                       Updated {formatDate(book.updatedAt)}
                     </p>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <Link href={`/dashboard/book-editor/${book.id}`}>
-                      <Button variant="secondary" size="sm" className="gap-1.5">
-                        Edit
-                        <Icons.arrowRight className="h-3.5 w-3.5" />
-                      </Button>
-                    </Link>
-                    <Link
-                      href={`/dashboard/book-editor/${book.id}`}
-                      className="text-xs text-muted-foreground transition-colors hover:text-foreground"
-                    >
-                      Open editor
-                    </Link>
+                  <div className="flex items-center justify-between gap-2">
+                    <DeleteBookButton bookId={book.id} bookTitle={title} />
+                    <div className="flex items-center gap-3">
+                      <Link href={`/dashboard/book-editor/${book.id}`}>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          className="gap-1.5"
+                        >
+                          Edit
+                          <Icons.arrowRight className="h-3.5 w-3.5" />
+                        </Button>
+                      </Link>
+                      <Link
+                        href={`/dashboard/book-editor/${book.id}`}
+                        className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+                      >
+                        Open editor
+                      </Link>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

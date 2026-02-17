@@ -27,18 +27,18 @@ export default async function Dashboard({ children }: ProtectedLayoutProps) {
   }));
 
   return (
-    <div className="dashboard-theme relative flex min-h-screen w-full overflow-hidden bg-background text-foreground">
+    <div className="dashboard-theme relative flex min-h-screen w-full overflow-x-hidden bg-background text-foreground">
       <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(14,165,164,0.18),_transparent_55%)] dark:bg-[radial-gradient(circle_at_top,_rgba(20,184,166,0.18),_transparent_55%)]" />
-        <div className="absolute right-[-120px] top-[-160px] h-[420px] w-[420px] rounded-full bg-[rgba(245,158,11,0.12)] blur-3xl dark:bg-[rgba(245,158,11,0.18)]" />
-        <div className="absolute bottom-[-200px] left-[-140px] h-[480px] w-[480px] rounded-full bg-[rgba(59,130,246,0.12)] blur-3xl dark:bg-[rgba(59,130,246,0.18)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(120deg,_rgba(255,255,255,0.92),_rgba(255,255,255,0.72))] dark:bg-[linear-gradient(120deg,_rgba(15,23,42,0.85),_rgba(15,23,42,0.65))]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(242,213,187,0.24),_transparent_52%)] dark:bg-[radial-gradient(circle_at_top,_rgba(214,181,166,0.2),_transparent_52%)]" />
+        <div className="absolute right-[-120px] top-[-160px] size-[420px] rounded-full bg-[rgba(187,213,233,0.22)] blur-3xl dark:bg-[rgba(163,189,212,0.14)]" />
+        <div className="absolute bottom-[-180px] left-[-140px] size-[460px] rounded-full bg-[rgba(232,203,215,0.2)] blur-3xl dark:bg-[rgba(205,176,190,0.12)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(120deg,_rgba(251,248,242,0.95),_rgba(246,239,230,0.84))] dark:bg-[linear-gradient(120deg,_rgba(33,38,62,0.92),_rgba(37,44,71,0.82))]" />
       </div>
 
       <DashboardSidebar links={filteredLinks} />
 
       <div className="relative flex flex-1 flex-col">
-        <header className="sticky top-0 z-50 flex h-14 border-b border-slate-200/70 bg-white/80 px-4 backdrop-blur-xl dark:border-white/10 dark:bg-slate-950/70 lg:h-[60px] xl:px-8">
+        <header className="border-border/70 bg-background/80 sticky top-0 z-50 flex h-14 border-b px-4 backdrop-blur-xl lg:h-[60px] xl:px-8">
           <MaxWidthWrapper className="flex max-w-7xl items-center gap-x-3 px-0">
             <MobileSheetSidebar links={filteredLinks} />
             <div className="flex-1" />

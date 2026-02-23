@@ -39,7 +39,7 @@ export default function Testimonials() {
                     </div>
                   </div>
 
-                  <div className="mb-3 flex items-center gap-1.5 text-primary">
+                  <div className="mb-3 flex items-center gap-1.5 text-accent">
                     <Icons.check className="size-4" />
                     <Icons.check className="size-4" />
                     <Icons.check className="size-4" />

@@ -1,11 +1,12 @@
 import {
-  Nunito as FontPlayfulBody,
+  Comic_Neue as FontPlayfulBody,
   Baloo_2 as FontPlayfulHeading,
   Plus_Jakarta_Sans as FontSans,
   Urbanist,
 } from "next/font/google";
 
-export const fontSans = FontSans({
+export const fontSans = FontPlayfulBody({
+  weight: ["300", "400", "700"],
   subsets: ["latin"],
   variable: "--font-sans",
 });
@@ -15,7 +16,7 @@ export const fontUrban = Urbanist({
   variable: "--font-urban",
 });
 
-export const fontHeading = Urbanist({
+export const fontHeading = FontPlayfulHeading({
   subsets: ["latin"],
   variable: "--font-heading",
 });
@@ -31,6 +32,7 @@ export const fontPlayfulHeading = FontPlayfulHeading({
 });
 
 export const fontPlayfulBody = FontPlayfulBody({
+  weight: ["300", "400", "700"],
   subsets: ["latin"],
   variable: "--font-playful-body",
 });

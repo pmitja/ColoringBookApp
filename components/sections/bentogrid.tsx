@@ -13,7 +13,7 @@ export default function BentoGrid() {
           <p className="playful-pill mx-auto w-fit text-xs font-semibold uppercase tracking-[0.22em]">
             Kid-First Experience
           </p>
-          <h2 className="font-heading mt-3 text-balance text-3xl sm:text-4xl">
+          <h2 className="mt-3 text-balance font-heading text-3xl sm:text-4xl">
             From photo to coloring fun in three easy steps
           </h2>
         </div>
@@ -121,7 +121,7 @@ export default function BentoGrid() {
               prefetch={true}
               className={cn(
                 buttonVariants({ size: "lg", rounded: "full" }),
-                "mt-6 w-full justify-center sm:w-fit",
+                "hover:bg-accent/90 mt-6 w-full justify-center bg-accent text-accent-foreground sm:w-fit",
               )}
             >
               Try It Free

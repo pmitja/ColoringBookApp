@@ -49,7 +49,7 @@ const statusStyles: Record<ImageJob["status"], string> = {
   QUEUED:
     "border-amber-200 bg-amber-100 text-amber-800 dark:border-amber-900/40 dark:bg-amber-900/25 dark:text-amber-300",
   FAILED:
-    "border-rose-200 bg-rose-100 text-rose-800 dark:border-rose-900/40 dark:bg-rose-900/25 dark:text-rose-300",
+    "border-orange-200 bg-orange-100 text-orange-800 dark:border-orange-900/40 dark:bg-orange-900/25 dark:text-orange-300",
 };
 
 const statusLabels: Record<ImageJob["status"], string> = {
@@ -155,7 +155,7 @@ export default async function DashboardPage() {
       </DashboardHeader>
 
       <div className="grid gap-4 xl:grid-cols-[1.4fr_0.6fr]">
-        <Card className="border-border/80 bg-card/95 rounded-3xl">
+        <Card className="playful-card">
           <CardHeader className="pb-4">
             <CardTitle className="font-heading text-xl">
               Monthly Generations
@@ -206,7 +206,7 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-border/80 bg-card/95 rounded-3xl">
+        <Card className="playful-card">
           <CardHeader className="pb-4">
             <CardTitle className="font-heading text-xl">
               Quick Actions
@@ -242,7 +242,7 @@ export default async function DashboardPage() {
         <MetricCard
           label="Total Pages"
           value={totalCreations}
-          tone="bg-secondary/75 text-secondary-foreground"
+          tone="bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300"
           icon={<Icons.bookOpen className="size-4" />}
         />
         <MetricCard
@@ -260,7 +260,7 @@ export default async function DashboardPage() {
         <MetricCard
           label="Failed"
           value={statusCount["FAILED"] ?? 0}
-          tone="bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300"
+          tone="bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300"
           icon={<Icons.warning className="size-4" />}
         />
       </section>
@@ -295,7 +295,7 @@ export default async function DashboardPage() {
             </Link>
           </EmptyPlaceholder>
         ) : (
-          <Card className="border-border/80 bg-card/95 rounded-3xl">
+          <Card className="playful-card">
             <CardContent className="p-0">
               <ul className="divide-border/70 divide-y">
                 {recentCreations.map((creation) => (
@@ -324,7 +324,7 @@ function MetricCard({
   tone: string;
 }) {
   return (
-    <Card className="border-border/80 bg-card/95 rounded-3xl">
+    <Card className="playful-card">
       <CardContent className="flex items-center justify-between p-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">

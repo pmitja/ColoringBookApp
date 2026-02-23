@@ -26,9 +26,9 @@ export default function HeroLanding() {
               Family-Safe Creative Flow
             </div>
 
-            <h1 className="font-heading text-balance text-4xl leading-tight sm:text-5xl md:text-6xl">
+            <h1 className="text-balance font-heading text-4xl leading-tight text-foreground sm:text-5xl md:text-6xl">
               Turn your favorite moments into{" "}
-              <span className="text-gradient_indigo-purple font-extrabold">
+              <span className="font-extrabold text-accent">
                 printable coloring adventures
               </span>
               .
@@ -46,7 +46,7 @@ export default function HeroLanding() {
                 prefetch={true}
                 className={cn(
                   buttonVariants({ size: "lg", rounded: "full" }),
-                  "shadow-primary/20 gap-2 px-6 shadow-md",
+                  "shadow-primary/20 hover:bg-accent/90 gap-2 bg-accent px-6 text-accent-foreground shadow-md",
                 )}
               >
                 Start Free

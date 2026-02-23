@@ -3,6 +3,21 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { 
+  Palette, 
+  PaintBucket, 
+  Image as ImageIcon, 
+  Undo2, 
+  Redo2, 
+  RotateCcw, 
+  Download, 
+  Save,
+  ChevronLeft,
+  ChevronRight,
+  ExternalLink,
+  BookOpen,
+  Plus
+} from "lucide-react";
 
 import {
   fillRegionAtPoint,
@@ -41,14 +56,26 @@ interface ColoringStudioProps {
 }
 
 const COLOR_PRESETS = [
-  "#ef4444",
-  "#f97316",
-  "#f59e0b",
-  "#84cc16",
-  "#22c55e",
-  "#14b8a6",
-  "#3b82f6",
-  "#8b5cf6",
+  "#ef4444", // Red
+  "#f97316", // Orange
+  "#f59e0b", // Amber
+  "#eab308", // Yellow
+  "#84cc16", // Lime
+  "#22c55e", // Green
+  "#10b981", // Emerald
+  "#14b8a6", // Teal
+  "#06b6d4", // Cyan
+  "#0ea5e9", // Light Blue
+  "#3b82f6", // Blue
+  "#6366f1", // Indigo
+  "#8b5cf6", // Violet
+  "#a855f7", // Purple
+  "#d946ef", // Fuchsia
+  "#ec4899", // Pink
+  "#f43f5e", // Rose
+  "#ffffff", // White
+  "#94a3b8", // Gray
+  "#0f172a", // Slate
 ];
 
 const MAX_HISTORY_STEPS = 20;
@@ -458,9 +485,9 @@ export default function ColoringStudio({
           <Link href="/upload" className="flex-1">
             <Button className="w-full">Upload Photo</Button>
           </Link>
-          <Link href="/ai-generator" className="flex-1">
+          <Link href="/ai-color-book" className="flex-1">
             <Button variant="outline" className="w-full">
-              Generate from Prompt
+              Generate Color Book
             </Button>
           </Link>
         </div>
@@ -470,46 +497,40 @@ export default function ColoringStudio({
 
   if (!isPaintingView) {
     return (
-      <>
-        <div className="flex flex-wrap items-center gap-2">
-          <Link href="/creations">
-            <Button variant="outline" className="gap-2">
-              <Icons.bookOpen className="size-4" />
-              My Creations
-            </Button>
-          </Link>
-          <Link href="/upload">
-            <Button className="gap-2">
-              <Icons.media className="size-4" />
-              New Page
-            </Button>
-          </Link>
-          <Button
-            disabled
-            className="gap-2 bg-sky-600 text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400"
-          >
-            <Icons.download className="size-4" />
-            Download Colored PNG
-          </Button>
-          <Button
-            disabled
-            className="gap-2 bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400"
-          >
-            <Icons.check className="size-4" />
-            Save to My Creations
-          </Button>
+      <div className="space-y-6">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <Link href="/creations">
+              <Button variant="outline" className="gap-2 rounded-xl">
+                <BookOpen className="size-4" />
+                My Creations
+              </Button>
+            </Link>
+            <Link href="/upload">
+              <Button className="gap-2 rounded-xl">
+                <Plus className="size-4" />
+                New Page
+              </Button>
+            </Link>
+          </div>
         </div>
 
-        <Card className="border-slate-200/70 bg-white/80 dark:border-white/10 dark:bg-white/5">
-          <CardHeader className="space-y-2">
-            <CardTitle className="text-lg">Choose a Page to Color</CardTitle>
-            <CardDescription>
-              Preview your generated pages, select one, then open the painting
-              canvas.
-            </CardDescription>
+        <Card className="playful-card overflow-hidden border-2 shadow-xl shadow-primary/5">
+          <CardHeader className="relative z-10 space-y-4 border-b border-border/50 bg-muted/20 pb-6">
+            <div className="flex items-center gap-3">
+              <div className="rounded-xl bg-primary/10 p-2.5 text-primary ring-1 ring-primary/20">
+                <Palette className="size-6" />
+              </div>
+              <div>
+                <CardTitle className="font-heading text-2xl">Choose a Page to Color</CardTitle>
+                <CardDescription className="text-base font-medium mt-1">
+                  Select one of your generated pages below to start painting.
+                </CardDescription>
+              </div>
+            </div>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          <CardContent className="relative z-10 p-6 sm:p-8">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {pages.map((page) => {
                 const isSelected = selectedPageId === page.id;
 
@@ -519,13 +540,13 @@ export default function ColoringStudio({
                     type="button"
                     onClick={() => handleSelectPage(page.id)}
                     className={cn(
-                      "rounded-2xl border p-2 text-left transition",
+                      "group relative rounded-2xl border-2 p-3 text-left transition-all duration-300",
                       isSelected
-                        ? "border-foreground/40 ring-foreground/15 bg-slate-100/80 ring-2 dark:bg-slate-900/50"
-                        : "border-slate-200/70 bg-white/70 hover:border-slate-300 dark:border-white/10 dark:bg-white/5 dark:hover:border-white/20",
+                        ? "border-primary bg-primary/5 shadow-md shadow-primary/10 scale-[1.02]"
+                        : "border-border/50 bg-background/50 hover:border-primary/50 hover:bg-muted/50 hover:shadow-sm"
                     )}
                   >
-                    <div className="relative aspect-[3/4] overflow-hidden rounded-xl border border-slate-200/70 bg-white dark:border-white/10">
+                    <div className="relative aspect-[3/4] overflow-hidden rounded-xl border border-border/50 bg-white shadow-sm transition-transform duration-300 group-hover:scale-[1.02]">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={`/api/download/lineart/${page.id}`}
@@ -534,311 +555,302 @@ export default function ColoringStudio({
                         loading="lazy"
                         decoding="async"
                       />
+                      {isSelected && (
+                        <div className="absolute inset-0 bg-primary/10 ring-inset ring-4 ring-primary" />
+                      )}
                       {isSelected ? (
-                        <Badge className="absolute right-2 top-2">
+                        <Badge className="absolute right-3 top-3 shadow-md border-0 bg-primary text-primary-foreground font-bold px-3 py-1">
                           Selected
                         </Badge>
                       ) : null}
                     </div>
-                    <p className="mt-2 truncate text-sm font-semibold text-foreground">
-                      {stripFileExtension(page.inputFileName)}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {formatCreatedAt(page.createdAt)}
-                    </p>
+                    <div className="mt-4 px-1">
+                      <p className="truncate text-sm font-bold text-foreground">
+                        {stripFileExtension(page.inputFileName)}
+                      </p>
+                      <p className="text-xs font-medium text-muted-foreground mt-1">
+                        {formatCreatedAt(page.createdAt)}
+                      </p>
+                    </div>
                   </button>
                 );
               })}
             </div>
 
-            <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+            <div className="mt-8 flex justify-end">
               <Button
                 onClick={() => {
                   if (!selectedPageId) return;
                   handleSelectPage(selectedPageId, true);
                 }}
                 disabled={!selectedPageId}
-                className="gap-2"
+                className="gap-2 rounded-full py-6 px-8 text-lg font-bold shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98]"
               >
-                <Icons.check className="size-4" />
+                <Palette className="size-5" />
                 Start Coloring
+                <ChevronRight className="size-5 ml-1" />
               </Button>
             </div>
           </CardContent>
         </Card>
-      </>
+      </div>
     );
   }
 
   return (
-    <>
-      <div className="flex flex-wrap items-center gap-2">
-        <Link href="/creations">
-          <Button variant="outline" className="gap-2">
-            <Icons.bookOpen className="size-4" />
-            My Creations
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="outline"
+            className="gap-2 rounded-xl"
+            onClick={() => setIsPaintingView(false)}
+          >
+            <ChevronLeft className="size-4" />
+            Back to Library
           </Button>
-        </Link>
-        <Link href="/upload">
-          <Button className="gap-2">
-            <Icons.media className="size-4" />
-            New Page
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            onClick={handleDownload}
+            disabled={isLoadingCanvas || isFilling || isSaving}
+            className="gap-2 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-bold shadow-sm"
+          >
+            <Download className="size-4" />
+            Download PNG
           </Button>
-        </Link>
-        <Button
-          onClick={handleDownload}
-          disabled={isLoadingCanvas || isFilling || isSaving}
-          className="gap-2 bg-sky-600 text-white hover:bg-sky-700 dark:bg-sky-500 dark:hover:bg-sky-400"
-        >
-          <Icons.download className="size-4" />
-          Download Colored PNG
-        </Button>
-        <Button
-          onClick={handleSaveToCreations}
-          disabled={isLoadingCanvas || isFilling || isSaving}
-          className="gap-2 bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400"
-        >
-          {isSaving ? (
-            <Icons.spinner className="size-4 animate-spin" />
-          ) : (
-            <Icons.check className="size-4" />
-          )}
-          Save to My Creations
-        </Button>
+          <Button
+            onClick={handleSaveToCreations}
+            disabled={isLoadingCanvas || isFilling || isSaving}
+            className="gap-2 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-md shadow-primary/20"
+          >
+            {isSaving ? (
+              <Icons.spinner className="size-4 animate-spin" />
+            ) : (
+              <Save className="size-4" />
+            )}
+            Save to Creations
+          </Button>
+        </div>
       </div>
 
-      <section className="grid gap-5 xl:grid-cols-[320px_minmax(0,1fr)]">
-      <Card className="border-slate-200/70 bg-white/80 dark:border-white/10 dark:bg-white/5">
-        <CardHeader className="space-y-2">
-          <CardTitle className="text-base">Color Controls</CardTitle>
-          <CardDescription>
-            Pick a color, click an enclosed area to fill, and keep image
-            switching hidden unless needed.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-5">
-          <div className="space-y-2">
-            <Accordion
-              type="single"
-              collapsible
-              value={galleryAccordionValue}
-              onValueChange={(value) =>
-                setGalleryAccordionValue(value || undefined)
-              }
-              className="rounded-xl border border-slate-200/70 px-3 dark:border-white/10"
-            >
-              <AccordionItem value="pages" className="border-none">
-                <AccordionTrigger className="py-3 text-sm font-semibold hover:no-underline">
-                  <span className="flex items-center gap-2">
-                    <Icons.media className="size-4" />
-                    Change Page
-                  </span>
-                </AccordionTrigger>
-                <AccordionContent className="pb-3">
-                  <div className="max-h-64 overflow-y-auto pr-1">
-                    <div className="grid grid-cols-2 gap-2">
-                      {pages.map((page) => {
-                        const isSelected = selectedPageId === page.id;
-
-                        return (
-                          <button
-                            key={page.id}
-                            type="button"
-                            onClick={() => handleSelectPage(page.id)}
-                            className={cn(
-                              "rounded-xl border p-1.5 text-left transition",
-                              isSelected
-                                ? "border-foreground/40 ring-foreground/15 bg-slate-100/80 ring-2 dark:bg-slate-900/50"
-                                : "border-slate-200/70 bg-white/70 hover:border-slate-300 dark:border-white/10 dark:bg-white/5 dark:hover:border-white/20",
-                            )}
-                          >
-                            <div className="relative aspect-[3/4] overflow-hidden rounded-lg border border-slate-200/70 bg-white dark:border-white/10">
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img
-                                src={`/api/download/lineart/${page.id}`}
-                                alt={`Coloring page preview for ${stripFileExtension(page.inputFileName)}`}
-                                className="size-full object-contain"
-                                loading="lazy"
-                                decoding="async"
-                              />
-                            </div>
-                            <p className="mt-1 truncate text-xs font-medium text-foreground">
-                              {stripFileExtension(page.inputFileName)}
-                            </p>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
-
-            {selectedPage ? (
-              <div className="flex items-center justify-between rounded-xl border border-slate-200/70 bg-slate-50/80 px-3 py-2 text-xs dark:border-white/10 dark:bg-slate-900/40">
-                <span className="truncate font-medium text-foreground">
-                  {stripFileExtension(selectedPage.inputFileName)}
-                </span>
-                <span className="text-muted-foreground">
-                  {formatCreatedAt(selectedPage.createdAt)}
-                </span>
+      <section className="grid gap-6 lg:grid-cols-[340px_minmax(0,1fr)]">
+        <Card className="playful-card overflow-hidden border-2 shadow-sm order-2 lg:order-1 h-fit sticky top-24">
+          <CardHeader className="bg-muted/20 border-b border-border/50 pb-5">
+            <div className="flex items-center gap-2">
+              <PaintBucket className="size-5 text-primary" />
+              <CardTitle className="font-heading text-xl">Color Palette</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-6 p-5">
+            
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="fill-color-picker" className="text-sm font-bold">Selected Color</Label>
+                <Badge variant="outline" className="font-mono bg-background">
+                  {fillHex.toUpperCase()}
+                </Badge>
               </div>
-            ) : null}
-
-            <Button
-              variant="ghost"
-              className="w-full justify-start gap-2"
-              onClick={() => setIsPaintingView(false)}
-            >
-              <Icons.chevronLeft className="size-4" />
-              Back to Page Picker
-            </Button>
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="fill-color-picker">Fill color</Label>
-              <span className="font-mono text-xs text-muted-foreground">
-                {fillHex.toUpperCase()}
-              </span>
-            </div>
-            <input
-              id="fill-color-picker"
-              type="color"
-              value={fillHex}
-              onChange={(event) => setFillHex(event.target.value)}
-              className="h-10 w-full cursor-pointer rounded-xl border border-input bg-transparent p-1"
-              aria-label="Choose fill color"
-            />
-            <div className="grid grid-cols-8 gap-1.5">
-              {COLOR_PRESETS.map((color) => (
-                <button
-                  key={color}
-                  type="button"
-                  onClick={() => setFillHex(color)}
-                  className={cn(
-                    "size-7 rounded-full border transition",
-                    fillHex.toLowerCase() === color.toLowerCase()
-                      ? "ring-foreground/20 border-foreground ring-2"
-                      : "border-slate-200/80 dark:border-white/20",
-                  )}
-                  style={{ backgroundColor: color }}
-                  aria-label={`Use color ${color}`}
-                />
-              ))}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2">
-            <Button
-              onClick={handleUndo}
-              disabled={!canUndo || isLoadingCanvas || isFilling}
-              variant="outline"
-              className="gap-2"
-            >
-              <Icons.undo className="size-4" />
-              Undo
-            </Button>
-            <Button
-              onClick={handleRedo}
-              disabled={!canRedo || isLoadingCanvas || isFilling}
-              variant="outline"
-              className="gap-2"
-            >
-              <Icons.redo className="size-4" />
-              Redo
-            </Button>
-            <Button
-              onClick={handleReset}
-              disabled={isLoadingCanvas || isFilling}
-              variant="outline"
-              className="col-span-2 gap-2"
-            >
-              <Icons.undo className="size-4" />
-              Reset
-            </Button>
-          </div>
-
-          {lastSavedJobId ? (
-            <Link href={`/results/${lastSavedJobId}`} className="block">
-              <Button variant="ghost" className="w-full gap-2">
-                <Icons.arrowUpRight className="size-4" />
-                Open Last Saved Result
-              </Button>
-            </Link>
-          ) : null}
-
-          <p className="text-xs text-muted-foreground">
-            Click any enclosed area on the canvas to fill only that region with
-            the selected color.
-          </p>
-
-          {selectedPage ? (
-            <Link href={`/results/${selectedPage.id}`} className="block">
-              <Button variant="ghost" className="w-full gap-2">
-                <Icons.arrowUpRight className="size-4" />
-                Open Original Results
-              </Button>
-            </Link>
-          ) : null}
-        </CardContent>
-      </Card>
-
-      <Card className="border-slate-200/70 bg-white/80 dark:border-white/10 dark:bg-white/5">
-        <CardHeader>
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <CardTitle className="text-base">Canvas Preview</CardTitle>
-              <CardDescription>
-                Click-to-fill stays inside line-art boundaries.
-              </CardDescription>
-            </div>
-            {canvasSize ? (
-              <Badge variant="outline">
-                {canvasSize.width} × {canvasSize.height}
-              </Badge>
-            ) : null}
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="relative flex min-h-[320px] items-center justify-center overflow-hidden rounded-2xl border border-slate-200/70 bg-white shadow-sm dark:border-white/10">
-            <canvas
-              ref={canvasRef}
-              onPointerDown={fillRegionFromPointer}
-              className="block max-h-[68vh] w-auto max-w-full cursor-crosshair touch-none"
-              aria-label="Coloring page canvas"
-            />
-            {(isLoadingCanvas || isFilling) && (
-              <div className="absolute inset-0 flex items-center justify-center bg-white/70 backdrop-blur-sm dark:bg-slate-900/60">
-                <div className="flex items-center gap-2 rounded-full border border-slate-200/70 bg-white px-3 py-1.5 text-sm dark:border-white/15 dark:bg-slate-900">
-                  <Icons.spinner className="size-4 animate-spin" />
-                  <span>
-                    {isLoadingCanvas ? "Loading page..." : "Applying fill..."}
-                  </span>
+              <div className="flex items-center gap-3">
+                <div 
+                  className="size-12 rounded-xl border-2 border-border/50 shadow-inner overflow-hidden shrink-0"
+                  style={{ backgroundColor: fillHex }}
+                >
+                  <input
+                    id="fill-color-picker"
+                    type="color"
+                    value={fillHex}
+                    onChange={(event) => setFillHex(event.target.value)}
+                    className="w-full h-full opacity-0 cursor-pointer"
+                    aria-label="Choose fill color"
+                  />
+                </div>
+                <div className="flex-1 text-xs font-medium text-muted-foreground leading-snug">
+                  Click the color square to pick a custom color, or choose a preset below.
                 </div>
               </div>
-            )}
-          </div>
+            </div>
 
-          {canvasError ? (
-            <Alert className="border-rose-400/30 bg-rose-500/10 text-rose-800 dark:text-rose-100">
-              <Icons.warning className="size-4 text-rose-500 dark:text-rose-200" />
-              <AlertDescription className="text-rose-700 dark:text-rose-50">
-                {canvasError}
-              </AlertDescription>
-            </Alert>
-          ) : null}
+            <div className="space-y-3">
+              <Label className="text-sm font-bold">Presets</Label>
+              <div className="grid grid-cols-5 gap-2">
+                {COLOR_PRESETS.map((color) => (
+                  <button
+                    key={color}
+                    type="button"
+                    onClick={() => setFillHex(color)}
+                    className={cn(
+                      "aspect-square rounded-xl border-2 transition-all hover:scale-110 active:scale-95 shadow-sm",
+                      fillHex.toLowerCase() === color.toLowerCase()
+                        ? "border-foreground ring-2 ring-foreground/20 ring-offset-1 scale-110 z-10"
+                        : "border-black/10 dark:border-white/20 hover:border-foreground/50",
+                    )}
+                    style={{ backgroundColor: color }}
+                    aria-label={`Use color ${color}`}
+                  />
+                ))}
+              </div>
+            </div>
 
-          <div className="rounded-2xl border border-slate-200/70 bg-slate-50/80 p-3 text-sm text-muted-foreground dark:border-white/10 dark:bg-slate-900/40">
-            {lastFillPixels === null
-              ? "Tip: click inside an enclosed object to color only that region."
-              : lastFillPixels > 0
-                ? `Region fill updated ${lastFillPixels.toLocaleString("en-US")} pixels.`
-                : "No fillable region found at the clicked position."}
-          </div>
-        </CardContent>
-      </Card>
+            <div className="h-px bg-border/50 w-full" />
+
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                onClick={handleUndo}
+                disabled={!canUndo || isLoadingCanvas || isFilling}
+                variant="outline"
+                className="gap-2 rounded-xl font-bold border-2"
+              >
+                <Undo2 className="size-4" />
+                Undo
+              </Button>
+              <Button
+                onClick={handleRedo}
+                disabled={!canRedo || isLoadingCanvas || isFilling}
+                variant="outline"
+                className="gap-2 rounded-xl font-bold border-2"
+              >
+                <Redo2 className="size-4" />
+                Redo
+              </Button>
+              <Button
+                onClick={handleReset}
+                disabled={isLoadingCanvas || isFilling}
+                variant="destructive"
+                className="col-span-2 gap-2 rounded-xl font-bold bg-destructive/10 text-destructive hover:bg-destructive/20 hover:text-destructive border-0"
+              >
+                <RotateCcw className="size-4" />
+                Reset Canvas
+              </Button>
+            </div>
+
+            <div className="space-y-2 pt-2">
+              <Accordion
+                type="single"
+                collapsible
+                value={galleryAccordionValue}
+                onValueChange={(value) =>
+                  setGalleryAccordionValue(value || undefined)
+                }
+                className="rounded-2xl border-2 border-border/50 bg-muted/20 px-4"
+              >
+                <AccordionItem value="pages" className="border-none">
+                  <AccordionTrigger className="py-4 text-sm font-bold hover:no-underline [&[data-state=open]]:pb-2">
+                    <span className="flex items-center gap-2">
+                      <ImageIcon className="size-4 text-muted-foreground" />
+                      Switch Page
+                    </span>
+                  </AccordionTrigger>
+                  <AccordionContent className="pb-4">
+                    <div className="max-h-60 overflow-y-auto pr-2 -mr-2">
+                      <div className="grid grid-cols-2 gap-2">
+                        {pages.map((page) => {
+                          const isSelected = selectedPageId === page.id;
+
+                          return (
+                            <button
+                              key={page.id}
+                              type="button"
+                              onClick={() => handleSelectPage(page.id)}
+                              className={cn(
+                                "group rounded-xl border-2 p-1.5 text-left transition-all",
+                                isSelected
+                                  ? "border-primary bg-primary/5"
+                                  : "border-border/50 bg-background hover:border-primary/30"
+                              )}
+                            >
+                              <div className="relative aspect-[3/4] overflow-hidden rounded-lg border border-border/50 bg-white">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src={`/api/download/lineart/${page.id}`}
+                                  alt={`Preview`}
+                                  className="size-full object-contain transition-transform group-hover:scale-105"
+                                  loading="lazy"
+                                  decoding="async"
+                                />
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            </div>
+
+            {selectedPage || lastSavedJobId ? (
+              <div className="space-y-2 pt-2">
+                {lastSavedJobId && (
+                  <Link href={`/results/${lastSavedJobId}`} className="block">
+                    <Button variant="outline" className="w-full gap-2 rounded-xl font-bold bg-muted/30">
+                      <ExternalLink className="size-4" />
+                      View Last Saved
+                    </Button>
+                  </Link>
+                )}
+                {selectedPage && (
+                  <Link href={`/results/${selectedPage.id}`} className="block">
+                    <Button variant="ghost" className="w-full gap-2 rounded-xl font-medium text-muted-foreground hover:text-foreground">
+                      <ExternalLink className="size-4" />
+                      Original Results
+                    </Button>
+                  </Link>
+                )}
+              </div>
+            ) : null}
+
+          </CardContent>
+        </Card>
+
+        <Card className="playful-card overflow-hidden border-2 shadow-xl shadow-primary/5 order-1 lg:order-2">
+          <CardHeader className="bg-muted/20 border-b border-border/50 pb-5">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <CardTitle className="font-heading text-xl">Canvas</CardTitle>
+                <CardDescription className="text-sm font-medium mt-1">
+                  Click inside any enclosed area to fill it.
+                </CardDescription>
+              </div>
+              {canvasSize ? (
+                <Badge variant="outline" className="bg-background shadow-sm px-3 py-1 font-mono text-xs">
+                  {canvasSize.width} × {canvasSize.height}
+                </Badge>
+              ) : null}
+            </div>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="relative flex min-h-[400px] items-center justify-center overflow-hidden rounded-2xl border-2 border-border/50 bg-[url('/checkered-pattern.png')] bg-repeat shadow-inner dark:bg-[url('/checkered-pattern-dark.png')]">
+              <div className="absolute inset-0 bg-background/50 backdrop-blur-[2px]" />
+              <canvas
+                ref={canvasRef}
+                onPointerDown={fillRegionFromPointer}
+                className="relative z-10 block max-h-[75vh] w-auto max-w-full cursor-crosshair touch-none bg-white shadow-xl ring-1 ring-border/50"
+                aria-label="Coloring page canvas"
+              />
+              {(isLoadingCanvas || isFilling) && (
+                <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/40 backdrop-blur-sm">
+                  <div className="flex items-center gap-3 rounded-2xl border-2 border-primary/20 bg-background px-6 py-4 shadow-xl">
+                    <Icons.spinner className="size-5 animate-spin text-primary" />
+                    <span className="font-bold text-base">
+                      {isLoadingCanvas ? "Preparing canvas..." : "Filling color..."}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {canvasError ? (
+              <Alert className="mt-6 border-destructive/20 bg-destructive/10 text-destructive rounded-2xl">
+                <Icons.warning className="size-4" />
+                <AlertDescription className="font-bold ml-2">
+                  {canvasError}
+                </AlertDescription>
+              </Alert>
+            ) : null}
+          </CardContent>
+        </Card>
       </section>
-    </>
+    </div>
   );
 }

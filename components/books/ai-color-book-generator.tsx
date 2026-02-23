@@ -10,6 +10,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { Sparkles, BookOpen, ChevronRight, FileImage, Type, BookOpenCheck, Loader2, Wand2, Paintbrush, Layers } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,14 +24,51 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { Icons } from "@/components/shared/icons";
+import { cn } from "@/lib/utils";
 
 const MIN_PROMPT_LENGTH = 12;
 const DEFAULT_PAGE_COUNT = 10;
 const MIN_PAGE_COUNT = 1;
 const MAX_PAGE_COUNT = 40;
+const PAPER_FORMATS = ["A3", "A4", "A5"] as const;
+const DEFAULT_PAPER_FORMAT = "A4";
+const STYLE_PRESETS = [
+  "CLASSIC",
+  "PLAYFUL_ROUNDED",
+  "BOLD_SIMPLE",
+  "DETAILED_COZY",
+  "WHIMSICAL",
+] as const;
+const DEFAULT_STYLE_PRESET = "CLASSIC";
+
+type PaperFormat = (typeof PAPER_FORMATS)[number];
+type StylePreset = (typeof STYLE_PRESETS)[number];
+
+const STYLE_PRESET_LABELS: Record<StylePreset, string> = {
+  CLASSIC: "Classic outline",
+  PLAYFUL_ROUNDED: "Playful & Rounded",
+  BOLD_SIMPLE: "Bold & Simple",
+  DETAILED_COZY: "Detailed & Cozy",
+  WHIMSICAL: "Whimsical Storybook",
+};
+
+const STYLE_PRESET_DESCRIPTIONS: Record<StylePreset, string> = {
+  CLASSIC: "Standard coloring book style with clean lines.",
+  PLAYFUL_ROUNDED: "Soft edges, cute proportions, great for kids.",
+  BOLD_SIMPLE: "Thick lines, minimalistic details, easy to color.",
+  DETAILED_COZY: "Intricate patterns, relaxing to color for adults.",
+  WHIMSICAL: "Magical feel, dynamic flowing lines and elements.",
+};
 
 type GenerationStatus = "PROCESSING" | "DONE" | "FAILED";
 
@@ -93,6 +131,12 @@ export default function AIColorBookGenerator() {
   const [prompt, setPrompt] = useState("");
   const [title, setTitle] = useState("");
   const [pageCount, setPageCount] = useState(DEFAULT_PAGE_COUNT);
+  const [paperFormat, setPaperFormat] = useState<PaperFormat>(
+    DEFAULT_PAPER_FORMAT,
+  );
+  const [stylePreset, setStylePreset] = useState<StylePreset>(
+    DEFAULT_STYLE_PRESET,
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [activeBookId, setActiveBookId] = useState<string | null>(null);
@@ -191,6 +235,8 @@ export default function AIColorBookGenerator() {
             prompt: trimmedPrompt,
             title: title.trim() || null,
             pageCount: clampedCount,
+            paperFormat,
+            stylePreset,
           }),
         });
 
@@ -220,171 +266,347 @@ export default function AIColorBookGenerator() {
         setIsSubmitting(false);
       }
     },
-    [pageCount, prompt, title],
+    [pageCount, paperFormat, prompt, stylePreset, title],
   );
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-      <Card className="playful-card overflow-hidden">
-        <CardHeader className="relative z-10 space-y-3 pb-6">
-          <CardTitle className="font-heading text-3xl">Generate New Book</CardTitle>
-          <CardDescription className="text-base">
-            Tell us your book idea and choose how many interior pages you want.
-            We automatically generate a front cover, your selected number of
-            interior pages, and a back cover.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="relative z-10">
-          <form onSubmit={submit} className="space-y-6">
-            <div className="space-y-3">
-              <Label htmlFor="book-prompt" className="text-base font-bold">Book prompt</Label>
-              <Textarea
-                id="book-prompt"
-                placeholder="Example: cute jungle animals learning letters in a playful forest classroom"
-                value={prompt}
-                onChange={(event) => setPrompt(event.target.value)}
-                className="bg-muted/50 focus-visible:ring-primary/50 min-h-[160px] resize-none rounded-2xl p-4 text-base"
-                maxLength={2000}
-                required
-              />
-              <p className="text-sm font-medium text-muted-foreground">
-                Minimum {MIN_PROMPT_LENGTH} characters.
-              </p>
+    <div className="mx-auto w-full max-w-6xl">
+      <div className="grid gap-8 lg:grid-cols-[1.5fr_1fr] items-start">
+        {/* Left Column - Form */}
+        <Card className="playful-card overflow-hidden border-2 shadow-xl shadow-primary/5">
+          <CardHeader className="relative z-10 space-y-4 border-b border-border/50 bg-muted/20 pb-6">
+            <div className="flex items-center gap-3">
+              <div className="rounded-xl bg-primary/10 p-2.5 text-primary ring-1 ring-primary/20">
+                <Wand2 className="size-6" />
+              </div>
+              <div>
+                <CardTitle className="font-heading text-3xl">Book Studio</CardTitle>
+                <CardDescription className="text-base font-medium mt-1">
+                  Describe your idea, we'll draw the entire book.
+                </CardDescription>
+              </div>
             </div>
-
-            <div className="space-y-3">
-              <Label htmlFor="book-title" className="text-base font-bold">Book title (optional)</Label>
-              <Input
-                id="book-title"
-                value={title}
-                onChange={(event) => setTitle(event.target.value)}
-                placeholder="Example: Jungle Adventures"
-                maxLength={120}
-                className="bg-muted/50 focus-visible:ring-primary/50 rounded-2xl px-4 py-6 text-base"
-              />
-            </div>
-
-            <div className="bg-muted/30 border-border/50 space-y-5 rounded-2xl border p-5">
-              <div className="flex items-center justify-between gap-3">
-                <Label htmlFor="page-count" className="text-base font-bold">Interior pages</Label>
-                <div className="flex items-center gap-2 rounded-xl border bg-background px-3 py-1 shadow-sm">
-                   <Input
-                     id="page-count"
-                     type="number"
-                     min={MIN_PAGE_COUNT}
-                     max={MAX_PAGE_COUNT}
-                     value={pageCount}
-                     onChange={(event) => {
-                       const parsed = Number.parseInt(event.target.value, 10);
-                       if (Number.isNaN(parsed)) {
-                         setPageCount(DEFAULT_PAGE_COUNT);
-                         return;
-                       }
-                       setPageCount(clampPageCount(parsed));
-                     }}
-                     className="w-16 border-0 bg-transparent p-0 text-center font-bold focus-visible:ring-0"
-                   />
-                   <span className="text-sm font-medium text-muted-foreground">pages</span>
+          </CardHeader>
+          <CardContent className="relative z-10 p-6 sm:p-8">
+            <form onSubmit={submit} className="space-y-8">
+              {/* Concept Section */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 text-foreground/80">
+                  <BookOpen className="size-5" />
+                  <h3 className="font-heading text-xl">1. The Concept</h3>
+                </div>
+                
+                <div className="grid gap-5 rounded-2xl border-2 border-border/50 bg-background/50 p-5 shadow-sm transition-all focus-within:border-primary/30 focus-within:bg-background focus-within:shadow-md">
+                  <div className="space-y-2">
+                    <Label htmlFor="book-title" className="text-base font-bold flex items-center gap-2">
+                      Book Title <span className="text-muted-foreground font-medium text-xs">(Optional)</span>
+                    </Label>
+                    <Input
+                      id="book-title"
+                      value={title}
+                      onChange={(event) => setTitle(event.target.value)}
+                      placeholder="e.g. Magical Forest Adventures"
+                      maxLength={120}
+                      className="h-12 rounded-xl bg-muted/40 px-4 text-base focus-visible:ring-primary/50"
+                      disabled={isGenerating || isSubmitting}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="book-prompt" className="text-base font-bold flex justify-between">
+                      <span>Book Prompt</span>
+                      <span className={cn("text-xs font-medium", prompt.length < MIN_PROMPT_LENGTH ? "text-destructive" : "text-muted-foreground")}>
+                        {prompt.length} / 2000
+                      </span>
+                    </Label>
+                    <Textarea
+                      id="book-prompt"
+                      placeholder="e.g. Cute woodland animals learning letters in a playful forest classroom. Friendly and educational."
+                      value={prompt}
+                      onChange={(event) => setPrompt(event.target.value)}
+                      className="min-h-[140px] resize-none rounded-xl bg-muted/40 p-4 text-base leading-relaxed focus-visible:ring-primary/50"
+                      maxLength={2000}
+                      disabled={isGenerating || isSubmitting}
+                      required
+                    />
+                    <p className="text-sm font-medium text-muted-foreground mt-1">
+                      Be descriptive! This will be used to generate the cover and all interior pages.
+                    </p>
+                  </div>
                 </div>
               </div>
-              <Slider
-                min={MIN_PAGE_COUNT}
-                max={MAX_PAGE_COUNT}
-                step={1}
-                value={[pageCount]}
-                onValueChange={([value]) => setPageCount(clampPageCount(value))}
-                className="py-4"
-              />
-              <p className="text-sm font-medium text-muted-foreground">
-                Default {DEFAULT_PAGE_COUNT}. Maximum {MAX_PAGE_COUNT}.
-              </p>
-            </div>
 
-            <Button
-              type="submit"
-              className="w-full gap-2 rounded-full py-6 text-lg font-bold shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98] sm:w-auto sm:px-8"
-              disabled={!canSubmit}
-            >
-              {isSubmitting || isGenerating ? (
-                <Icons.spinner className="size-5 animate-spin" />
-              ) : (
-                <Icons.bookOpen className="size-5" />
-              )}
-              {isGenerating ? "Generating Magic..." : "Generate AI Color Book"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+              {/* Style Section */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 text-foreground/80">
+                  <Paintbrush className="size-5" />
+                  <h3 className="font-heading text-xl">2. The Look</h3>
+                </div>
+                
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="space-y-2 rounded-2xl border-2 border-border/50 bg-background/50 p-4 shadow-sm hover:border-border/80 transition-colors">
+                    <Label htmlFor="style-preset" className="text-base font-bold block mb-1">Illustration Style</Label>
+                    <Select
+                      value={stylePreset}
+                      onValueChange={(value) => setStylePreset(value as StylePreset)}
+                      disabled={isGenerating || isSubmitting}
+                    >
+                      <SelectTrigger
+                        id="style-preset"
+                        className="h-12 w-full rounded-xl bg-muted/40 px-4 text-base focus:ring-primary/50 border-0 shadow-sm ring-1 ring-inset ring-border/50 [&>span]:line-clamp-1 [&>span]:text-left text-left"
+                      >
+                        <SelectValue placeholder="Select style">
+                          {stylePreset ? STYLE_PRESET_LABELS[stylePreset] : "Select style"}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl">
+                        {STYLE_PRESETS.map((preset) => (
+                          <SelectItem key={preset} value={preset} className="rounded-lg py-3 cursor-pointer">
+                            <div className="flex flex-col text-left">
+                              <span className="font-bold">{STYLE_PRESET_LABELS[preset]}</span>
+                              <span className="text-xs text-muted-foreground mt-0.5">{STYLE_PRESET_DESCRIPTIONS[preset]}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-      <Card className="playful-card flex flex-col overflow-hidden">
-        <CardHeader className="bg-muted/30 border-border/50 relative z-10 space-y-2 border-b pb-5">
-          <CardTitle className="font-heading text-2xl">Generation Status</CardTitle>
-          <CardDescription>
-            When generation finishes, the editor opens automatically.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="relative z-10 flex flex-1 flex-col justify-center space-y-6 p-6">
-          {meta ? (
-            <div className="space-y-6">
-              <div className="flex items-center justify-between gap-2">
-                <Badge
-                  variant={
-                    meta.status === "DONE"
-                      ? "secondary"
-                      : meta.status === "FAILED"
-                        ? "destructive"
-                        : "default"
-                  }
-                  className="rounded-full px-3 py-1 text-sm font-bold"
+                  <div className="space-y-2 rounded-2xl border-2 border-border/50 bg-background/50 p-4 shadow-sm hover:border-border/80 transition-colors">
+                    <Label htmlFor="paper-format" className="text-base font-bold block mb-1">Paper Format</Label>
+                    <Select
+                      value={paperFormat}
+                      onValueChange={(value) => setPaperFormat(value as PaperFormat)}
+                      disabled={isGenerating || isSubmitting}
+                    >
+                      <SelectTrigger
+                        id="paper-format"
+                        className="h-12 w-full rounded-xl bg-muted/40 px-4 text-base focus:ring-primary/50 border-0 shadow-sm ring-1 ring-inset ring-border/50"
+                      >
+                        <SelectValue placeholder="Select format" />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-xl">
+                        {PAPER_FORMATS.map((format) => (
+                          <SelectItem key={format} value={format} className="rounded-lg py-2 cursor-pointer">
+                            <span className="font-bold">{format}</span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Length Section */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 text-foreground/80">
+                  <Layers className="size-5" />
+                  <h3 className="font-heading text-xl">3. The Size</h3>
+                </div>
+                
+                <div className="space-y-6 rounded-2xl border-2 border-border/50 bg-background/50 p-5 sm:p-6 shadow-sm">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <Label htmlFor="page-count" className="text-base font-bold block">Interior Pages</Label>
+                      <span className="text-sm font-medium text-muted-foreground mt-0.5 block">
+                        + Front and back cover automatically added
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5 rounded-xl bg-muted/50 px-3 py-1.5 ring-1 ring-inset ring-border/50">
+                       <Input
+                         id="page-count"
+                         type="number"
+                         min={MIN_PAGE_COUNT}
+                         max={MAX_PAGE_COUNT}
+                         value={pageCount}
+                         onChange={(event) => {
+                           const parsed = Number.parseInt(event.target.value, 10);
+                           if (Number.isNaN(parsed)) {
+                             setPageCount(DEFAULT_PAGE_COUNT);
+                             return;
+                           }
+                           setPageCount(clampPageCount(parsed));
+                         }}
+                         disabled={isGenerating || isSubmitting}
+                         className="w-12 h-8 border-0 bg-transparent p-0 text-center font-bold text-lg focus-visible:ring-0 shadow-none"
+                       />
+                       <span className="text-sm font-bold text-muted-foreground/70 pr-1">pages</span>
+                    </div>
+                  </div>
+                  <div className="pt-2 pb-1 px-1">
+                    <Slider
+                      min={MIN_PAGE_COUNT}
+                      max={MAX_PAGE_COUNT}
+                      step={1}
+                      value={[pageCount]}
+                      onValueChange={([value]) => setPageCount(clampPageCount(value))}
+                      disabled={isGenerating || isSubmitting}
+                      className="cursor-pointer"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <Button
+                  type="submit"
+                  className={cn(
+                    "w-full gap-2 rounded-2xl py-7 text-xl font-bold shadow-xl transition-all",
+                    canSubmit ? "hover:scale-[1.01] hover:shadow-primary/25 active:scale-[0.99]" : "opacity-80",
+                    isGenerating && "bg-primary/90 cursor-not-allowed pointer-events-none"
+                  )}
+                  disabled={!canSubmit || isGenerating || isSubmitting}
                 >
-                  {meta.status === "PROCESSING"
-                    ? "✨ Processing"
-                    : meta.status === "DONE"
-                      ? "✅ Ready"
-                      : "❌ Failed"}
-                </Badge>
-                <p className="text-sm font-bold text-muted-foreground">
-                  {meta.completedAssets} / {meta.totalAssets} assets
-                </p>
+                  {isSubmitting || isGenerating ? (
+                    <>
+                      <Loader2 className="size-6 animate-spin" />
+                      {isGenerating ? "Generating Magic..." : "Starting..."}
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="size-6" />
+                      Generate Coloring Book
+                    </>
+                  )}
+                </Button>
+                {isGenerating && (
+                  <p className="text-center text-sm font-medium text-muted-foreground mt-4 animate-pulse">
+                    Please keep this page open while we prepare your book.
+                  </p>
+                )}
               </div>
-              <Progress value={progressValue} className="h-4 rounded-full shadow-inner" />
-              {meta.currentStep ? (
-                <p className="animate-pulse text-center text-sm font-medium text-muted-foreground">
-                  {meta.currentStep}
-                </p>
-              ) : null}
-              {meta.error ? (
-                <p className="bg-destructive/10 rounded-xl p-3 text-center text-sm font-bold text-destructive">{meta.error}</p>
-              ) : null}
-            </div>
-          ) : (
-            <div className="border-border/50 bg-muted/20 flex flex-col items-center justify-center rounded-3xl border-2 border-dashed p-8 text-center">
-              <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-background shadow-sm">
-                <Icons.bookOpen className="text-muted-foreground/50 size-8" />
-              </div>
-              <p className="text-base font-medium text-muted-foreground">
-                No active generation.<br/> Start a new AI color book to see progress.
-              </p>
-            </div>
-          )}
+            </form>
+          </CardContent>
+        </Card>
 
-          <div className="mt-auto pt-4">
-             {canOpenGeneratedBook ? (
-               <Link href={`/dashboard/book-editor/${activeBookId}`}>
-                 <Button variant="outline" className="w-full rounded-full py-6 text-base font-bold shadow-sm">
-                   Open Book Editor <Icons.arrowRight className="ml-2 size-4" />
-                 </Button>
-               </Link>
-             ) : (
-               <Link href="/dashboard/book-editor">
-                 <Button variant="outline" className="border-border/50 bg-background/50 w-full rounded-full py-6 text-base font-bold shadow-sm">
-                   Open My Books <Icons.arrowRight className="ml-2 size-4" />
-                 </Button>
-               </Link>
-             )}
-          </div>
-        </CardContent>
-      </Card>
+        {/* Right Column - Status */}
+        <div className="lg:sticky lg:top-24 space-y-6">
+          <Card className={cn(
+            "playful-card flex flex-col overflow-hidden transition-all duration-500",
+            isGenerating ? "border-primary/50 shadow-lg shadow-primary/10 ring-4 ring-primary/10" : "border-2 border-border/50 shadow-sm"
+          )}>
+            <CardHeader className={cn(
+              "relative z-10 space-y-2 border-b pb-5 transition-colors duration-500",
+              isGenerating ? "bg-primary/5 border-primary/20" : "bg-muted/20 border-border/50"
+            )}>
+              <div className="flex items-center justify-between">
+                <CardTitle className="font-heading text-2xl">Status</CardTitle>
+                {isGenerating && (
+                  <span className="relative flex h-3 w-3">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
+                  </span>
+                )}
+              </div>
+              <CardDescription>
+                Live generation progress.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="relative z-10 flex flex-1 flex-col justify-center p-6">
+              {meta ? (
+                <div className="space-y-8 py-2">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <Badge
+                        variant={
+                          meta.status === "DONE"
+                            ? "default"
+                            : meta.status === "FAILED"
+                              ? "destructive"
+                              : "secondary"
+                        }
+                        className={cn(
+                          "rounded-full px-4 py-1.5 text-sm font-bold shadow-sm",
+                          meta.status === "PROCESSING" && "bg-primary/10 text-primary hover:bg-primary/20 ring-1 ring-primary/20 border-0"
+                        )}
+                      >
+                        {meta.status === "PROCESSING"
+                          ? "✨ Processing"
+                          : meta.status === "DONE"
+                            ? "✅ Ready!"
+                            : "❌ Failed"}
+                      </Badge>
+                      <div className="flex items-center gap-1.5 text-sm font-bold text-muted-foreground bg-muted/50 px-3 py-1 rounded-full">
+                        <FileImage className="size-4" />
+                        {meta.completedAssets} / {meta.totalAssets}
+                      </div>
+                    </div>
+                    
+                    <div className="relative pt-2">
+                      <Progress 
+                        value={progressValue} 
+                        className={cn(
+                          "h-3 rounded-full shadow-inner bg-muted",
+                          meta.status === "PROCESSING" && "animate-pulse"
+                        )} 
+                      />
+                      <div 
+                        className="absolute right-0 top-0 -translate-y-full pb-1 text-xs font-bold text-primary transition-all duration-300"
+                        style={{ left: `${progressValue}%`, transform: 'translateX(-50%)' }}
+                      >
+                        {progressValue}%
+                      </div>
+                    </div>
+                  </div>
+
+                  {meta.currentStep ? (
+                    <div className="flex items-center justify-center gap-3 rounded-xl bg-primary/5 p-4 border border-primary/10">
+                      <Loader2 className="size-5 animate-spin text-primary" />
+                      <p className="text-sm font-bold text-primary">
+                        {meta.currentStep}
+                      </p>
+                    </div>
+                  ) : null}
+                  
+                  {meta.error ? (
+                    <div className="rounded-xl border border-destructive/20 bg-destructive/10 p-4 flex items-start gap-3 text-destructive">
+                      <Icons.warning className="size-5 mt-0.5 shrink-0" />
+                      <p className="text-sm font-bold leading-tight">{meta.error}</p>
+                    </div>
+                  ) : null}
+
+                  {canOpenGeneratedBook && (
+                    <div className="pt-2 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                      <Link href={`/dashboard/book-editor/${activeBookId}`}>
+                        <Button className="w-full rounded-2xl py-6 text-base font-bold shadow-lg shadow-primary/20 group">
+                          Open Editor <ChevronRight className="ml-2 size-5 transition-transform group-hover:translate-x-1" />
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-8 text-center opacity-70">
+                  <div className="mb-5 flex size-20 items-center justify-center rounded-3xl bg-muted/40 rotate-3 shadow-sm border border-border/50">
+                    <BookOpenCheck className="text-muted-foreground/60 size-10 -rotate-3" />
+                  </div>
+                  <h4 className="font-heading text-lg mb-2">Ready to Create</h4>
+                  <p className="text-sm font-medium text-muted-foreground max-w-[200px] leading-relaxed">
+                    Fill out the form to start generating your custom coloring book.
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="playful-card overflow-hidden border-2 shadow-sm bg-muted/10">
+            <CardContent className="p-5 flex items-center gap-4">
+              <div className="rounded-xl bg-background p-3 shadow-sm ring-1 ring-border/50 shrink-0">
+                <BookOpen className="size-6 text-primary" />
+              </div>
+              <div>
+                <h4 className="font-bold text-sm">View Previous Books</h4>
+                <p className="text-xs text-muted-foreground mt-0.5">Manage and edit your saved creations.</p>
+              </div>
+              <Link href="/dashboard/book-editor" className="ml-auto shrink-0">
+                <Button variant="ghost" size="icon" className="rounded-full hover:bg-background shadow-sm ring-1 ring-border/50 bg-background/50">
+                  <ChevronRight className="size-5" />
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }

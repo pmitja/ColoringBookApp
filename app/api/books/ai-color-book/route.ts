@@ -14,9 +14,24 @@ const MIN_PROMPT_LENGTH = 12;
 const DEFAULT_PAGE_COUNT = 10;
 const MIN_PAGE_COUNT = 1;
 const MAX_PAGE_COUNT = 40;
+const PAPER_FORMATS = ["A3", "A4", "A5"] as const;
+const DEFAULT_PAPER_FORMAT = "A4";
+const STYLE_PRESETS = [
+  "CLASSIC",
+  "PLAYFUL_ROUNDED",
+  "BOLD_SIMPLE",
+  "DETAILED_COZY",
+  "WHIMSICAL",
+] as const;
+const DEFAULT_STYLE_PRESET = "CLASSIC";
+// A-series paper uses ~1:sqrt(2). `4:3` is the closest supported landscape
+// Grok ratio to the editor canvas (420x297).
+const GROK_A_SERIES_ASPECT_RATIO = "4:3";
 
-const BOOK_PAGE_WIDTH = 420;
-const BOOK_PAGE_HEIGHT = 297;
+// Use oversized dimensions so the editor's re-clamp effect snaps generated
+// assets to the current page size (which is viewport-scaled in the client).
+const AUTO_CLAMP_IMAGE_BOX_WIDTH = 4096;
+const AUTO_CLAMP_IMAGE_BOX_HEIGHT = 2896; // ~sqrt(2) landscape ratio
 
 const LINEART_REQUIREMENTS_NO_TEXT = [
   "Create printable children's coloring-book line art.",
@@ -32,13 +47,34 @@ const LINEART_REQUIREMENTS_WITH_TITLE = [
   "Render only the requested book title text. No other text, logos, borders, or watermarks.",
 ].join(" ");
 
+const COLOR_FRONT_COVER_REQUIREMENTS = [
+  "Create a full-color commercial-style children's coloring book front cover illustration (not black-and-white line art).",
+  "Use a cute, cozy, kid-friendly look with clean outlines and appealing colors.",
+  "Use a soft pastel palette with warm contrast and a polished print-ready cover feel.",
+  "Keep the composition readable and cover-like with a strong focal scene.",
+  "No watermarks or logos.",
+].join(" ");
+
+const COLOR_BACK_COVER_REQUIREMENTS = [
+  "Create a full-color children's coloring book back cover design (not black-and-white line art only).",
+  "Use a soft pastel background and cute decorative accents that match the front cover style.",
+  "Include several framed mini preview panels that can be simple black line-art previews on white cards.",
+  "Leave a clean open area near the bottom-right for barcode/ISBN placement.",
+  "No watermarks or logos.",
+].join(" ");
+
 type AIColorBookStatus = "PROCESSING" | "DONE" | "FAILED";
 type CoverRole = "front" | "back";
 type AssetRole = "front" | "interior" | "back";
+type PaperFormat = (typeof PAPER_FORMATS)[number];
+type StylePreset = (typeof STYLE_PRESETS)[number];
 
 interface AIColorBookMeta {
   status: AIColorBookStatus;
   prompt: string;
+  paperFormat: PaperFormat;
+  aspectRatio: string;
+  stylePreset: StylePreset;
   requestedPageCount: number;
   totalAssets: number;
   completedAssets: number;
@@ -92,6 +128,9 @@ interface ProcessColorBookParams {
   title: string;
   prompt: string;
   pageCount: number;
+  paperFormat: PaperFormat;
+  aspectRatio: string;
+  stylePreset: StylePreset;
 }
 
 function getFalErrorDetails(error: unknown): string | null {
@@ -142,6 +181,54 @@ function normalizeTitle(value: unknown) {
   return title.slice(0, 120);
 }
 
+function normalizePaperFormat(value: unknown): PaperFormat {
+  if (typeof value !== "string") return DEFAULT_PAPER_FORMAT;
+
+  const upper = value.trim().toUpperCase();
+  if ((PAPER_FORMATS as readonly string[]).includes(upper)) {
+    return upper as PaperFormat;
+  }
+
+  return DEFAULT_PAPER_FORMAT;
+}
+
+function getAspectRatioForPaperFormat(_paperFormat: PaperFormat) {
+  return GROK_A_SERIES_ASPECT_RATIO;
+}
+
+function normalizeStylePreset(value: unknown): StylePreset {
+  if (typeof value !== "string") return DEFAULT_STYLE_PRESET;
+
+  const upper = value.trim().toUpperCase();
+  if ((STYLE_PRESETS as readonly string[]).includes(upper)) {
+    return upper as StylePreset;
+  }
+
+  return DEFAULT_STYLE_PRESET;
+}
+
+function buildStyleLock(stylePreset: StylePreset) {
+  const styleDescription: Record<StylePreset, string> = {
+    CLASSIC:
+      "Classic children's coloring-book line art with clean medium outlines, balanced detail, simple readable faces, and clear subject separation.",
+    PLAYFUL_ROUNDED:
+      "Playful rounded line art with soft curved shapes, friendly expressions, smoother contours, and medium-thick outlines.",
+    BOLD_SIMPLE:
+      "Bold simple line art with thick outlines, larger shapes, minimal small details, and very clear silhouettes for younger kids.",
+    DETAILED_COZY:
+      "Detailed cozy line art with clean fine-to-medium outlines, richer scene details, layered props, and warm homey compositions while staying uncluttered.",
+    WHIMSICAL:
+      "Whimsical storybook line art with expressive characters, playful proportions, decorative but clean details, and gentle imaginative scene composition.",
+  };
+
+  return [
+    "BOOK-WIDE STYLE LOCK (must remain consistent across front cover, every interior page, and back cover):",
+    styleDescription[stylePreset],
+    "Keep the same line thickness behavior, character face style, shape language, detail density, and composition complexity across all assets in this book.",
+    "Do not switch to a different drawing style or realism level on any page.",
+  ].join("\n");
+}
+
 function buildTitleFromPrompt(prompt: string) {
   const words = prompt.replace(/\s+/g, " ").trim().split(" ").slice(0, 6);
 
@@ -159,36 +246,46 @@ function buildTitleFromPrompt(prompt: string) {
 
 function buildInteriorPagePrompt(
   prompt: string,
+  stylePreset: StylePreset,
   pageIndex: number,
   pageCount: number,
 ) {
   return [
     `Theme prompt: ${prompt}`,
+    buildStyleLock(stylePreset),
     `Generate interior coloring-book page ${pageIndex} of ${pageCount}. Keep this page clearly different from other pages while staying in the same theme.`,
     "Compose one clear scene with readable main subjects and enough open areas for coloring.",
     LINEART_REQUIREMENTS_NO_TEXT,
   ].join("\n\n");
 }
 
-function buildFrontCoverPrompt(prompt: string, title: string) {
+function buildFrontCoverPrompt(
+  prompt: string,
+  title: string,
+  stylePreset: StylePreset,
+) {
   return [
     `Theme prompt: ${prompt}`,
+    buildStyleLock(stylePreset),
     `Book title text to render exactly: "${title}"`,
     "Generate a front cover illustration for a children's coloring book.",
     "Create a friendly central composition that looks like a cover.",
     "Render the title text clearly and legibly near the top of the cover in large lettering.",
-    "Make the title readable with strong black outlines and clean spacing.",
-    LINEART_REQUIREMENTS_WITH_TITLE,
+    "Make the title readable with high contrast, clean spacing, and clear outline/shape separation.",
+    "Do not imitate any specific existing published cover. Create an original design only.",
+    COLOR_FRONT_COVER_REQUIREMENTS,
   ].join("\n\n");
 }
 
-function buildBackCoverPrompt(prompt: string) {
+function buildBackCoverPrompt(prompt: string, stylePreset: StylePreset) {
   return [
     `Theme prompt: ${prompt}`,
+    buildStyleLock(stylePreset),
     "Generate a back cover illustration for the same children's coloring book.",
-    "Keep composition simpler than the front cover and leave more open white space.",
-    "Do not render text.",
-    LINEART_REQUIREMENTS_NO_TEXT,
+    "Keep composition simpler than the front cover while still feeling polished and colorful.",
+    "Do not render text except tiny placeholder-like barcode-safe empty area (leave area blank instead of text).",
+    "Do not imitate any specific existing published back cover. Create an original design only.",
+    COLOR_BACK_COVER_REQUIREMENTS,
   ].join("\n\n");
 }
 
@@ -235,8 +332,8 @@ function createFrontCoverPage(assetId: string): BookPage {
         assetId,
         x: 0,
         y: 0,
-        width: BOOK_PAGE_WIDTH,
-        height: BOOK_PAGE_HEIGHT,
+        width: AUTO_CLAMP_IMAGE_BOX_WIDTH,
+        height: AUTO_CLAMP_IMAGE_BOX_HEIGHT,
         fit: "cover",
         coverRole: "front",
       }),
@@ -252,8 +349,8 @@ function createBackCoverPage(assetId: string): BookPage {
         assetId,
         x: 0,
         y: 0,
-        width: BOOK_PAGE_WIDTH,
-        height: BOOK_PAGE_HEIGHT,
+        width: AUTO_CLAMP_IMAGE_BOX_WIDTH,
+        height: AUTO_CLAMP_IMAGE_BOX_HEIGHT,
         fit: "cover",
         coverRole: "back",
       }),
@@ -269,8 +366,8 @@ function createInteriorPage(assetId: string): BookPage {
         assetId,
         x: 0,
         y: 0,
-        width: BOOK_PAGE_WIDTH,
-        height: BOOK_PAGE_HEIGHT,
+        width: AUTO_CLAMP_IMAGE_BOX_WIDTH,
+        height: AUTO_CLAMP_IMAGE_BOX_HEIGHT,
         fit: "contain",
       }),
     ],
@@ -326,12 +423,16 @@ function buildPagesFromAssets(assets: GeneratedAsset[]) {
   return pages;
 }
 
-async function generateImageFromPrompt(prompt: string): Promise<string> {
+async function generateImageFromPrompt(
+  prompt: string,
+  aspectRatio: string,
+): Promise<string> {
   const result = await fal.subscribe(GENERATOR_MODEL, {
     input: {
       prompt,
       num_images: 1,
       output_format: "png",
+      aspect_ratio: aspectRatio,
     } as any,
     logs: true,
     onQueueUpdate: (update) => {
@@ -392,18 +493,59 @@ async function uploadLineartToUploadThing(
   return upload.data.url;
 }
 
+async function uploadColorImageToUploadThing(
+  imageUrl: string,
+  fileName: string,
+): Promise<string> {
+  const { UTApi } = await import("uploadthing/server");
+  const sharp = await import("sharp");
+
+  const response = await fetch(imageUrl);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch generated image: ${response.status}`);
+  }
+
+  const sourceBuffer = Buffer.from(await response.arrayBuffer());
+  const processedBuffer = await sharp
+    .default(sourceBuffer)
+    .resize({
+      width: 2400,
+      height: 2400,
+      fit: "inside",
+      withoutEnlargement: true,
+    })
+    .flatten({ background: "#ffffff" })
+    .png({ compressionLevel: 9 })
+    .toBuffer();
+
+  const file = new File([processedBuffer], fileName, {
+    type: "image/png",
+  });
+
+  const utapi = new UTApi();
+  const upload = await utapi.uploadFiles(file);
+  if (upload.error) {
+    throw new Error(upload.error.message);
+  }
+
+  return upload.data.url;
+}
+
 async function createDoneImageJob(
   userId: string,
   fileName: string,
-  lineartUrl: string,
+  urls: {
+    lineartUrl: string | null;
+    cartoonUrl: string | null;
+  },
 ) {
   return prisma.imageJob.create({
     data: {
       userId,
       inputFileName: fileName,
       inputUrl: null,
-      cartoonUrl: null,
-      lineartUrl,
+      cartoonUrl: urls.cartoonUrl,
+      lineartUrl: urls.lineartUrl,
       isPublic: false,
       isUpscaled: false,
       status: "DONE",
@@ -416,13 +558,25 @@ async function createDoneImageJob(
 }
 
 async function processAIColorBookGeneration(params: ProcessColorBookParams) {
-  const { userId, bookId, title, prompt, pageCount } = params;
+  const {
+    userId,
+    bookId,
+    title,
+    prompt,
+    pageCount,
+    paperFormat,
+    aspectRatio,
+    stylePreset,
+  } = params;
   const totalAssets = pageCount + 2;
   const startedAt = new Date().toISOString();
 
   let meta: AIColorBookMeta = {
     status: "PROCESSING",
     prompt,
+    paperFormat,
+    aspectRatio,
+    stylePreset,
     requestedPageCount: pageCount,
     totalAssets,
     completedAssets: 0,
@@ -460,12 +614,16 @@ async function processAIColorBookGeneration(params: ProcessColorBookParams) {
     index: number,
     progressStep: string,
   ) => {
-    const generatedUrl = await generateImageFromPrompt(imagePrompt);
-    const uploadedLineartUrl = await uploadLineartToUploadThing(
-      generatedUrl,
-      fileName,
-    );
-    const job = await createDoneImageJob(userId, fileName, uploadedLineartUrl);
+    const generatedUrl = await generateImageFromPrompt(imagePrompt, aspectRatio);
+    const isCoverAsset = role === "front" || role === "back";
+    const uploadedUrl = isCoverAsset
+      ? await uploadColorImageToUploadThing(generatedUrl, fileName)
+      : await uploadLineartToUploadThing(generatedUrl, fileName);
+    const job = await createDoneImageJob(userId, fileName, {
+      // Keep `lineartUrl` populated for editor asset loading compatibility.
+      lineartUrl: uploadedUrl,
+      cartoonUrl: isCoverAsset ? uploadedUrl : null,
+    });
 
     generatedAssets.push({
       role,
@@ -496,7 +654,7 @@ async function processAIColorBookGeneration(params: ProcessColorBookParams) {
   try {
     await persistProgress("Generating front cover");
     await createAndTrackAsset(
-      buildFrontCoverPrompt(prompt, title),
+      buildFrontCoverPrompt(prompt, title, stylePreset),
       `ai-color-book-front-cover-${Date.now()}.png`,
       "front",
       0,
@@ -508,7 +666,7 @@ async function processAIColorBookGeneration(params: ProcessColorBookParams) {
         `Generating interior page ${pageIndex}/${pageCount}`,
       );
       await createAndTrackAsset(
-        buildInteriorPagePrompt(prompt, pageIndex, pageCount),
+        buildInteriorPagePrompt(prompt, stylePreset, pageIndex, pageCount),
         `ai-color-book-page-${Date.now()}-${pageIndex}.png`,
         "interior",
         pageIndex,
@@ -518,7 +676,7 @@ async function processAIColorBookGeneration(params: ProcessColorBookParams) {
 
     await persistProgress("Generating back cover");
     await createAndTrackAsset(
-      buildBackCoverPrompt(prompt),
+      buildBackCoverPrompt(prompt, stylePreset),
       `ai-color-book-back-cover-${Date.now()}.png`,
       "back",
       pageCount + 1,
@@ -609,6 +767,9 @@ export const POST = auth(async (req) => {
     }
 
     const pageCount = clampPageCount(payload?.pageCount);
+    const paperFormat = normalizePaperFormat(payload?.paperFormat);
+    const aspectRatio = getAspectRatioForPaperFormat(paperFormat);
+    const stylePreset = normalizeStylePreset(payload?.stylePreset);
     const title =
       normalizeTitle(payload?.title) || buildTitleFromPrompt(prompt);
 
@@ -655,6 +816,9 @@ export const POST = auth(async (req) => {
     const initialMeta: AIColorBookMeta = {
       status: "PROCESSING",
       prompt,
+      paperFormat,
+      aspectRatio,
+      stylePreset,
       requestedPageCount: pageCount,
       totalAssets: totalRequiredAssets,
       completedAssets: 0,
@@ -682,6 +846,9 @@ export const POST = auth(async (req) => {
         title,
         prompt,
         pageCount,
+        paperFormat,
+        aspectRatio,
+        stylePreset,
       });
     });
 

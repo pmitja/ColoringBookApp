@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useDropzone } from "react-dropzone";
+import { motion, AnimatePresence } from "framer-motion";
 
 import { BASE_STYLES, STYLE_PRESETS, type StyleId } from "@/config/prompts";
 import { cn } from "@/lib/utils";
@@ -628,47 +629,69 @@ export default function GeneratorStudio({
   const renderStylePicker = (
     subtitle = "Pick the artistic pass before line-art conversion.",
   ) => (
-    <div className="border-border/50 bg-muted/30 rounded-2xl border p-5">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <Label className="text-base font-bold">Style</Label>
-        <p className="text-sm font-medium text-muted-foreground">{subtitle}</p>
+    <div className="border-border/50 bg-muted/20 rounded-3xl border p-6 shadow-sm relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-background/40 to-muted/20 z-0" />
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-2 relative z-10">
+        <div>
+          <Label className="text-xl font-heading font-bold flex items-center gap-2">
+            <Icons.palette className="size-5 text-primary" />
+            Style Selection
+          </Label>
+          <p className="text-sm font-medium text-muted-foreground mt-1">{subtitle}</p>
+        </div>
+        <div className="bg-background/80 backdrop-blur-sm border rounded-full px-3 py-1.5 text-xs font-semibold shadow-sm inline-flex items-center gap-1.5 self-start sm:self-auto">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+          </span>
+          {STYLE_PRESETS[selectedStyle].label} Selected
+        </div>
       </div>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        {styleKeys.map((styleId) => {
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 relative z-10">
+        {styleKeys.map((styleId, index) => {
           const preset = STYLE_PRESETS[styleId];
           const isSelected = selectedStyle === styleId;
 
           return (
-            <button
+            <motion.button
               key={styleId}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.05 }}
               type="button"
               disabled={isUploading}
               onClick={() => setSelectedStyle(styleId)}
               className={cn(
-                "group relative overflow-hidden rounded-2xl border-2 p-1 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-70",
+                "group relative overflow-hidden rounded-2xl border-2 p-1.5 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-70",
                 isSelected
-                  ? "bg-primary/5 border-primary shadow-sm"
-                  : "hover:bg-muted/50 border-transparent bg-background hover:border-border",
+                  ? "bg-primary/5 border-primary shadow-md"
+                  : "hover:bg-muted/60 border-transparent bg-background/60 hover:border-border hover:shadow-sm",
               )}
             >
               <div
-                className="relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-muted"
+                className="relative aspect-[4/3] w-full overflow-hidden rounded-[0.85rem] bg-muted"
               >
                 <Image
                   src={preset.previewImage}
                   alt={`${preset.label} style preview`}
                   fill
                   className={cn(
-                    "object-cover transition-transform duration-500",
+                    "object-cover transition-transform duration-700 ease-out",
                     isSelected ? "scale-105" : "group-hover:scale-110"
                   )}
                   sizes="(min-width: 1280px) 12vw, (min-width: 1024px) 16vw, (min-width: 640px) 24vw, 44vw"
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-transparent opacity-60 transition-opacity group-hover:opacity-80" />
+                
                 {isSelected && (
-                   <div className="ring-primary/20 absolute inset-0 rounded-xl ring-2 ring-inset" />
+                   <div className="ring-primary/40 absolute inset-0 rounded-[0.85rem] ring-2 ring-inset">
+                      <div className="absolute top-2 right-2 bg-primary text-primary-foreground rounded-full p-1 shadow-sm">
+                        <Icons.check className="size-3" />
+                      </div>
+                   </div>
                 )}
               </div>
-              <div className="p-2">
+              <div className="p-2.5">
                  <p
                    className={cn(
                      "text-sm font-bold transition-colors",
@@ -677,11 +700,11 @@ export default function GeneratorStudio({
                  >
                    {preset.label}
                  </p>
-                 <p className="line-clamp-1 text-xs font-medium text-muted-foreground">
+                 <p className="line-clamp-1 text-xs font-medium text-muted-foreground mt-0.5">
                    {preset.subtitle}
                  </p>
               </div>
-            </button>
+            </motion.button>
           );
         })}
       </div>
@@ -692,197 +715,274 @@ export default function GeneratorStudio({
     <>
       <DashboardHeader heading={heading} text={text} />
 
-      <div className="mx-auto max-w-6xl space-y-8 pb-10">
-        <Card className="playful-card overflow-hidden">
-          <CardHeader className="bg-muted/30 border-border/50 relative z-10 space-y-6 border-b pb-6">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <CardTitle className="font-heading text-3xl">Generator Studio</CardTitle>
-                <CardDescription className="mt-2 text-base">
-                  Pick your creation mode, tune style, and generate printable
-                  line art.
-                </CardDescription>
-              </div>
-              <div className="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
-                <Icons.check className="size-3.5" />
-                Original files not stored
-              </div>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-3">
-              {stepStates.map((step) => (
-                <FlowStep
-                  key={step.id}
-                  id={step.id}
-                  title={step.title}
-                  description={step.description}
-                  state={step.state}
-                />
-              ))}
-            </div>
-          </CardHeader>
-          <CardContent className="relative z-10 p-6 md:p-8">
-            {isUploading ? (
-              <div
-                className="border-border/80 bg-secondary/45 space-y-3 rounded-2xl border p-4"
-                aria-live="polite"
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2">
-                    <Icons.spinner className="size-4 animate-spin text-primary" />
-                    <p className="text-sm font-medium text-foreground">
-                      Generating your coloring page
-                    </p>
-                  </div>
-                  <p className="text-sm font-semibold text-foreground">
-                    {uploadProgress}%
-                  </p>
+      <div className="mx-auto max-w-[96rem] space-y-6 pb-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <Card className="playful-card overflow-hidden">
+            <CardHeader className="bg-muted/30 border-border/50 relative z-10 space-y-4 border-b pb-5">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="space-y-1.5">
+                  <CardTitle className="font-heading flex items-center gap-2 text-3xl">
+                    <div className="bg-primary/10 rounded-full p-2 text-primary">
+                      <Icons.wandSparkles className="size-6" />
+                    </div>
+                    Generator Studio
+                  </CardTitle>
+                  <CardDescription className="text-base">
+                    Pick your creation mode, tune style, and generate printable
+                    line art.
+                  </CardDescription>
                 </div>
-                <Progress value={uploadProgress} className="h-2.5" />
-                <p className="text-xs text-muted-foreground">
-                  Keep this tab open. We’ll redirect automatically when your
-                  page is ready.
-                </p>
+                <div className="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-emerald-700 shadow-sm dark:bg-emerald-900/30 dark:text-emerald-400">
+                  <div className="bg-emerald-200 dark:bg-emerald-800 rounded-full p-0.5">
+                    <Icons.check className="size-3" />
+                  </div>
+                  Original files not stored
+                </div>
               </div>
-            ) : null}
-
-            <div className="grid gap-8 lg:grid-cols-[1.4fr_0.6fr]">
-              <div className="space-y-6">
-                <Tabs
-                  value={mode}
-                  onValueChange={(value) => {
-                    const nextMode = value as UploadMode;
-                    if (!availableModes.includes(nextMode)) return;
-                    setMode(nextMode);
-                    setError(null);
-                  }}
-                  className="space-y-6"
-                >
-                  {showModeTabs ? (
-                    <TabsList
-                      className={cn(
-                        "bg-muted/50 border-border/50 grid h-auto w-full rounded-2xl border p-1.5",
-                        availableModes.length === 2
-                          ? "grid-cols-2"
-                          : availableModes.length === 3
-                            ? "grid-cols-3"
-                            : "grid-cols-4",
-                      )}
+              <div className="grid gap-3 sm:grid-cols-3">
+                {stepStates.map((step, index) => (
+                  <motion.div
+                    key={step.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.1 }}
+                  >
+                    <FlowStep
+                      id={step.id}
+                      title={step.title}
+                      description={step.description}
+                      state={step.state}
+                    />
+                  </motion.div>
+                ))}
+              </div>
+            </CardHeader>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="relative z-10 p-5 md:p-6"
+          >
+            <AnimatePresence mode="wait">
+                {isUploading && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                    animate={{ opacity: 1, height: "auto", marginBottom: 24 }}
+                    exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <div
+                      className="border-primary/20 bg-primary/5 space-y-4 rounded-2xl border p-5 relative overflow-hidden"
+                      aria-live="polite"
                     >
-                      {availableModes.includes("photo") ? (
-                        <TabsTrigger
-                          value="photo"
-                          className="rounded-xl py-3 font-bold data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm"
-                        >
-                          Photo Upload
-                        </TabsTrigger>
-                      ) : null}
-                      {availableModes.includes("ai") ? (
-                        <TabsTrigger
-                          value="ai"
-                          className="rounded-xl py-3 font-bold data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm"
-                        >
-                          AI Generator
-                        </TabsTrigger>
-                      ) : null}
-                      {availableModes.includes("name") ? (
-                        <TabsTrigger
-                          value="name"
-                          className="rounded-xl py-3 font-bold data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm"
-                        >
-                          Name Pages
-                        </TabsTrigger>
-                      ) : null}
-                      {availableModes.includes("consistent") ? (
-                        <TabsTrigger
-                          value="consistent"
-                          className="rounded-xl py-3 font-bold data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm"
-                        >
-                          Consistent Characters
-                        </TabsTrigger>
-                      ) : null}
-                    </TabsList>
-                  ) : null}
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent -translate-x-[100%] animate-[shimmer_2s_infinite]" />
+                      <div className="flex items-center justify-between gap-3 relative z-10">
+                        <div className="flex items-center gap-3">
+                          <div className="bg-primary/20 rounded-full p-2">
+                            <Icons.spinner className="size-5 animate-spin text-primary" />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-foreground">
+                              Generating your coloring page
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              Keep this tab open. We’ll redirect automatically.
+                            </p>
+                          </div>
+                        </div>
+                        <div className="bg-background rounded-full px-3 py-1 text-sm font-bold text-primary shadow-sm border">
+                          {uploadProgress}%
+                        </div>
+                      </div>
+                      <Progress value={uploadProgress} className="h-3 relative z-10" />
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
-                  {availableModes.includes("photo") ? (
-                    <TabsContent value="photo" className="space-y-4">
+              <div className="grid gap-6 xl:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)]">
+                <div className="grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(20rem,0.85fr)] xl:items-start">
+                  <Tabs
+                    value={mode}
+                    onValueChange={(value) => {
+                      const nextMode = value as UploadMode;
+                      if (!availableModes.includes(nextMode)) return;
+                      setMode(nextMode);
+                      setError(null);
+                    }}
+                    className="space-y-6 xl:min-w-0"
+                  >
+                    {showModeTabs ? (
+                      <TabsList
+                        className={cn(
+                          "bg-muted/40 border-border/40 grid h-auto w-full rounded-[1.5rem] border p-2 backdrop-blur-md",
+                          availableModes.length === 2
+                            ? "grid-cols-2"
+                            : availableModes.length === 3
+                              ? "grid-cols-3"
+                              : "grid-cols-4",
+                        )}
+                      >
+                        {availableModes.includes("photo") && (
+                          <TabsTrigger
+                            value="photo"
+                            className="rounded-xl py-3.5 font-bold transition-all data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-md"
+                          >
+                            <div className="flex items-center gap-2">
+                              <Icons.media className="size-4" />
+                              <span>Photo Upload</span>
+                            </div>
+                          </TabsTrigger>
+                        )}
+                        {availableModes.includes("ai") && (
+                          <TabsTrigger
+                            value="ai"
+                            className="rounded-xl py-3.5 font-bold transition-all data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-md"
+                          >
+                            <div className="flex items-center gap-2">
+                              <Icons.wandSparkles className="size-4" />
+                              <span>AI Generator</span>
+                            </div>
+                          </TabsTrigger>
+                        )}
+                        {availableModes.includes("name") && (
+                          <TabsTrigger
+                            value="name"
+                            className="rounded-xl py-3.5 font-bold transition-all data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-md"
+                          >
+                            <div className="flex items-center gap-2">
+                              <Icons.page className="size-4" />
+                              <span>Name Pages</span>
+                            </div>
+                          </TabsTrigger>
+                        )}
+                        {availableModes.includes("consistent") && (
+                          <TabsTrigger
+                            value="consistent"
+                            className="rounded-xl py-3.5 font-bold transition-all data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-md"
+                          >
+                            <div className="flex items-center gap-2">
+                              <Icons.userCircle className="size-4" />
+                              <span>Characters</span>
+                            </div>
+                          </TabsTrigger>
+                        )}
+                      </TabsList>
+                    ) : null}
+
+                  {availableModes.includes("photo") && (
+                    <TabsContent value="photo" className="space-y-6">
                       {!selectedFile ? (
-                        <div className="border-border/70 bg-background/70 dark:border-border/60 dark:bg-background/35 rounded-2xl border p-6">
+                        <div className="border-border/70 bg-background/70 dark:border-border/60 dark:bg-background/35 rounded-[2rem] border p-4 shadow-sm relative overflow-hidden">
+                          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-50 pointer-events-none" />
                           <div
                             {...getPhotoRootProps()}
                             className={cn(
-                              "border-border/70 bg-muted/40 dark:border-border/60 dark:bg-muted/20 flex cursor-pointer flex-col items-start rounded-2xl border-2 border-dashed p-8 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                              "border-border/70 bg-background/80 dark:border-border/60 dark:bg-muted/10 relative z-10 flex cursor-pointer flex-col items-center justify-center rounded-[1.5rem] border-2 border-dashed p-10 text-center transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                               isPhotoDragActive
-                                ? "border-primary/70 bg-emerald-500/10"
-                                : "hover:border-primary/60 hover:bg-muted/60 dark:hover:bg-muted/30",
+                                ? "border-primary bg-primary/5 scale-[0.98] shadow-inner"
+                                : "hover:border-primary/50 hover:bg-muted/60 dark:hover:bg-muted/30 hover:shadow-sm",
                             )}
                           >
                             <input {...getPhotoInputProps()} />
-                            <div className="bg-secondary/80 mb-4 flex size-16 items-center justify-center rounded-full">
-                              <Icons.media className="size-8 text-primary" />
-                            </div>
+                            <motion.div 
+                              animate={isPhotoDragActive ? { scale: 1.1, rotate: [0, -10, 10, -10, 0] } : { scale: 1, rotate: 0 }}
+                              transition={{ duration: 0.5 }}
+                              className="bg-primary/10 mb-6 flex size-20 items-center justify-center rounded-full shadow-sm"
+                            >
+                              <Icons.media className="size-10 text-primary" />
+                            </motion.div>
                             {isPhotoDragActive ? (
-                              <p className="text-lg font-medium">
-                                Drop your photo here
+                              <p className="text-xl font-bold text-primary">
+                                Drop it to create magic! ✨
                               </p>
                             ) : (
-                              <div className="space-y-2">
-                                <p className="text-lg font-medium">
-                                  Drag & drop your photo, or{" "}
-                                  <span className="text-primary">
-                                    click to browse
-                                  </span>
+                              <div className="space-y-3">
+                                <p className="text-xl font-bold text-foreground">
+                                  Drag & drop a photo here
                                 </p>
-                                <p className="text-sm text-muted-foreground">
-                                  Supports JPG, PNG, HEIC up to 10MB
+                                <p className="text-base text-muted-foreground font-medium">
+                                  or <span className="text-primary hover:underline underline-offset-4 decoration-primary/30">click to browse</span> your device
                                 </p>
+                                <div className="flex items-center justify-center gap-2 mt-4 pt-4 border-t border-border/50">
+                                  <span className="text-xs font-semibold text-muted-foreground bg-muted/50 px-2 py-1 rounded-md">JPG</span>
+                                  <span className="text-xs font-semibold text-muted-foreground bg-muted/50 px-2 py-1 rounded-md">PNG</span>
+                                  <span className="text-xs font-semibold text-muted-foreground bg-muted/50 px-2 py-1 rounded-md">HEIC</span>
+                                  <span className="text-xs text-muted-foreground ml-1">Up to 10MB</span>
+                                </div>
                               </div>
                             )}
                           </div>
                         </div>
                       ) : (
-                        <div className="border-border/70 bg-background/70 dark:border-border/60 dark:bg-background/35 space-y-4 rounded-2xl border p-6">
-                          <div className="border-border/70 bg-muted/30 dark:border-border/60 dark:bg-muted/20 relative aspect-square w-full max-w-md overflow-hidden rounded-2xl border">
-                            {previewUrl ? (
-                              <Image
-                                src={previewUrl}
-                                alt="Upload preview"
-                                fill
-                                className="object-cover"
-                              />
-                            ) : null}
-                          </div>
-                          <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                            <span className="border-border/70 bg-background/70 dark:border-border/60 dark:bg-background/35 rounded-full border px-3 py-1">
-                              File: {selectedFile.name}
-                            </span>
-                            <span className="border-border/70 bg-background/70 dark:border-border/60 dark:bg-background/35 rounded-full border px-3 py-1">
-                              Size:{" "}
-                              {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                            </span>
-                          </div>
-                        </div>
+                          <motion.div 
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="border-border/70 bg-background/80 dark:border-border/60 dark:bg-muted/10 space-y-4 rounded-[2rem] border p-6 shadow-sm"
+                          >
+                            <div className="relative aspect-square w-full max-w-md mx-auto overflow-hidden rounded-[1.5rem] border-4 border-background shadow-lg group">
+                              {previewUrl && (
+                                <>
+                                  <Image
+                                    src={previewUrl}
+                                    alt="Upload preview"
+                                    fill
+                                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                                  />
+                                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                </>
+                              )}
+                            </div>
+                            <div className="flex flex-wrap justify-center gap-3 text-sm text-muted-foreground mt-4">
+                              <span className="bg-muted/50 rounded-full border border-border/50 px-4 py-1.5 font-medium shadow-sm flex items-center gap-2">
+                                <Icons.file className="size-4 text-primary" />
+                                <span className="max-w-[200px] truncate">{selectedFile.name}</span>
+                              </span>
+                              <span className="bg-muted/50 rounded-full border border-border/50 px-4 py-1.5 font-medium shadow-sm">
+                                {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                              </span>
+                            </div>
+                          </motion.div>
                       )}
 
-                      {renderStylePicker()}
+                      <motion.div
+                         initial={{ opacity: 0, y: 10 }}
+                         animate={{ opacity: 1, y: 0 }}
+                         transition={{ delay: 0.1 }}
+                      >
+                        {renderStylePicker()}
+                      </motion.div>
 
-                      <div className="flex gap-3">
+                      <motion.div
+                         initial={{ opacity: 0, y: 10 }}
+                         animate={{ opacity: 1, y: 0 }}
+                         transition={{ delay: 0.2 }}
+                         className="pt-2 flex gap-3"
+                      >
                         <Button
                           onClick={handlePhotoUpload}
                           disabled={isUploading || !isReadyToSubmit}
-                          className="flex-1 gap-2"
+                          className="flex-1 gap-3 rounded-full py-7 text-lg font-bold shadow-lg transition-transform hover:scale-[1.02] active:scale-[0.98] group relative overflow-hidden"
                           size="lg"
                         >
+                          <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 pointer-events-none" />
                           {isUploading ? (
                             <>
-                              <Icons.spinner className="size-4 animate-spin" />
-                              Processing...
+                              <Icons.spinner className="size-5 animate-spin" />
+                              <span className="relative z-10">Processing Magic...</span>
                             </>
                           ) : (
                             <>
-                              <Icons.package className="size-4" />
-                              {batchCount > 1
-                                ? `Process ${batchCount} Photos`
-                                : "Process Photo"}
+                              <Icons.wandSparkles className="size-5 relative z-10 group-hover:rotate-12 transition-transform duration-300" />
+                              <span className="relative z-10">
+                                {batchCount > 1
+                                  ? `Process ${batchCount} Photos`
+                                  : "Turn into Line Art"}
+                              </span>
                             </>
                           )}
                         </Button>
@@ -895,178 +995,254 @@ export default function GeneratorStudio({
                           variant="outline"
                           disabled={isUploading || !selectedFile}
                           size="lg"
-                          className="border-border/70 bg-background/70 dark:border-border/60 dark:bg-background/35 rounded-full"
+                          className="border-border/70 bg-background/70 dark:border-border/60 dark:bg-background/35 rounded-full size-14 shadow-sm hover:shadow-md hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 transition-all shrink-0"
                           aria-label="Remove selected image"
                           title="Remove selected image"
                         >
-                          <Icons.close className="size-4" />
+                          <Icons.close className="size-5" />
                         </Button>
-                      </div>
-                      {!isReadyToSubmit ? (
-                        <p className="text-xs text-muted-foreground">
+                      </motion.div>
+                      {!isReadyToSubmit && (
+                        <p className="text-center text-sm font-medium text-muted-foreground mt-4 animate-pulse">
                           Upload a photo to enable generation.
                         </p>
-                      ) : null}
+                      )}
                     </TabsContent>
-                  ) : null}
+                  )}
 
                   {availableModes.includes("ai") ? (
-                    <TabsContent value="ai" className="space-y-6">
-                      <div className="border-border/50 bg-muted/30 rounded-2xl border p-5">
+                    <TabsContent value="ai" className="space-y-8">
+                      <motion.div 
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-gradient-to-br from-primary/10 via-background to-background rounded-[2rem] border p-6 shadow-sm relative overflow-hidden"
+                      >
+                        <div className="absolute top-0 right-0 -translate-y-1/4 translate-x-1/4 w-32 h-32 bg-primary/20 blur-3xl rounded-full" />
                         <Label
                           htmlFor="generator-prompt"
-                          className="mb-4 block text-base font-bold"
+                          className="mb-5 flex items-center gap-2 text-xl font-heading font-bold"
                         >
+                          <Icons.sparkles className="size-5 text-primary" />
                           Describe your coloring page
                         </Label>
-                        <Textarea
-                          id="generator-prompt"
-                          name="generator-prompt"
-                          value={generatorPrompt}
-                          onChange={(e) => setGeneratorPrompt(e.target.value)}
-                          placeholder="Example: cheerful fox teacher in a forest classroom, kids reading books, clean scene composition"
-                          className="focus-visible:ring-primary/50 min-h-[160px] resize-none rounded-xl bg-background p-4 text-base"
-                          disabled={isUploading}
-                        />
-                        <div className="mt-3 flex items-center justify-between gap-3 text-sm font-medium text-muted-foreground">
-                          <p>
-                            Keep it specific: subject, setting, action, and
-                            mood.
+                          <div className="relative">
+                            <Textarea
+                              id="generator-prompt"
+                              name="generator-prompt"
+                              value={generatorPrompt}
+                              onChange={(e) => setGeneratorPrompt(e.target.value)}
+                              placeholder="Example: a cheerful fox teacher in a cozy forest classroom, kids sitting on mushroom stools reading books, clean simple background..."
+                              className="focus-visible:ring-primary/40 focus-visible:border-primary/50 min-h-[160px] resize-none rounded-[1.5rem] bg-background/80 backdrop-blur-sm p-5 text-base shadow-inner text-foreground/90 placeholder:text-muted-foreground/60 border-2"
+                              disabled={isUploading}
+                            />
+                            {generatorPromptLength > 0 && generatorPromptLength < MINIMUM_PROMPT_LENGTH && (
+                              <div className="absolute bottom-4 right-4 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-3 py-1 rounded-full text-xs font-bold shadow-sm border border-amber-200/50 flex items-center gap-1.5">
+                                <Icons.warning className="size-3" />
+                                Need {MINIMUM_PROMPT_LENGTH - generatorPromptLength} more chars
+                              </div>
+                            )}
+                            {generatorPromptLength >= MINIMUM_PROMPT_LENGTH && (
+                              <div className="absolute bottom-4 right-4 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-3 py-1 rounded-full text-xs font-bold shadow-sm border border-emerald-200/50 flex items-center gap-1.5">
+                                <Icons.check className="size-3" />
+                                Ready
+                              </div>
+                            )}
+                          </div>
+                        <div className="mt-4 flex items-center justify-between gap-3 text-sm font-medium text-muted-foreground px-2">
+                          <p className="flex items-center gap-1.5">
+                            <Icons.info className="size-4 opacity-70" />
+                            Be specific: subject, setting, action, and mood.
                           </p>
                           <p
                             className={cn(
-                              "shrink-0",
-                              generatorPromptLength < MINIMUM_PROMPT_LENGTH &&
-                                "text-amber-600 dark:text-amber-400",
+                              "shrink-0 font-mono text-xs font-bold bg-muted/50 px-2 py-1 rounded-md",
+                              generatorPromptLength < MINIMUM_PROMPT_LENGTH
+                                ? "text-amber-600 dark:text-amber-400"
+                                : "text-emerald-600 dark:text-emerald-400"
                             )}
                           >
-                            {generatorPromptLength}/{MINIMUM_PROMPT_LENGTH} min
+                            {generatorPromptLength} / {MINIMUM_PROMPT_LENGTH} min
                           </p>
                         </div>
-                      </div>
+                      </motion.div>
 
-                      {renderStylePicker(
-                        "This style guides the AI scene generation.",
-                      )}
-
-                      <Button
-                        onClick={handleAIGenerator}
-                        disabled={isUploading || !isReadyToSubmit}
-                        className="w-full gap-2 rounded-full py-6 text-lg font-bold shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98]"
-                        size="lg"
+                      <motion.div
+                         initial={{ opacity: 0, y: 10 }}
+                         animate={{ opacity: 1, y: 0 }}
+                         transition={{ delay: 0.1 }}
                       >
-                        {isUploading ? (
-                          <>
-                            <Icons.spinner className="size-5 animate-spin" />
-                            Generating Magic...
-                          </>
-                        ) : (
-                          <>
-                            <Icons.arrowRight className="size-5" />
-                            Generate with AI
-                          </>
+                        {renderStylePicker(
+                          "This style guides the AI scene generation.",
                         )}
-                      </Button>
-                      {!isReadyToSubmit ? (
-                        <p className="text-center text-sm font-medium text-muted-foreground">
-                          Write at least {MINIMUM_PROMPT_LENGTH} characters to
-                          generate.
-                        </p>
-                      ) : null}
+                      </motion.div>
+
+                      <motion.div
+                         initial={{ opacity: 0, y: 10 }}
+                         animate={{ opacity: 1, y: 0 }}
+                         transition={{ delay: 0.2 }}
+                         className="pt-2"
+                      >
+                        <Button
+                          onClick={handleAIGenerator}
+                          disabled={isUploading || !isReadyToSubmit}
+                          className="w-full gap-3 rounded-full py-7 text-lg font-bold shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98] group relative overflow-hidden"
+                          size="lg"
+                        >
+                          <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 pointer-events-none" />
+                          {isUploading ? (
+                            <>
+                              <Icons.spinner className="size-5 animate-spin" />
+                              <span className="relative z-10">Weaving Spells...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Icons.wandSparkles className="size-5 relative z-10 group-hover:rotate-12 transition-transform duration-300" />
+                              <span className="relative z-10">Generate Line Art</span>
+                              <Icons.arrowRight className="size-4 ml-1 opacity-70 group-hover:translate-x-1 transition-transform relative z-10" />
+                            </>
+                          )}
+                        </Button>
+                        {!isReadyToSubmit && (
+                          <p className="text-center text-sm font-medium text-muted-foreground mt-4 animate-pulse">
+                            Write a bit more to unlock generation.
+                          </p>
+                        )}
+                      </motion.div>
                     </TabsContent>
                   ) : null}
 
-                  {availableModes.includes("name") ? (
-                    <TabsContent value="name" className="space-y-4">
-                      <div className="border-border/70 bg-background/70 dark:border-border/60 dark:bg-background/35 space-y-3 rounded-2xl border p-4">
-                        <Label
-                          htmlFor="name-page-name"
-                          className="text-base font-medium"
-                        >
-                          Name to generate
-                        </Label>
-                        <Input
-                          id="name-page-name"
-                          name="name-page-name"
-                          value={namePageName}
-                          onChange={(event) => {
-                            setNamePageName(
-                              sanitizeNameInput(event.target.value),
-                            );
-                          }}
-                          placeholder="Example: Sara"
-                          className="h-12 text-lg font-semibold tracking-wide"
-                          maxLength={NAME_MAX_LENGTH}
-                          disabled={isUploading}
-                        />
-                        <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
-                          <p>Letters, spaces, apostrophes, and hyphens only.</p>
-                          <p
-                            className={cn(
-                              "shrink-0",
-                              namePageNameLength < NAME_MIN_LENGTH &&
-                                "text-amber-600 dark:text-amber-300",
-                            )}
+                  {availableModes.includes("name") && (
+                    <TabsContent value="name" className="space-y-6">
+                      <motion.div 
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-gradient-to-br from-primary/10 via-background to-background rounded-[2rem] border p-6 shadow-sm relative overflow-hidden"
+                      >
+                        <div className="absolute top-0 left-0 -translate-y-1/4 -translate-x-1/4 w-32 h-32 bg-primary/20 blur-3xl rounded-full" />
+                        <div className="relative z-10 space-y-4">
+                          <Label
+                            htmlFor="name-page-name"
+                            className="flex items-center gap-2 text-xl font-heading font-bold"
                           >
-                            {namePageNameLength}/{NAME_MAX_LENGTH}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="border-border/70 bg-background/70 dark:border-border/60 dark:bg-background/35 space-y-3 rounded-2xl border p-4">
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <Label className="text-base font-medium">
-                            Decoration Theme
+                            <Icons.page className="size-5 text-primary" />
+                            Name to Generate
                           </Label>
-                          <p className="text-xs text-muted-foreground">
-                            Controls the doodles around the name.
-                          </p>
+                          <div className="relative">
+                            <Input
+                              id="name-page-name"
+                              name="name-page-name"
+                              value={namePageName}
+                              onChange={(event) => {
+                                setNamePageName(
+                                  sanitizeNameInput(event.target.value),
+                                );
+                              }}
+                              placeholder="Example: Sara"
+                              className="h-16 text-2xl font-bold tracking-widest text-center rounded-[1.5rem] bg-background/80 backdrop-blur-sm border-2 focus-visible:ring-primary/40 focus-visible:border-primary/50 shadow-inner"
+                              maxLength={NAME_MAX_LENGTH}
+                              disabled={isUploading}
+                            />
+                            <div className="absolute right-4 top-1/2 -translate-y-1/2 bg-muted/80 backdrop-blur-md px-2 py-1 rounded-md text-xs font-bold text-muted-foreground shadow-sm border">
+                              {namePageNameLength} / {NAME_MAX_LENGTH}
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between text-xs font-medium text-muted-foreground px-2">
+                            <p className="flex items-center gap-1.5">
+                              <Icons.info className="size-4 opacity-70" />
+                              Letters, spaces, apostrophes, and hyphens only.
+                            </p>
+                          </div>
                         </div>
-                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                          {NAME_THEME_OPTIONS.map((theme) => {
+                      </motion.div>
+
+                      <motion.div 
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 }}
+                        className="bg-background/80 backdrop-blur-sm space-y-5 rounded-[2rem] border border-border/50 p-6 shadow-sm relative overflow-hidden"
+                      >
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 relative z-10">
+                          <div>
+                            <Label className="text-xl font-heading font-bold flex items-center gap-2">
+                              <Icons.palette className="size-5 text-primary" />
+                              Decoration Theme
+                            </Label>
+                            <p className="text-sm font-medium text-muted-foreground mt-1">
+                              Controls the doodles around the name.
+                            </p>
+                          </div>
+                          <div className="bg-muted/80 backdrop-blur-md border rounded-full px-3 py-1.5 text-xs font-bold shadow-sm inline-flex items-center gap-1.5">
+                             {selectedNameTheme?.label ?? (NAME_THEME_OPTIONS[0] ? NAME_THEME_OPTIONS[0].label : "")}
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 relative z-10">
+                          {NAME_THEME_OPTIONS.map((theme, index) => {
                             const isSelected = theme.id === nameThemeId;
 
                             return (
-                              <button
+                              <motion.button
                                 key={theme.id}
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ duration: 0.2, delay: index * 0.05 }}
                                 type="button"
                                 disabled={isUploading}
                                 onClick={() => setNameThemeId(theme.id)}
                                 className={cn(
-                                  "rounded-xl border p-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                                  "group relative overflow-hidden rounded-[1.5rem] border-2 p-4 text-left transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                                   isSelected
-                                    ? "border-primary/50 bg-primary/10 text-primary shadow-[0_0_0_1px_hsl(var(--primary)/0.18)]"
-                                    : "border-border/70 bg-background/70 dark:border-border/60 dark:bg-background/35 hover:bg-muted/45 dark:hover:bg-muted/20 text-foreground",
+                                    ? "bg-primary/5 border-primary shadow-md"
+                                    : "bg-background/60 hover:bg-muted/40 hover:border-primary/30 border-transparent shadow-sm",
                                 )}
                               >
-                                <p className="text-sm font-semibold">
-                                  {theme.label}
-                                </p>
-                                <p
-                                  className={cn(
-                                    "mt-1 text-xs",
-                                    isSelected
-                                      ? "text-primary/85"
-                                      : "text-muted-foreground",
-                                  )}
-                                >
-                                  {theme.subtitle}
-                                </p>
-                              </button>
+                                {isSelected && (
+                                  <motion.div 
+                                    layoutId="theme-active-indicator"
+                                    className="absolute inset-0 bg-primary/5 pointer-events-none"
+                                  />
+                                )}
+                                <div className="relative z-10 flex items-start justify-between gap-2">
+                                  <div>
+                                    <p className={cn("text-base font-bold transition-colors", isSelected ? "text-primary" : "text-foreground group-hover:text-primary/80")}>
+                                      {theme.label}
+                                    </p>
+                                    <p
+                                      className={cn(
+                                        "mt-1 text-xs font-medium leading-relaxed transition-colors",
+                                        isSelected
+                                          ? "text-foreground/80"
+                                          : "text-muted-foreground group-hover:text-muted-foreground/80",
+                                      )}
+                                    >
+                                      {theme.subtitle}
+                                    </p>
+                                  </div>
+                                  <div className={cn(
+                                    "shrink-0 rounded-full border-2 p-1 transition-colors",
+                                    isSelected ? "border-primary bg-primary text-primary-foreground" : "border-muted-foreground/30 text-transparent bg-background/50"
+                                  )}>
+                                     <Icons.check className="size-3" />
+                                  </div>
+                                </div>
+                              </motion.button>
                             );
                           })}
                         </div>
-                        <p className="text-xs text-muted-foreground">
-                          Selected: {selectedNameTheme.label}
-                        </p>
-                      </div>
+                      </motion.div>
 
-                      <div className="border-border/70 bg-background/70 dark:border-border/60 dark:bg-background/35 space-y-3 rounded-2xl border p-4">
+                      <motion.div 
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                        className="bg-background/80 backdrop-blur-sm space-y-4 rounded-[2rem] border border-border/50 p-6 shadow-sm"
+                      >
                         <Label
                           htmlFor="name-page-details"
-                          className="text-base font-medium"
+                          className="flex items-center gap-2 text-xl font-heading font-bold"
                         >
-                          Optional extra details
+                          <Icons.settings className="size-5 text-primary" />
+                          Optional Tweaks
                         </Label>
                         <Textarea
                           id="name-page-details"
@@ -1076,444 +1252,568 @@ export default function GeneratorStudio({
                             setNamePageDetails(event.target.value)
                           }
                           placeholder="Example: add bigger flowers in the top corners and keep open space around each letter"
-                          className="min-h-[100px]"
+                          className="min-h-[100px] resize-none rounded-[1.5rem] bg-background p-4 text-base focus-visible:ring-primary/40 focus-visible:border-primary/50 shadow-inner border-2"
                           disabled={isUploading}
                         />
-                        <p className="text-xs text-muted-foreground">
+                        <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground px-2">
+                          <Icons.info className="size-4 opacity-70" />
                           Keep this short for clean printable outlines.
                         </p>
-                      </div>
+                      </motion.div>
 
-                      <Button
-                        onClick={handleNamePageGenerator}
-                        disabled={isUploading || !isReadyToSubmit}
-                        className="w-full gap-2"
-                        size="lg"
+                      <motion.div
+                         initial={{ opacity: 0, y: 10 }}
+                         animate={{ opacity: 1, y: 0 }}
+                         transition={{ delay: 0.3 }}
+                         className="pt-2"
                       >
-                        {isUploading ? (
-                          <>
-                            <Icons.spinner className="size-4 animate-spin" />
-                            Generating...
-                          </>
-                        ) : (
-                          <>
-                            <Icons.arrowRight className="size-4" />
-                            Generate Name Page
-                          </>
+                        <Button
+                          onClick={handleNamePageGenerator}
+                          disabled={isUploading || !isReadyToSubmit}
+                          className="w-full gap-3 rounded-full py-7 text-lg font-bold shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98] group relative overflow-hidden"
+                          size="lg"
+                        >
+                           <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 pointer-events-none" />
+                          {isUploading ? (
+                            <>
+                              <Icons.spinner className="size-5 animate-spin" />
+                              <span className="relative z-10">Weaving Spells...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Icons.wandSparkles className="size-5 relative z-10 group-hover:rotate-12 transition-transform duration-300" />
+                              <span className="relative z-10">Generate Name Page</span>
+                              <Icons.arrowRight className="size-4 ml-1 opacity-70 group-hover:translate-x-1 transition-transform relative z-10" />
+                            </>
+                          )}
+                        </Button>
+                        {!isReadyToSubmit && (
+                          <p className="text-center text-sm font-medium text-muted-foreground mt-4 animate-pulse">
+                            Enter a name to start generation.
+                          </p>
                         )}
-                      </Button>
-                      {!isReadyToSubmit ? (
-                        <p className="text-xs text-muted-foreground">
-                          Enter at least {NAME_MIN_LENGTH} characters for the
-                          name.
-                        </p>
-                      ) : null}
+                      </motion.div>
                     </TabsContent>
-                  ) : null}
+                  )}
 
-                  {availableModes.includes("consistent") ? (
-                    <TabsContent value="consistent" className="space-y-4">
-                      {isReferenceLoading ? (
-                        <div className="border-border/70 bg-background/70 dark:border-border/60 dark:bg-background/35 flex items-center gap-2 rounded-xl border p-3 text-sm text-muted-foreground">
-                          <Icons.spinner className="size-4 animate-spin" />
+                  {availableModes.includes("consistent") && (
+                    <TabsContent value="consistent" className="space-y-6">
+                      {isReferenceLoading && (
+                        <motion.div 
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          className="border-primary/20 bg-primary/5 flex items-center gap-3 rounded-xl border p-4 text-sm font-medium text-primary shadow-sm"
+                        >
+                          <div className="bg-primary/20 rounded-full p-1.5">
+                            <Icons.spinner className="size-4 animate-spin" />
+                          </div>
                           Loading reference image from your results...
-                        </div>
-                      ) : null}
-                      <div className="border-border/70 bg-background/70 dark:border-border/60 dark:bg-background/35 space-y-4 rounded-2xl border p-4">
-                        <div className="space-y-2">
-                          <Label className="text-base font-medium">
-                            Reference character image
+                        </motion.div>
+                      )}
+                      
+                      <motion.div 
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-gradient-to-br from-primary/10 via-background to-background rounded-[2rem] border p-6 shadow-sm relative overflow-hidden"
+                      >
+                        <div className="absolute top-0 right-0 -translate-y-1/4 translate-x-1/4 w-32 h-32 bg-primary/20 blur-3xl rounded-full" />
+                        <div className="relative z-10 space-y-5">
+                          <Label className="flex items-center gap-2 text-xl font-heading font-bold">
+                            <Icons.userCircle className="size-5 text-primary" />
+                            Reference Character
                           </Label>
+                          
                           {!referenceFile && !referenceJobId ? (
                             <div
                               {...getReferenceRootProps()}
                               className={cn(
-                                "border-border/70 bg-muted/40 dark:border-border/60 dark:bg-muted/20 flex cursor-pointer flex-col items-start rounded-2xl border-2 border-dashed p-6 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                                "border-border/70 bg-background/80 dark:border-border/60 dark:bg-muted/10 flex cursor-pointer flex-col items-center justify-center rounded-[1.5rem] border-2 border-dashed p-8 text-center transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                                 isReferenceDragActive
-                                  ? "border-primary/70 bg-emerald-500/10"
-                                  : "hover:border-primary/60 hover:bg-muted/60 dark:hover:bg-muted/30",
+                                  ? "border-primary bg-primary/5 scale-[0.98] shadow-inner"
+                                  : "hover:border-primary/50 hover:bg-muted/60 dark:hover:bg-muted/30 hover:shadow-sm",
                               )}
                             >
                               <input {...getReferenceInputProps()} />
-                              <p className="text-sm font-medium">
-                                Drop reference image or click to browse
+                              <motion.div 
+                                animate={isReferenceDragActive ? { scale: 1.1, rotate: [0, -10, 10, -10, 0] } : { scale: 1, rotate: 0 }}
+                                transition={{ duration: 0.5 }}
+                                className="bg-primary/10 mb-4 flex size-16 items-center justify-center rounded-full shadow-sm"
+                              >
+                                <Icons.imagePlus className="size-8 text-primary" />
+                              </motion.div>
+                              <p className="text-lg font-bold text-foreground">
+                                Drop character image or <span className="text-primary hover:underline underline-offset-4 decoration-primary/30">browse</span>
                               </p>
-                              <p className="mt-1 text-xs text-muted-foreground">
-                                Use the same character you want to keep
-                                consistent.
+                              <p className="mt-2 text-sm font-medium text-muted-foreground">
+                                Use the same character you want to keep consistent across scenes.
                               </p>
                             </div>
                           ) : (
-                            <div className="space-y-3">
-                              <div className="border-border/70 bg-muted/30 dark:border-border/60 dark:bg-muted/20 relative aspect-square w-full max-w-sm overflow-hidden rounded-2xl border">
-                                {referencePreviewUrl ||
-                                referenceJobPreviewUrl ? (
-                                  <Image
-                                    src={
-                                      referencePreviewUrl ||
-                                      referenceJobPreviewUrl ||
-                                      ""
-                                    }
-                                    alt="Reference character preview"
-                                    fill
-                                    className="object-cover"
-                                  />
-                                ) : null}
+                            <motion.div 
+                              initial={{ opacity: 0, scale: 0.95 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              className="border-border/70 bg-background/80 dark:border-border/60 dark:bg-muted/10 space-y-4 rounded-[1.5rem] border p-5 shadow-sm"
+                            >
+                              <div className="relative aspect-square w-full max-w-sm mx-auto overflow-hidden rounded-2xl border-4 border-background shadow-lg group">
+                                {(referencePreviewUrl || referenceJobPreviewUrl) && (
+                                  <>
+                                    <Image
+                                      src={referencePreviewUrl || referenceJobPreviewUrl || ""}
+                                      alt="Reference character preview"
+                                      fill
+                                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                  </>
+                                )}
                               </div>
-                              <p className="text-xs text-muted-foreground">
-                                {referenceJobId
-                                  ? "Reference linked from a previous generated result."
-                                  : "Reference uploaded from your device."}
-                              </p>
-                              <Button
-                                type="button"
-                                variant="outline"
-                                disabled={isUploading}
-                                onClick={() => {
-                                  if (referencePreviewUrl)
-                                    URL.revokeObjectURL(referencePreviewUrl);
-                                  setReferenceFile(null);
-                                  setReferencePreviewUrl(null);
-                                  setReferenceJobId(null);
-                                  setReferenceJobPreviewUrl(null);
-                                }}
-                              >
-                                Use another reference
-                              </Button>
-                            </div>
+                              <div className="flex flex-col items-center gap-3">
+                                <p className="text-xs font-semibold text-muted-foreground bg-muted/50 px-3 py-1 rounded-full border border-border/50">
+                                  {referenceJobId
+                                    ? "Linked from a previous generation"
+                                    : "Uploaded from your device"}
+                                </p>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  disabled={isUploading}
+                                  onClick={() => {
+                                    if (referencePreviewUrl) URL.revokeObjectURL(referencePreviewUrl);
+                                    setReferenceFile(null);
+                                    setReferencePreviewUrl(null);
+                                    setReferenceJobId(null);
+                                    setReferenceJobPreviewUrl(null);
+                                  }}
+                                  className="rounded-full shadow-sm hover:shadow-md hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 transition-all"
+                                  size="sm"
+                                >
+                                  <Icons.trash className="size-4 mr-2" />
+                                  Remove Reference
+                                </Button>
+                              </div>
+                            </motion.div>
                           )}
-                          {referenceCreations.length > 0 ? (
-                            <div className="space-y-2">
+                          
+                          {referenceCreations && referenceCreations.length > 0 ? (
+                            <div className="space-y-3 pt-4 border-t border-border/50 mt-4">
                               <div className="flex items-center justify-between gap-2">
-                                <p className="text-xs text-muted-foreground">
-                                  Or choose from your recent creations.
+                                <p className="text-sm font-semibold flex items-center gap-2 text-foreground/80">
+                                  <Icons.library className="size-4 text-primary" />
+                                  Recent Creations
                                 </p>
                                 <Link
                                   href="/creations"
-                                  className="text-xs font-medium text-primary hover:underline"
+                                  className="text-xs font-bold text-primary hover:underline underline-offset-4 decoration-primary/30 bg-primary/5 px-2 py-1 rounded-md"
                                 >
-                                  Open all
+                                  View Gallery
                                 </Link>
                               </div>
-                              <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                              <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
                                 {referenceCreations.map((creation) => {
-                                  const isSelected =
-                                    creation.id === referenceJobId;
+                                  const isSelected = creation.id === referenceJobId;
 
                                   return (
                                     <button
                                       key={creation.id}
                                       type="button"
                                       disabled={isUploading}
-                                      onClick={() =>
-                                        handleSelectCreationReference(creation)
-                                      }
+                                      onClick={() => handleSelectCreationReference(creation)}
                                       className={cn(
-                                        "group rounded-xl p-1 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                                        "group rounded-2xl p-1.5 text-left transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                                         isSelected
-                                          ? "bg-primary/5"
-                                          : "hover:bg-muted/50",
+                                          ? "bg-primary/10 shadow-sm"
+                                          : "hover:bg-muted/60 bg-transparent",
                                       )}
                                       title={creation.inputFileName}
                                     >
                                       <div
                                         className={cn(
-                                          "relative aspect-square overflow-hidden rounded-lg border",
+                                          "relative aspect-square overflow-hidden rounded-xl border-2 transition-all",
                                           isSelected
-                                            ? "ring-primary/40 border-primary ring-1"
-                                            : "border-border/70 dark:border-border/60",
+                                            ? "border-primary shadow-sm"
+                                            : "border-transparent dark:border-border/60",
                                         )}
                                       >
                                         <Image
                                           src={creation.previewUrl}
                                           alt={`Reference ${creation.inputFileName}`}
                                           fill
-                                          className="object-cover transition-transform group-hover:scale-[1.02]"
+                                          className={cn(
+                                            "object-cover transition-transform duration-500",
+                                            isSelected ? "scale-105" : "group-hover:scale-110"
+                                          )}
                                           sizes="(min-width: 640px) 20vw, 30vw"
                                         />
+                                        {isSelected && (
+                                           <div className="absolute inset-0 bg-primary/10" />
+                                        )}
                                       </div>
-                                      <p
-                                        className={cn(
-                                          "mt-1 truncate text-[11px] text-muted-foreground",
-                                          isSelected &&
-                                            "font-medium text-foreground",
-                                        )}
-                                      >
-                                        {creation.inputFileName.replace(
-                                          /\.[^/.]+$/,
-                                          "",
-                                        )}
-                                      </p>
                                     </button>
                                   );
                                 })}
                               </div>
                             </div>
                           ) : (
-                            <p className="text-xs text-muted-foreground">
-                              No finished creations yet. Generate one first to
-                              reuse it as a reference.
+                            <p className="text-sm font-medium text-muted-foreground bg-muted/40 p-4 rounded-xl border border-border/50 text-center">
+                              No creations yet. Generate one to reuse it here!
                             </p>
                           )}
                         </div>
+                      </motion.div>
 
-                        <div className="space-y-2">
-                          <Label
-                            htmlFor="consistent-prompt"
-                            className="text-base font-medium"
-                          >
-                            New scene / behavior prompt
-                          </Label>
+                      <motion.div 
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 }}
+                        className="bg-background/80 backdrop-blur-sm space-y-4 rounded-[2rem] border border-border/50 p-6 shadow-sm"
+                      >
+                        <Label
+                          htmlFor="consistent-prompt"
+                          className="flex items-center gap-2 text-xl font-heading font-bold"
+                        >
+                          <Icons.wandSparkles className="size-5 text-primary" />
+                          New Scene Context
+                        </Label>
+                        <div className="relative">
                           <Textarea
                             id="consistent-prompt"
                             name="consistent-prompt"
                             value={consistentPrompt}
-                            onChange={(e) =>
-                              setConsistentPrompt(e.target.value)
-                            }
-                            placeholder="Example: same girl riding a bicycle through a flower market, smiling and waving"
-                            className="min-h-[120px]"
+                            onChange={(e) => setConsistentPrompt(e.target.value)}
+                            placeholder="Example: the same little girl riding a bicycle through a sunny flower market, smiling and waving..."
+                            className="focus-visible:ring-primary/40 focus-visible:border-primary/50 min-h-[140px] resize-none rounded-[1.5rem] bg-background p-5 text-base shadow-inner text-foreground/90 placeholder:text-muted-foreground/60 border-2"
                             disabled={isUploading}
                           />
-                          <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
-                            <p>
-                              We keep core character identity while changing
-                              scene/action.
-                            </p>
-                            <p
-                              className={cn(
-                                "shrink-0",
-                                consistentPromptLength <
-                                  MINIMUM_PROMPT_LENGTH &&
-                                  "text-amber-600 dark:text-amber-300",
-                              )}
-                            >
-                              {consistentPromptLength}/{MINIMUM_PROMPT_LENGTH}{" "}
-                              min
-                            </p>
-                          </div>
+                          {consistentPromptLength > 0 && consistentPromptLength < MINIMUM_PROMPT_LENGTH && (
+                            <div className="absolute bottom-4 right-4 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-3 py-1 rounded-full text-xs font-bold shadow-sm border border-amber-200/50 flex items-center gap-1.5">
+                              <Icons.warning className="size-3" />
+                              Need {MINIMUM_PROMPT_LENGTH - consistentPromptLength} chars
+                            </div>
+                          )}
+                          {consistentPromptLength >= MINIMUM_PROMPT_LENGTH && (
+                            <div className="absolute bottom-4 right-4 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-3 py-1 rounded-full text-xs font-bold shadow-sm border border-emerald-200/50 flex items-center gap-1.5">
+                              <Icons.check className="size-3" />
+                              Ready
+                            </div>
+                          )}
                         </div>
-                      </div>
+                        <div className="flex items-center justify-between text-xs font-medium text-muted-foreground px-2">
+                          <p className="flex items-center gap-1.5">
+                            <Icons.info className="size-4 opacity-70" />
+                            We keep the character identity, you describe the action.
+                          </p>
+                        </div>
+                      </motion.div>
 
-                      {renderStylePicker(
-                        "Style controls the new scene output before line-art conversion.",
-                      )}
-
-                      <Button
-                        onClick={handleConsistentCharacters}
-                        disabled={
-                          isUploading ||
-                          (!referenceFile && !referenceJobId) ||
-                          consistentPromptLength < MINIMUM_PROMPT_LENGTH
-                        }
-                        className="w-full gap-2"
-                        size="lg"
+                      <motion.div
+                         initial={{ opacity: 0, y: 10 }}
+                         animate={{ opacity: 1, y: 0 }}
+                         transition={{ delay: 0.2 }}
                       >
-                        {isUploading ? (
-                          <>
-                            <Icons.spinner className="size-4 animate-spin" />
-                            Generating...
-                          </>
-                        ) : (
-                          <>
-                            <Icons.arrowRight className="size-4" />
-                            Generate Consistent Character Scene
-                          </>
+                        {renderStylePicker(
+                          "Style controls the new scene output before line-art conversion.",
                         )}
-                      </Button>
-                      {!isReadyToSubmit ? (
-                        <p className="text-xs text-muted-foreground">
-                          Add a reference image and write at least{" "}
-                          {MINIMUM_PROMPT_LENGTH} characters to generate.
-                        </p>
-                      ) : null}
+                      </motion.div>
+
+                      <motion.div
+                         initial={{ opacity: 0, y: 10 }}
+                         animate={{ opacity: 1, y: 0 }}
+                         transition={{ delay: 0.3 }}
+                         className="pt-2"
+                      >
+                        <Button
+                          onClick={handleConsistentCharacters}
+                          disabled={
+                            isUploading ||
+                            (!referenceFile && !referenceJobId) ||
+                            consistentPromptLength < MINIMUM_PROMPT_LENGTH
+                          }
+                          className="w-full gap-3 rounded-full py-7 text-lg font-bold shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98] group relative overflow-hidden"
+                          size="lg"
+                        >
+                           <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 pointer-events-none" />
+                          {isUploading ? (
+                            <>
+                              <Icons.spinner className="size-5 animate-spin" />
+                              <span className="relative z-10">Weaving Spells...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Icons.userCircle className="size-5 relative z-10 group-hover:rotate-12 transition-transform duration-300" />
+                              <span className="relative z-10">Generate Consistent Scene</span>
+                              <Icons.arrowRight className="size-4 ml-1 opacity-70 group-hover:translate-x-1 transition-transform relative z-10" />
+                            </>
+                          )}
+                        </Button>
+                        {!isReadyToSubmit && (
+                          <p className="text-center text-sm font-medium text-muted-foreground mt-4 animate-pulse">
+                            Add a reference and description to begin.
+                          </p>
+                        )}
+                      </motion.div>
                     </TabsContent>
-                  ) : null}
+                  )}
                 </Tabs>
 
-                <div className="border-border/70 bg-background/70 dark:border-border/60 dark:bg-background/35 space-y-4 rounded-2xl border p-4">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div>
-                      <p className="text-sm font-semibold">Output Settings</p>
-                      <p className="text-xs text-muted-foreground">
-                        Private mode and upscale are paid-only features.
-                      </p>
-                    </div>
-                    <span
-                      className={cn(
-                        "rounded-full px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.2em]",
-                        isPaidUser
-                          ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-200"
-                          : "bg-amber-500/15 text-amber-700 dark:text-amber-100",
-                      )}
-                    >
-                      {isPaidUser ? "Paid Active" : "Upgrade Required"}
-                    </span>
-                  </div>
-
-                  {mode === "photo" ? (
-                    <div className="border-border/70 bg-muted/35 dark:border-border/60 dark:bg-muted/20 space-y-2 rounded-xl border p-3">
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="text-sm font-medium">
-                          Batch Generation ({batchCount})
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          Generate multiple variations in one run
+                  <div className="space-y-4 xl:sticky xl:top-6">
+                  <div className="border-border/70 bg-muted/20 space-y-5 rounded-[2rem] border p-5 shadow-sm relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-br from-background/40 to-muted/20 z-0" />
+                    <div className="flex flex-wrap items-center justify-between gap-3 relative z-10 border-b border-border/50 pb-4">
+                      <div className="space-y-1">
+                        <h3 className="text-xl font-heading font-bold flex items-center gap-2">
+                          <Icons.settings className="size-5 text-primary" />
+                          Output Settings
+                        </h3>
+                        <p className="text-sm text-muted-foreground font-medium">
+                          Customize your generation preferences
                         </p>
                       </div>
-                      <input
-                        type="range"
-                        min={BATCH_MIN}
-                        max={BATCH_MAX}
-                        step={1}
-                        value={batchCount}
-                        disabled={isUploading}
-                        onChange={(event) =>
-                          setBatchCount(
-                            Number.parseInt(event.target.value, 10) ||
-                              BATCH_MIN,
-                          )
-                        }
-                        className="h-2 w-full cursor-pointer accent-primary disabled:cursor-not-allowed"
-                      />
+                      <div
+                        className={cn(
+                          "rounded-full px-3 py-1 text-xs font-bold uppercase tracking-widest shadow-sm border",
+                          isPaidUser
+                            ? "bg-emerald-500/10 text-emerald-600 border-emerald-200 dark:border-emerald-800/30 dark:text-emerald-400"
+                            : "bg-amber-500/10 text-amber-600 border-amber-200 dark:border-amber-800/30 dark:text-amber-400",
+                        )}
+                      >
+                        {isPaidUser ? "Pro Active ✨" : "Upgrade to Pro"}
+                      </div>
                     </div>
+
+                    <div className="space-y-4 relative z-10">
+                      {mode === "photo" && (
+                        <motion.div 
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          className="bg-background/80 backdrop-blur-sm space-y-3 rounded-[1.5rem] border border-border/50 p-5 shadow-sm"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="space-y-1">
+                              <p className="text-base font-semibold flex items-center gap-2">
+                                <Icons.copy className="size-4 text-primary" />
+                                Batch Generation
+                              </p>
+                              <p className="text-xs text-muted-foreground font-medium">
+                                Generate {batchCount} variations in one run
+                              </p>
+                            </div>
+                            <div className="bg-primary/10 text-primary font-bold px-3 py-1 rounded-full text-sm shadow-sm">
+                              x{batchCount}
+                            </div>
+                          </div>
+                          <div className="pt-2 px-1">
+                            <input
+                              type="range"
+                              min={BATCH_MIN}
+                              max={BATCH_MAX}
+                              step={1}
+                              value={batchCount}
+                              disabled={isUploading}
+                              onChange={(event) =>
+                                setBatchCount(
+                                  Number.parseInt(event.target.value, 10) ||
+                                    BATCH_MIN,
+                                )
+                              }
+                              className="h-2.5 w-full cursor-pointer appearance-none rounded-full bg-muted accent-primary disabled:cursor-not-allowed disabled:opacity-50"
+                            />
+                            <div className="flex justify-between mt-2 text-xs font-bold text-muted-foreground">
+                              <span>1</span>
+                              <span>2</span>
+                              <span>3</span>
+                              <span>4</span>
+                              <span>5</span>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+
+                      <div className="bg-background/80 backdrop-blur-sm flex items-center justify-between gap-4 rounded-[1.5rem] border border-border/50 p-5 shadow-sm transition-colors hover:bg-background/90">
+                        <div className="space-y-1.5 flex-1">
+                          <p className="text-base font-semibold flex items-center gap-2">
+                            <Icons.user className="size-4 text-primary" />
+                            Private Mode
+                          </p>
+                          <p className="text-xs text-muted-foreground font-medium leading-relaxed">
+                            Hide your creations from the public gallery. Included in Pro.
+                          </p>
+                        </div>
+                        <Switch
+                          checked={isPrivateMode}
+                          onCheckedChange={setIsPrivateMode}
+                          disabled={!isPaidUser || isUploading}
+                          aria-label="Toggle private mode"
+                          className="data-[state=checked]:bg-primary"
+                        />
+                      </div>
+
+                      <div className="bg-background/80 backdrop-blur-sm flex items-center justify-between gap-4 rounded-[1.5rem] border border-border/50 p-5 shadow-sm transition-colors hover:bg-background/90">
+                        <div className="space-y-1.5 flex-1">
+                          <p className="text-base font-semibold flex items-center gap-2">
+                            <Icons.arrowUpRight className="size-4 text-primary" />
+                            High-Res Upscale
+                          </p>
+                          <p className="text-xs text-muted-foreground font-medium leading-relaxed">
+                            Export in 4K resolution for crisper prints. Included in Pro.
+                          </p>
+                        </div>
+                        <Switch
+                          checked={isUpscaleEnabled}
+                          onCheckedChange={setIsUpscaleEnabled}
+                          disabled={!isPaidUser || isUploading}
+                          aria-label="Toggle upscale"
+                          className="data-[state=checked]:bg-primary"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {isUploading ? (
+                    <p className="sr-only" aria-live="polite">
+                      Generation in progress. {uploadProgress}% complete.
+                    </p>
                   ) : null}
 
-                  <div className="border-border/70 bg-muted/35 dark:border-border/60 dark:bg-muted/20 flex items-start justify-between gap-3 rounded-xl border p-3">
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium">Private</p>
-                      <p className="text-xs text-muted-foreground">
-                        Paid users default to private mode. Private jobs are
-                        hidden from public listings.
-                      </p>
-                    </div>
-                    <Switch
-                      checked={isPrivateMode}
-                      onCheckedChange={setIsPrivateMode}
-                      disabled={!isPaidUser || isUploading}
-                      aria-label="Toggle private mode"
-                    />
+                  {error ? (
+                    <Alert className="border-destructive/40 bg-destructive/10 text-destructive">
+                      <Icons.warning className="size-4 text-destructive" />
+                      <AlertDescription className="text-destructive">
+                        {error}
+                      </AlertDescription>
+                    </Alert>
+                  ) : null}
                   </div>
-
-                  <div className="border-border/70 bg-muted/35 dark:border-border/60 dark:bg-muted/20 flex items-start justify-between gap-3 rounded-xl border p-3">
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium">Upscale</p>
-                      <p className="text-xs text-muted-foreground">
-                        Increase export resolution for cleaner print quality.
-                      </p>
-                    </div>
-                    <Switch
-                      checked={isUpscaleEnabled}
-                      onCheckedChange={setIsUpscaleEnabled}
-                      disabled={!isPaidUser || isUploading}
-                      aria-label="Toggle upscale"
-                    />
-                  </div>
-                </div>
-
-                {isUploading ? (
-                  <p className="sr-only" aria-live="polite">
-                    Generation in progress. {uploadProgress}% complete.
-                  </p>
-                ) : null}
-
-                {error ? (
-                  <Alert className="border-destructive/40 bg-destructive/10 text-destructive">
-                    <Icons.warning className="size-4 text-destructive" />
-                    <AlertDescription className="text-destructive">
-                      {error}
-                    </AlertDescription>
-                  </Alert>
-                ) : null}
               </div>
 
-              <div className="border-border/70 bg-background/70 dark:border-border/60 dark:bg-background/35 space-y-4 rounded-2xl border p-5">
-                <div className="space-y-1">
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+              <div className="bg-gradient-to-b from-muted/30 to-background/50 space-y-5 rounded-[2rem] border border-border/60 p-5 shadow-sm relative overflow-hidden xl:sticky xl:top-6 h-fit">
+                <div className="absolute top-0 right-0 -translate-y-1/2 translate-x-1/2 w-40 h-40 bg-primary/10 blur-3xl rounded-full" />
+                <div className="space-y-1.5 relative z-10">
+                  <h3 className="text-sm font-bold uppercase tracking-[0.2em] text-primary flex items-center gap-2">
+                    <Icons.package className="size-4" />
                     What You&rsquo;ll Get
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Clean line art made for printing and coloring.
+                  </h3>
+                  <p className="text-base font-medium text-foreground/80">
+                    Perfect, crisp line art generated specifically for coloring.
                   </p>
                 </div>
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-                  <div className="border-border/70 bg-background/70 dark:border-border/60 dark:bg-background/35 rounded-2xl border p-3 text-left">
-                    <div className="relative aspect-square w-full overflow-hidden rounded-xl">
+                
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-2 relative z-10">
+                  <motion.div 
+                    whileHover={{ scale: 1.02 }}
+                    className="bg-background/80 backdrop-blur-sm rounded-[1.5rem] border border-border/50 p-4 text-left shadow-sm group"
+                  >
+                    <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-muted/30 border border-border/50">
                       <Image
                         src="/illustrations/lineart-sample.svg"
                         alt="Line art sample"
                         fill
-                        className="object-contain"
+                        className="object-contain p-2 transition-transform duration-500 group-hover:scale-110"
                       />
                     </div>
-                    <p className="mt-2 text-xs font-medium">Line Art PNG</p>
-                  </div>
-                  <div className="border-border/70 bg-background/70 dark:border-border/60 dark:bg-background/35 rounded-2xl border p-3 text-left">
-                    <div className="relative aspect-square w-full overflow-hidden rounded-xl">
+                    <div className="mt-3 flex items-center justify-between">
+                      <p className="text-sm font-bold flex items-center gap-1.5">
+                        <Icons.imagePlus className="size-4 text-primary" />
+                        HD PNG Image
+                      </p>
+                      <span className="bg-primary/10 text-primary text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-md">Transparent</span>
+                    </div>
+                  </motion.div>
+                  
+                  <motion.div 
+                    whileHover={{ scale: 1.02 }}
+                    className="bg-background/80 backdrop-blur-sm rounded-[1.5rem] border border-border/50 p-4 text-left shadow-sm group"
+                  >
+                    <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-muted/30 border border-border/50">
                       <Image
                         src="/illustrations/color-sample.svg"
                         alt="Print ready preview"
                         fill
-                        className="object-contain"
+                        className="object-contain p-2 transition-transform duration-500 group-hover:scale-110"
                       />
                     </div>
-                    <p className="mt-2 text-xs font-medium">Print-ready PDF</p>
-                  </div>
+                    <div className="mt-3 flex items-center justify-between">
+                      <p className="text-sm font-bold flex items-center gap-1.5">
+                        <Icons.fileText className="size-4 text-primary" />
+                        Print-Ready PDF
+                      </p>
+                      <span className="bg-primary/10 text-primary text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-md">A4 Size</span>
+                    </div>
+                  </motion.div>
                 </div>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li className="flex items-center gap-2">
-                    <span className="text-primary">•</span>
-                    Crisp outlines that kids can color easily.
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-primary">•</span>
-                    Works with home printers and classroom worksheets.
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="text-primary">•</span>
-                    Prompt and output settings tuned for coloring pages.
-                  </li>
-                </ul>
+
+                <div className="relative z-10 pt-2 border-t border-border/50">
+                  <ul className="space-y-3 text-sm font-medium text-muted-foreground">
+                    <li className="flex items-start gap-2.5">
+                      <div className="bg-primary/15 rounded-full p-1 mt-0.5">
+                        <Icons.check className="size-3 text-primary" />
+                      </div>
+                      <span className="leading-snug text-foreground/80">Vector-like crisp outlines that kids can color easily without bleeding.</span>
+                    </li>
+                    <li className="flex items-start gap-2.5">
+                      <div className="bg-primary/15 rounded-full p-1 mt-0.5">
+                        <Icons.check className="size-3 text-primary" />
+                      </div>
+                      <span className="leading-snug text-foreground/80">Optimized for standard US Letter / A4 home & classroom printers.</span>
+                    </li>
+                    <li className="flex items-start gap-2.5">
+                      <div className="bg-primary/15 rounded-full p-1 mt-0.5">
+                        <Icons.check className="size-3 text-primary" />
+                      </div>
+                      <span className="leading-snug text-foreground/80">Custom AI pipeline tuned specifically for coloring book formats.</span>
+                    </li>
+                  </ul>
+                </div>
               </div>
             </div>
-          </CardContent>
+          </motion.div>
         </Card>
+        </motion.div>
 
-        <Card className="border-border/80 bg-card/95 rounded-3xl border">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Icons.help className="size-5" />
-              Tips for Best Results
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2 text-sm">
-              <li className="flex items-start gap-2">
-                <span className="text-primary">•</span>
-                Use clear subjects and avoid crowded compositions.
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-primary">•</span>
-                For consistent characters, use a front-facing reference with
-                clear facial features.
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-primary">•</span>
-                Include action words in prompts: running, reading, flying,
-                exploring.
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-primary">•</span>
-                For name pages, shorter names usually produce cleaner bubble
-                letters and better spacing.
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-primary">•</span>
-                Aspect ratio is set to Auto for best framing.
-              </li>
-            </ul>
-          </CardContent>
-        </Card>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <Card className="border-border/60 bg-gradient-to-r from-card/95 via-background to-card/95 rounded-[2rem] border shadow-sm backdrop-blur-xl relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary/10 via-primary/50 to-primary/10" />
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-3 text-xl">
+                <div className="bg-primary/10 p-2 rounded-full text-primary">
+                  <Icons.help className="size-5" />
+                </div>
+                Tips for Magical Results ✨
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ul className="grid gap-4 sm:grid-cols-2 text-sm text-muted-foreground font-medium">
+                <li className="flex items-start gap-3 bg-muted/20 p-4 rounded-xl border border-border/40 transition-colors hover:bg-muted/40">
+                  <div className="bg-primary/20 text-primary rounded-full p-1 shrink-0 mt-0.5">
+                    <Icons.wandSparkles className="size-3" />
+                  </div>
+                  <span className="leading-relaxed">Keep descriptions specific but simple. <strong className="text-foreground">Avoid crowded scenes</strong> or too many tiny details.</span>
+                </li>
+                <li className="flex items-start gap-3 bg-muted/20 p-4 rounded-xl border border-border/40 transition-colors hover:bg-muted/40">
+                  <div className="bg-primary/20 text-primary rounded-full p-1 shrink-0 mt-0.5">
+                    <Icons.wandSparkles className="size-3" />
+                  </div>
+                  <span className="leading-relaxed">For consistent characters, use a <strong className="text-foreground">front-facing reference</strong> with clear facial features.</span>
+                </li>
+                <li className="flex items-start gap-3 bg-muted/20 p-4 rounded-xl border border-border/40 transition-colors hover:bg-muted/40">
+                  <div className="bg-primary/20 text-primary rounded-full p-1 shrink-0 mt-0.5">
+                    <Icons.wandSparkles className="size-3" />
+                  </div>
+                  <span className="leading-relaxed">Include <strong className="text-foreground">dynamic action words</strong> like: running, reading, flying, or exploring.</span>
+                </li>
+                <li className="flex items-start gap-3 bg-muted/20 p-4 rounded-xl border border-border/40 transition-colors hover:bg-muted/40">
+                  <div className="bg-primary/20 text-primary rounded-full p-1 shrink-0 mt-0.5">
+                    <Icons.wandSparkles className="size-3" />
+                  </div>
+                  <span className="leading-relaxed">For Name Pages, <strong className="text-foreground">shorter names</strong> create cleaner bubble letters and better overall spacing.</span>
+                </li>
+              </ul>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
     </>
   );
@@ -1533,25 +1833,35 @@ function FlowStep({
   return (
     <div
       className={cn(
-        "border-border/70 bg-background/70 rounded-xl border p-3",
+        "border-border/60 bg-background/60 rounded-[1.5rem] border p-4 shadow-sm transition-all duration-300 relative overflow-hidden backdrop-blur-md",
         state === "active" &&
-          "border-primary/50 bg-primary/5 shadow-[0_0_0_1px_hsl(var(--primary)/0.14)]",
-        state === "done" && "border-primary/30 bg-secondary/40",
+          "border-primary/50 bg-primary/5 shadow-md scale-[1.02] ring-1 ring-primary/20",
+        state === "done" && "border-emerald-500/30 bg-emerald-500/5",
+        state === "idle" && "opacity-60 grayscale-[50%] hover:grayscale-0 hover:opacity-100"
       )}
     >
-      <div className="flex items-center gap-2">
+      {state === "active" && (
+        <motion.div 
+          layoutId="active-step-indicator"
+          className="absolute left-0 top-0 w-1 h-full bg-primary" 
+        />
+      )}
+      <div className="flex items-center gap-3 relative z-10">
         <span
           className={cn(
-            "border-border/80 inline-flex size-6 items-center justify-center rounded-full border text-xs font-semibold",
-            state === "active" && "border-primary/50 text-primary",
-            state === "done" && "border-primary/40 bg-primary/10 text-primary",
+            "inline-flex size-8 items-center justify-center rounded-full text-sm font-bold shadow-sm transition-colors",
+            state === "active" && "bg-primary text-primary-foreground",
+            state === "done" && "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400",
+            state === "idle" && "bg-muted text-muted-foreground"
           )}
         >
-          {state === "done" ? <Icons.check className="size-3.5" /> : id}
+          {state === "done" ? <Icons.check className="size-4" /> : id}
         </span>
-        <p className="text-sm font-semibold text-foreground">{title}</p>
+        <div>
+          <p className={cn("text-base font-bold", state === "idle" ? "text-muted-foreground" : "text-foreground")}>{title}</p>
+          <p className="text-xs font-medium text-muted-foreground leading-tight mt-0.5">{description}</p>
+        </div>
       </div>
-      <p className="mt-1 text-xs text-muted-foreground">{description}</p>
     </div>
   );
 }

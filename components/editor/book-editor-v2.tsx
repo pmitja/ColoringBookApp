@@ -135,6 +135,7 @@ export default function BookEditorV2({
     "book-editor:v2:book-id",
     null,
   );
+  const aiLayoutNormalizedBookIdsRef = useRef<Set<string>>(new Set());
 
   const createDefaultBook = useCallback(
     (): BookState => ({
@@ -180,7 +181,7 @@ export default function BookEditorV2({
   const [pageOrientation, setPageOrientation] = useLocalStorage<
     "portrait" | "landscape"
   >("book-editor:v2:orientation", "landscape");
-  const workAreaPaddingEnabled = false;
+  const workAreaPaddingEnabled = true;
   const bookRef = useRef<SimpleFlipBookHandle | null>(null);
   const isExportingRef = useRef(false);
   const stageRef = useRef<HTMLDivElement | null>(null);
@@ -412,6 +413,89 @@ export default function BookEditorV2({
     },
     [book.pages, getPagePaddingByIndex],
   );
+
+  // Normalize AI-generated books once on load so interior pages open with the
+  // same "contain" fit users currently set manually page-by-page.
+  useEffect(() => {
+    if (!hasMeasured || !bookId) return;
+
+    const aiMeta = (book as any)?.meta?.aiColorBook;
+    const hasAiMeta = Boolean(aiMeta && typeof aiMeta === "object");
+    const hasSuspiciousOversizedImages = book.pages.some((page) =>
+      page.elements.some(
+        (el) =>
+          el.type === "image" &&
+          (el.data.width >= 2000 || el.data.height >= 2000),
+      ),
+    );
+    if (!hasAiMeta && !hasSuspiciousOversizedImages) return;
+    if (aiLayoutNormalizedBookIdsRef.current.has(bookId)) return;
+
+    let changed = false;
+    const lastPageIndex = Math.max(0, book.pages.length - 1);
+
+    const normalizedPages = book.pages.map((page, pageIndex) => {
+      const pagePadding = getPagePaddingByIndex(pageIndex);
+      const pagePadUnits = pagePadding / Math.max(renderZoom, 0.0001);
+      const pageContentWidth = Math.max(0, pageWidth - 2 * pagePadUnits);
+      const pageContentHeight = Math.max(0, pageHeight - 2 * pagePadUnits);
+      const isEdgePage = pageIndex === 0 || pageIndex === lastPageIndex;
+
+      const nextElements = page.elements.map((el) => {
+        if (el.type !== "image") return el;
+
+        const isCoverImage =
+          el.data.coverRole === "front" ||
+          el.data.coverRole === "back" ||
+          (isEdgePage && !el.data.coverRole);
+        const desiredFit = isCoverImage ? "cover" : "contain";
+
+        const nextData = {
+          ...el.data,
+          fit: desiredFit,
+          x: 0,
+          y: 0,
+          width: Math.max(20, Math.round(pageContentWidth)),
+          height: Math.max(20, Math.round(pageContentHeight)),
+          objectPosX: el.data.objectPosX ?? 50,
+          objectPosY: el.data.objectPosY ?? 50,
+        };
+
+        if (
+          nextData.fit !== el.data.fit ||
+          nextData.x !== el.data.x ||
+          nextData.y !== el.data.y ||
+          nextData.width !== el.data.width ||
+          nextData.height !== el.data.height ||
+          nextData.objectPosX !== el.data.objectPosX ||
+          nextData.objectPosY !== el.data.objectPosY
+        ) {
+          changed = true;
+          return { ...el, data: nextData } as PageElement;
+        }
+
+        return el;
+      });
+
+      const pageChanged = nextElements.some((el, index) => el !== page.elements[index]);
+      return pageChanged ? { ...page, elements: nextElements } : page;
+    });
+
+    aiLayoutNormalizedBookIdsRef.current.add(bookId);
+
+    if (changed) {
+      setBook({ ...book, pages: normalizedPages });
+    }
+  }, [
+    book,
+    bookId,
+    getPagePaddingByIndex,
+    hasMeasured,
+    pageHeight,
+    pageWidth,
+    renderZoom,
+    setBook,
+  ]);
 
   // Work area sizes in logical page units (independent of zoom)
   // Convert fixed pixel padding into page units based on zoom
@@ -1808,18 +1892,18 @@ export default function BookEditorV2({
 
   return (
     <div className="space-y-4 p-2 sm:p-4">
-      <div className="rounded-3xl border bg-gradient-to-br from-slate-50 via-white to-amber-50 p-4 shadow-sm dark:from-slate-950 dark:via-slate-900 dark:to-amber-950/30">
+      <div className="playful-card rounded-3xl border-2 border-border/50 bg-background/50 p-4 shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="flex min-w-[240px] flex-1 flex-col gap-2">
-            <div className="flex flex-wrap items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.3em] text-muted-foreground">
-              <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700 dark:bg-amber-500/15 dark:text-amber-200">
+            <div className="flex flex-wrap items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+              <span className="rounded-lg bg-primary/10 px-2.5 py-1 text-[10px] font-bold text-primary ring-1 ring-primary/20">
                 Studio
               </span>
               <span>Book editor</span>
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <Input
-                className="focus-visible:border-primary/40 h-11 w-full max-w-md rounded-2xl border border-transparent bg-white/80 px-4 text-base font-semibold shadow-sm focus-visible:ring-0 dark:border-slate-800/80 dark:bg-slate-900/70 dark:text-foreground dark:placeholder:text-muted-foreground sm:text-lg"
+                className="focus-visible:border-primary/40 h-12 w-full max-w-md rounded-2xl border-2 border-transparent bg-muted/40 px-4 text-base font-bold shadow-sm focus-visible:ring-0 hover:border-border/50 transition-colors sm:text-lg"
                 value={book.title}
                 onChange={(e) => setBook({ ...book, title: e.target.value })}
                 placeholder="Book title"
@@ -1827,58 +1911,58 @@ export default function BookEditorV2({
               />
               <Badge
                 variant="secondary"
-                className="rounded-full px-3 py-1 text-[10px] uppercase tracking-[0.2em]"
+                className="rounded-xl px-3 py-1 text-xs font-bold"
               >
                 {saveLabel}
               </Badge>
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <Icons.bookOpen className="size-3.5" />
+              <div className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-xl">
+                <Icons.bookOpen className="size-4" />
                 <span>{book.pages.length} pages</span>
               </div>
             </div>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 mt-2 sm:mt-0">
             <Button
               variant={isPaidUser ? "secondary" : "outline"}
-              className="h-10 rounded-xl px-3 text-xs sm:text-sm"
+              className="h-11 rounded-2xl px-4 text-sm font-bold shadow-sm"
               onClick={openCoverWizard}
               disabled={Boolean(savingCoverOptionId)}
             >
-              <Icons.bookOpen className="mr-1 size-3.5" />
+              <Icons.bookOpen className="mr-2 size-4 text-primary" />
               Cover Wizard
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="outline"
-                  className="h-10 rounded-xl px-3 text-xs sm:text-sm"
+                  className="h-11 rounded-2xl px-4 text-sm font-bold shadow-sm"
                 >
-                  <Icons.ellipsis className="mr-1 size-3.5" />
+                  <Icons.ellipsis className="mr-2 size-4" />
                   Actions
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={loadLatest}>
+              <DropdownMenuContent align="end" className="rounded-2xl p-2 font-medium">
+                <DropdownMenuItem onClick={loadLatest} className="rounded-xl py-2 cursor-pointer focus:bg-primary/10 focus:text-primary">
                   <Icons.download className="mr-2 size-4" />
                   Load latest
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={exportToPdf}>
+                <DropdownMenuItem onClick={exportToPdf} className="rounded-xl py-2 cursor-pointer focus:bg-primary/10 focus:text-primary">
                   <Icons.download className="mr-2 size-4" />
                   Export PDF
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             <Button
-              className="h-10 rounded-xl px-4 text-xs sm:text-sm"
+              className="h-11 rounded-2xl px-6 text-sm font-bold shadow-md shadow-primary/20 transition-transform hover:scale-105 active:scale-95"
               onClick={saveBook}
             >
-              <Icons.check className="mr-1 size-3.5" />
-              {bookId ? "Save" : "Save as New"}
+              <Icons.check className="mr-2 size-4" />
+              {bookId ? "Save Changes" : "Save as New"}
             </Button>
           </div>
         </div>
 
-        <div className="mt-4 flex flex-wrap items-center gap-2 rounded-2xl border bg-white/70 p-2 backdrop-blur dark:bg-slate-900/70">
+        <div className="mt-4 flex flex-wrap items-center gap-2 rounded-2xl border-2 border-border/50 bg-background p-2 shadow-sm">
           <TooltipProvider>
             <div className="flex flex-wrap items-center gap-2">
               <Tooltip>

@@ -46,6 +46,8 @@ import {
   Wallet,
   Wand2,
   X,
+  WandSparkles,
+  UserCircle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -85,6 +87,7 @@ export const Icons = {
   calendar: Calendar,
   dashboard: LayoutDashboard,
   ellipsis: MoreVertical,
+  file: File,
   gitHub: ({ ...props }: LucideProps) => (
     <svg
       aria-hidden="true"
@@ -136,11 +139,15 @@ export const Icons = {
       ></path>
     </svg>
   ),
-  help: Info,
+  fileText: FileText,
+  help: HelpCircle,
   home: Home,
   laptop: Laptop,
   lineChart: LineChart,
   logo: BrandLogo,
+  imagePlus: ImagePlus,
+  info: Info,
+  library: Library,
   media: ImagePlus,
   messages: MessageSquarePlus,
   moon: Moon,
@@ -150,6 +157,7 @@ export const Icons = {
   download: Download,
   redo: Redo2,
   post: Sparkles,
+  sparkles: Sparkles,
   search: Search,
   settings: Sliders,
   spinner: Loader2,
@@ -174,5 +182,7 @@ export const Icons = {
     </svg>
   ),
   user: User,
+  userCircle: UserCircle,
+  wandSparkles: WandSparkles,
   warning: AlertTriangle,
 };

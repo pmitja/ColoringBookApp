@@ -35,7 +35,7 @@ function SignInModal({
           </p>
         </div>
 
-        <div className="flex flex-col space-y-4 bg-secondary/50 px-4 py-8 md:px-16">
+        <div className="bg-secondary/50 flex flex-col space-y-4 px-4 py-8 md:px-16">
           <Button
             variant="default"
             disabled={signInClicked}

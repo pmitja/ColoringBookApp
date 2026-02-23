@@ -148,35 +148,34 @@ export default async function CreationsPage({
       </DashboardHeader>
 
       <div className="space-y-6 overflow-x-hidden pb-10">
-        <Card className="border-border/80 bg-card/95 rounded-3xl border">
-          <CardContent className="flex flex-wrap items-center justify-between gap-4 p-5">
+        <Card className="playful-card overflow-hidden">
+          <CardContent className="relative z-10 flex flex-wrap items-center justify-between gap-4 p-6">
             <div>
-              <p className="text-sm font-semibold text-foreground">
-                {creationItems.length} total page
-                {creationItems.length === 1 ? "" : "s"}
+              <p className="text-xl font-bold text-foreground">
+                {creationItems.length} total page{creationItems.length === 1 ? "" : "s"}
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="mt-1 text-base text-muted-foreground">
                 Keep only the pages you still want to color, print, or export.
               </p>
             </div>
-            <div className="flex flex-wrap gap-2 text-xs">
-              <span className="border-border/70 bg-background/60 rounded-full border px-3 py-1 text-muted-foreground">
-                Ready: {readyCount}
+            <div className="flex flex-wrap gap-3 text-sm font-bold">
+              <span className="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-4 py-1.5 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+                <span className="size-2 rounded-full bg-emerald-500"></span> Ready: {readyCount}
               </span>
-              <span className="border-border/70 bg-background/60 rounded-full border px-3 py-1 text-muted-foreground">
-                In progress: {processingCount}
+              <span className="inline-flex items-center gap-2 rounded-full bg-sky-100 px-4 py-1.5 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400">
+                <span className="size-2 animate-pulse rounded-full bg-sky-500"></span> In progress: {processingCount}
               </span>
-              <span className="border-border/70 bg-background/60 rounded-full border px-3 py-1 text-muted-foreground">
-                Failed: {failedCount}
+              <span className="inline-flex items-center gap-2 rounded-full bg-orange-100 px-4 py-1.5 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400">
+                <span className="size-2 rounded-full bg-orange-500"></span> Failed: {failedCount}
               </span>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-border/80 bg-card/95 rounded-3xl">
-          <CardContent className="space-y-4 p-5">
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-              <form className="flex-1" action="/creations" method="GET">
+        <Card className="playful-card overflow-visible">
+          <CardContent className="space-y-6 p-6">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
+              <form className="group relative flex-1" action="/creations" method="GET">
                 {status !== "all" ? (
                   <input type="hidden" name="status" value={status} />
                 ) : null}
@@ -187,29 +186,27 @@ export default async function CreationsPage({
                   <input type="hidden" name="view" value={view} />
                 ) : null}
 
-                <div className="relative">
-                  <Icons.search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                  <Input
-                    name="q"
-                    defaultValue={q}
-                    placeholder="Search by file name"
-                    className="pl-10"
-                  />
-                </div>
+                <Icons.search className="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-primary" />
+                <Input
+                  name="q"
+                  defaultValue={q}
+                  placeholder="Search by file name"
+                  className="bg-muted/50 focus-visible:ring-primary/50 h-12 rounded-2xl border-transparent pl-12 text-base transition-all focus-visible:bg-background"
+                />
               </form>
 
-              <div className="flex flex-wrap items-center gap-2 lg:justify-end">
-                <div className="border-border/80 bg-background/60 inline-flex items-center gap-1 rounded-full border p-1">
+              <div className="flex flex-wrap items-center gap-3 lg:justify-end">
+                <div className="bg-muted/50 inline-flex items-center gap-1 rounded-full border p-1">
                   <Link href={buildHref({ view: "grid" })}>
                     <Button
                       variant={view === "grid" ? "default" : "ghost"}
                       size="sm"
                       className={cn(
-                        "rounded-full px-3",
-                        view !== "grid" && "text-muted-foreground",
+                        "rounded-full px-4 font-bold shadow-sm transition-all",
+                        view === "grid" ? "bg-background text-foreground" : "text-muted-foreground hover:text-foreground",
                       )}
                     >
-                      <Icons.dashboard className="mr-1 size-4" />
+                      <Icons.dashboard className="mr-2 size-4" />
                       Grid
                     </Button>
                   </Link>
@@ -218,11 +215,11 @@ export default async function CreationsPage({
                       variant={view === "list" ? "default" : "ghost"}
                       size="sm"
                       className={cn(
-                        "rounded-full px-3",
-                        view !== "list" && "text-muted-foreground",
+                        "rounded-full px-4 font-bold shadow-sm transition-all",
+                        view === "list" ? "bg-background text-foreground" : "text-muted-foreground hover:text-foreground",
                       )}
                     >
-                      <Icons.post className="mr-1 size-4" />
+                      <Icons.post className="mr-2 size-4" />
                       List
                     </Button>
                   </Link>
@@ -251,7 +248,12 @@ export default async function CreationsPage({
                     variant={
                       status === (key as FilterStatus) ? "default" : "outline"
                     }
-                    className="rounded-full text-xs"
+                    className={cn(
+                      "rounded-full px-4 font-bold transition-all",
+                      status === key 
+                        ? "shadow-md hover:scale-105" 
+                        : "bg-background/50 border-border/50 hover:bg-muted"
+                    )}
                   >
                     {label}
                   </Button>

@@ -13,7 +13,7 @@ export function EmptyPlaceholder({
   return (
     <div
       className={cn(
-        "border-border/80 bg-card/95 animate-in fade-in-50 flex flex-1 items-center justify-center rounded-3xl border p-8 text-center shadow-sm",
+        "border-border/80 bg-card/95 flex flex-1 items-center justify-center rounded-3xl border p-8 text-center shadow-sm animate-in fade-in-50",
         className,
       )}
       {...props}
@@ -61,7 +61,7 @@ EmptyPlaceholder.Title = function EmptyPlaceholderTitle({
 }: EmptyPlaceholderTitleProps) {
   return (
     <h3
-      className={cn("font-heading mt-5 text-2xl font-bold", className)}
+      className={cn("mt-5 font-heading text-2xl font-bold", className)}
       {...props}
     />
   );

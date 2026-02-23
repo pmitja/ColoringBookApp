@@ -71,7 +71,7 @@ export function DeleteBookButton({
           type="button"
           size={size}
           variant="outline"
-          className="text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/30 gap-1.5"
+          className="hover:bg-destructive/10 border-destructive/30 gap-1.5 text-destructive hover:text-destructive"
           disabled={isDeleting}
         >
           {isDeleting ? (

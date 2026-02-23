@@ -224,64 +224,68 @@ export default function AIColorBookGenerator() {
   );
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-      <Card className="border-border/80 bg-card/95 rounded-3xl border">
-        <CardHeader className="space-y-2">
-          <CardTitle className="text-xl">Generate New Book</CardTitle>
-          <CardDescription>
+    <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+      <Card className="playful-card overflow-hidden">
+        <CardHeader className="relative z-10 space-y-3 pb-6">
+          <CardTitle className="font-heading text-3xl">Generate New Book</CardTitle>
+          <CardDescription className="text-base">
             Tell us your book idea and choose how many interior pages you want.
             We automatically generate a front cover, your selected number of
             interior pages, and a back cover.
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={submit} className="space-y-5">
-            <div className="space-y-2">
-              <Label htmlFor="book-prompt">Book prompt</Label>
+        <CardContent className="relative z-10">
+          <form onSubmit={submit} className="space-y-6">
+            <div className="space-y-3">
+              <Label htmlFor="book-prompt" className="text-base font-bold">Book prompt</Label>
               <Textarea
                 id="book-prompt"
                 placeholder="Example: cute jungle animals learning letters in a playful forest classroom"
                 value={prompt}
                 onChange={(event) => setPrompt(event.target.value)}
-                className="min-h-[140px]"
+                className="bg-muted/50 focus-visible:ring-primary/50 min-h-[160px] resize-none rounded-2xl p-4 text-base"
                 maxLength={2000}
                 required
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-sm font-medium text-muted-foreground">
                 Minimum {MIN_PROMPT_LENGTH} characters.
               </p>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="book-title">Book title (optional)</Label>
+            <div className="space-y-3">
+              <Label htmlFor="book-title" className="text-base font-bold">Book title (optional)</Label>
               <Input
                 id="book-title"
                 value={title}
                 onChange={(event) => setTitle(event.target.value)}
                 placeholder="Example: Jungle Adventures"
                 maxLength={120}
+                className="bg-muted/50 focus-visible:ring-primary/50 rounded-2xl px-4 py-6 text-base"
               />
             </div>
 
-            <div className="space-y-3">
-              <div className="flex items-end justify-between gap-3">
-                <Label htmlFor="page-count">Interior pages</Label>
-                <Input
-                  id="page-count"
-                  type="number"
-                  min={MIN_PAGE_COUNT}
-                  max={MAX_PAGE_COUNT}
-                  value={pageCount}
-                  onChange={(event) => {
-                    const parsed = Number.parseInt(event.target.value, 10);
-                    if (Number.isNaN(parsed)) {
-                      setPageCount(DEFAULT_PAGE_COUNT);
-                      return;
-                    }
-                    setPageCount(clampPageCount(parsed));
-                  }}
-                  className="w-24"
-                />
+            <div className="bg-muted/30 border-border/50 space-y-5 rounded-2xl border p-5">
+              <div className="flex items-center justify-between gap-3">
+                <Label htmlFor="page-count" className="text-base font-bold">Interior pages</Label>
+                <div className="flex items-center gap-2 rounded-xl border bg-background px-3 py-1 shadow-sm">
+                   <Input
+                     id="page-count"
+                     type="number"
+                     min={MIN_PAGE_COUNT}
+                     max={MAX_PAGE_COUNT}
+                     value={pageCount}
+                     onChange={(event) => {
+                       const parsed = Number.parseInt(event.target.value, 10);
+                       if (Number.isNaN(parsed)) {
+                         setPageCount(DEFAULT_PAGE_COUNT);
+                         return;
+                       }
+                       setPageCount(clampPageCount(parsed));
+                     }}
+                     className="w-16 border-0 bg-transparent p-0 text-center font-bold focus-visible:ring-0"
+                   />
+                   <span className="text-sm font-medium text-muted-foreground">pages</span>
+                </div>
               </div>
               <Slider
                 min={MIN_PAGE_COUNT}
@@ -289,38 +293,39 @@ export default function AIColorBookGenerator() {
                 step={1}
                 value={[pageCount]}
                 onValueChange={([value]) => setPageCount(clampPageCount(value))}
+                className="py-4"
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-sm font-medium text-muted-foreground">
                 Default {DEFAULT_PAGE_COUNT}. Maximum {MAX_PAGE_COUNT}.
               </p>
             </div>
 
             <Button
               type="submit"
-              className="w-full gap-2 rounded-full sm:w-auto"
+              className="w-full gap-2 rounded-full py-6 text-lg font-bold shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98] sm:w-auto sm:px-8"
               disabled={!canSubmit}
             >
               {isSubmitting || isGenerating ? (
-                <Icons.spinner className="size-4 animate-spin" />
+                <Icons.spinner className="size-5 animate-spin" />
               ) : (
-                <Icons.bookOpen className="size-4" />
+                <Icons.bookOpen className="size-5" />
               )}
-              {isGenerating ? "Generating..." : "Generate AI Color Book"}
+              {isGenerating ? "Generating Magic..." : "Generate AI Color Book"}
             </Button>
           </form>
         </CardContent>
       </Card>
 
-      <Card className="border-border/80 bg-card/95 rounded-3xl border">
-        <CardHeader className="space-y-2">
-          <CardTitle className="text-xl">Generation Status</CardTitle>
+      <Card className="playful-card flex flex-col overflow-hidden">
+        <CardHeader className="bg-muted/30 border-border/50 relative z-10 space-y-2 border-b pb-5">
+          <CardTitle className="font-heading text-2xl">Generation Status</CardTitle>
           <CardDescription>
             When generation finishes, the editor opens automatically.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="relative z-10 flex flex-1 flex-col justify-center space-y-6 p-6">
           {meta ? (
-            <>
+            <div className="space-y-6">
               <div className="flex items-center justify-between gap-2">
                 <Badge
                   variant={
@@ -328,49 +333,56 @@ export default function AIColorBookGenerator() {
                       ? "secondary"
                       : meta.status === "FAILED"
                         ? "destructive"
-                        : "outline"
+                        : "default"
                   }
-                  className="rounded-full"
+                  className="rounded-full px-3 py-1 text-sm font-bold"
                 >
                   {meta.status === "PROCESSING"
-                    ? "Processing"
+                    ? "✨ Processing"
                     : meta.status === "DONE"
-                      ? "Done"
-                      : "Failed"}
+                      ? "✅ Ready"
+                      : "❌ Failed"}
                 </Badge>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-sm font-bold text-muted-foreground">
                   {meta.completedAssets} / {meta.totalAssets} assets
                 </p>
               </div>
-              <Progress value={progressValue} className="h-2.5 rounded-full" />
+              <Progress value={progressValue} className="h-4 rounded-full shadow-inner" />
               {meta.currentStep ? (
-                <p className="text-sm text-muted-foreground">
+                <p className="animate-pulse text-center text-sm font-medium text-muted-foreground">
                   {meta.currentStep}
                 </p>
               ) : null}
               {meta.error ? (
-                <p className="text-sm text-destructive">{meta.error}</p>
+                <p className="bg-destructive/10 rounded-xl p-3 text-center text-sm font-bold text-destructive">{meta.error}</p>
               ) : null}
-            </>
+            </div>
           ) : (
-            <div className="rounded-2xl border border-dashed p-4 text-sm text-muted-foreground">
-              No active generation. Start a new AI color book to see progress.
+            <div className="border-border/50 bg-muted/20 flex flex-col items-center justify-center rounded-3xl border-2 border-dashed p-8 text-center">
+              <div className="mb-4 flex size-16 items-center justify-center rounded-full bg-background shadow-sm">
+                <Icons.bookOpen className="text-muted-foreground/50 size-8" />
+              </div>
+              <p className="text-base font-medium text-muted-foreground">
+                No active generation.<br/> Start a new AI color book to see progress.
+              </p>
             </div>
           )}
 
-          {canOpenGeneratedBook ? (
-            <Link href={`/dashboard/book-editor/${activeBookId}`}>
-              <Button variant="outline" className="w-full rounded-full">
-                Open Book Editor
-              </Button>
-            </Link>
-          ) : (
-            <Link href="/dashboard/book-editor">
-              <Button variant="outline" className="w-full rounded-full">
-                Open My Books
-              </Button>
-            </Link>
-          )}
+          <div className="mt-auto pt-4">
+             {canOpenGeneratedBook ? (
+               <Link href={`/dashboard/book-editor/${activeBookId}`}>
+                 <Button variant="outline" className="w-full rounded-full py-6 text-base font-bold shadow-sm">
+                   Open Book Editor <Icons.arrowRight className="ml-2 size-4" />
+                 </Button>
+               </Link>
+             ) : (
+               <Link href="/dashboard/book-editor">
+                 <Button variant="outline" className="border-border/50 bg-background/50 w-full rounded-full py-6 text-base font-bold shadow-sm">
+                   Open My Books <Icons.arrowRight className="ml-2 size-4" />
+                 </Button>
+               </Link>
+             )}
+          </div>
         </CardContent>
       </Card>
     </div>

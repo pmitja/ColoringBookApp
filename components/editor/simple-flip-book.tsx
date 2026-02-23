@@ -145,11 +145,11 @@ export const SimpleFlipBook = React.forwardRef<
     >
       {mode === "spread" ? (
         <div
-          className="relative h-full w-full overflow-hidden rounded bg-neutral-100"
+          className="relative size-full overflow-hidden rounded bg-neutral-100"
           style={{ width: width * 2, height }}
         >
           {/* Pages container */}
-          <div className="flex h-full w-full">
+          <div className="flex size-full">
             <div className={"relative h-full"} style={{ width }}>
               <div
                 className={
@@ -180,7 +180,7 @@ export const SimpleFlipBook = React.forwardRef<
       ) : (
         <div
           style={{ width, height }}
-          className="relative h-full w-full overflow-hidden rounded bg-white"
+          className="relative size-full overflow-hidden rounded bg-white"
         >
           <div className="absolute inset-0 transition-transform duration-300 ease-in-out">
             {leftPage}

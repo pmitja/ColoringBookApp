@@ -628,12 +628,12 @@ export default function GeneratorStudio({
   const renderStylePicker = (
     subtitle = "Pick the artistic pass before line-art conversion.",
   ) => (
-    <div className="border-border/70 bg-background/70 dark:border-border/60 dark:bg-background/35 space-y-3 rounded-2xl border p-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <Label className="text-base font-medium">Style</Label>
-        <p className="text-xs text-muted-foreground">{subtitle}</p>
+    <div className="border-border/50 bg-muted/30 rounded-2xl border p-5">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <Label className="text-base font-bold">Style</Label>
+        <p className="text-sm font-medium text-muted-foreground">{subtitle}</p>
       </div>
-      <div className="grid grid-cols-2 gap-x-3 gap-y-4 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {styleKeys.map((styleId) => {
           const preset = STYLE_PRESETS[styleId];
           const isSelected = selectedStyle === styleId;
@@ -645,42 +645,42 @@ export default function GeneratorStudio({
               disabled={isUploading}
               onClick={() => setSelectedStyle(styleId)}
               className={cn(
-                "group rounded-xl p-1 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-70",
+                "group relative overflow-hidden rounded-2xl border-2 p-1 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-70",
                 isSelected
-                  ? "bg-primary/5"
-                  : "hover:bg-muted/45 dark:hover:bg-muted/20",
+                  ? "bg-primary/5 border-primary shadow-sm"
+                  : "hover:bg-muted/50 border-transparent bg-background hover:border-border",
               )}
             >
               <div
-                className={cn(
-                  "border-border/70 bg-background/70 dark:border-border/60 dark:bg-background/35 relative aspect-[4/3] overflow-hidden rounded-lg border",
-                  isSelected && "ring-primary/40 border-primary ring-1",
-                )}
+                className="relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-muted"
               >
                 <Image
                   src={preset.previewImage}
                   alt={`${preset.label} style preview`}
                   fill
-                  className="object-cover transition-transform duration-200 group-hover:scale-[1.02]"
+                  className={cn(
+                    "object-cover transition-transform duration-500",
+                    isSelected ? "scale-105" : "group-hover:scale-110"
+                  )}
                   sizes="(min-width: 1280px) 12vw, (min-width: 1024px) 16vw, (min-width: 640px) 24vw, 44vw"
                 />
+                {isSelected && (
+                   <div className="ring-primary/20 absolute inset-0 rounded-xl ring-2 ring-inset" />
+                )}
               </div>
-              <p
-                className={cn(
-                  "mt-2 text-sm font-semibold text-foreground",
-                  isSelected && "text-primary",
-                )}
-              >
-                {preset.label}
-              </p>
-              <p
-                className={cn(
-                  "text-xs text-muted-foreground",
-                  isSelected && "text-foreground/80",
-                )}
-              >
-                {preset.subtitle}
-              </p>
+              <div className="p-2">
+                 <p
+                   className={cn(
+                     "text-sm font-bold transition-colors",
+                     isSelected ? "text-primary" : "text-foreground group-hover:text-primary",
+                   )}
+                 >
+                   {preset.label}
+                 </p>
+                 <p className="line-clamp-1 text-xs font-medium text-muted-foreground">
+                   {preset.subtitle}
+                 </p>
+              </div>
             </button>
           );
         })}
@@ -692,22 +692,23 @@ export default function GeneratorStudio({
     <>
       <DashboardHeader heading={heading} text={text} />
 
-      <div className="mx-auto max-w-6xl space-y-6 pb-10">
-        <Card className="border-border/80 bg-card/95 rounded-3xl border">
-          <CardHeader className="space-y-4">
+      <div className="mx-auto max-w-6xl space-y-8 pb-10">
+        <Card className="playful-card overflow-hidden">
+          <CardHeader className="bg-muted/30 border-border/50 relative z-10 space-y-6 border-b pb-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <CardTitle>Generator Studio</CardTitle>
-                <CardDescription>
+                <CardTitle className="font-heading text-3xl">Generator Studio</CardTitle>
+                <CardDescription className="mt-2 text-base">
                   Pick your creation mode, tune style, and generate printable
                   line art.
                 </CardDescription>
               </div>
-              <div className="border-border/80 bg-secondary/60 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-secondary-foreground">
+              <div className="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+                <Icons.check className="size-3.5" />
                 Original files not stored
               </div>
             </div>
-            <div className="grid gap-2 sm:grid-cols-3">
+            <div className="grid gap-3 sm:grid-cols-3">
               {stepStates.map((step) => (
                 <FlowStep
                   key={step.id}
@@ -719,7 +720,7 @@ export default function GeneratorStudio({
               ))}
             </div>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="relative z-10 p-6 md:p-8">
             {isUploading ? (
               <div
                 className="border-border/80 bg-secondary/45 space-y-3 rounded-2xl border p-4"
@@ -744,8 +745,8 @@ export default function GeneratorStudio({
               </div>
             ) : null}
 
-            <div className="grid gap-6 lg:grid-cols-[1.4fr_0.6fr]">
-              <div className="space-y-4">
+            <div className="grid gap-8 lg:grid-cols-[1.4fr_0.6fr]">
+              <div className="space-y-6">
                 <Tabs
                   value={mode}
                   onValueChange={(value) => {
@@ -754,12 +755,12 @@ export default function GeneratorStudio({
                     setMode(nextMode);
                     setError(null);
                   }}
-                  className="space-y-4"
+                  className="space-y-6"
                 >
                   {showModeTabs ? (
                     <TabsList
                       className={cn(
-                        "border-border/70 bg-background/70 dark:border-border/60 dark:bg-background/35 grid h-auto w-full rounded-2xl border p-1",
+                        "bg-muted/50 border-border/50 grid h-auto w-full rounded-2xl border p-1.5",
                         availableModes.length === 2
                           ? "grid-cols-2"
                           : availableModes.length === 3
@@ -770,7 +771,7 @@ export default function GeneratorStudio({
                       {availableModes.includes("photo") ? (
                         <TabsTrigger
                           value="photo"
-                          className="data-[state=active]:border-primary/50 data-[state=active]:bg-primary/10 rounded-xl data-[state=active]:text-primary data-[state=active]:shadow-[0_0_0_1px_hsl(var(--primary)/0.18)]"
+                          className="rounded-xl py-3 font-bold data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm"
                         >
                           Photo Upload
                         </TabsTrigger>
@@ -778,7 +779,7 @@ export default function GeneratorStudio({
                       {availableModes.includes("ai") ? (
                         <TabsTrigger
                           value="ai"
-                          className="data-[state=active]:border-primary/50 data-[state=active]:bg-primary/10 rounded-xl data-[state=active]:text-primary data-[state=active]:shadow-[0_0_0_1px_hsl(var(--primary)/0.18)]"
+                          className="rounded-xl py-3 font-bold data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm"
                         >
                           AI Generator
                         </TabsTrigger>
@@ -786,7 +787,7 @@ export default function GeneratorStudio({
                       {availableModes.includes("name") ? (
                         <TabsTrigger
                           value="name"
-                          className="data-[state=active]:border-primary/50 data-[state=active]:bg-primary/10 rounded-xl data-[state=active]:text-primary data-[state=active]:shadow-[0_0_0_1px_hsl(var(--primary)/0.18)]"
+                          className="rounded-xl py-3 font-bold data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm"
                         >
                           Name Pages
                         </TabsTrigger>
@@ -794,7 +795,7 @@ export default function GeneratorStudio({
                       {availableModes.includes("consistent") ? (
                         <TabsTrigger
                           value="consistent"
-                          className="data-[state=active]:border-primary/50 data-[state=active]:bg-primary/10 rounded-xl data-[state=active]:text-primary data-[state=active]:shadow-[0_0_0_1px_hsl(var(--primary)/0.18)]"
+                          className="rounded-xl py-3 font-bold data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-sm"
                         >
                           Consistent Characters
                         </TabsTrigger>
@@ -910,11 +911,11 @@ export default function GeneratorStudio({
                   ) : null}
 
                   {availableModes.includes("ai") ? (
-                    <TabsContent value="ai" className="space-y-4">
-                      <div className="border-border/70 bg-background/70 dark:border-border/60 dark:bg-background/35 space-y-3 rounded-2xl border p-4">
+                    <TabsContent value="ai" className="space-y-6">
+                      <div className="border-border/50 bg-muted/30 rounded-2xl border p-5">
                         <Label
                           htmlFor="generator-prompt"
-                          className="text-base font-medium"
+                          className="mb-4 block text-base font-bold"
                         >
                           Describe your coloring page
                         </Label>
@@ -924,10 +925,10 @@ export default function GeneratorStudio({
                           value={generatorPrompt}
                           onChange={(e) => setGeneratorPrompt(e.target.value)}
                           placeholder="Example: cheerful fox teacher in a forest classroom, kids reading books, clean scene composition"
-                          className="min-h-[140px]"
+                          className="focus-visible:ring-primary/50 min-h-[160px] resize-none rounded-xl bg-background p-4 text-base"
                           disabled={isUploading}
                         />
-                        <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
+                        <div className="mt-3 flex items-center justify-between gap-3 text-sm font-medium text-muted-foreground">
                           <p>
                             Keep it specific: subject, setting, action, and
                             mood.
@@ -936,7 +937,7 @@ export default function GeneratorStudio({
                             className={cn(
                               "shrink-0",
                               generatorPromptLength < MINIMUM_PROMPT_LENGTH &&
-                                "text-amber-600 dark:text-amber-300",
+                                "text-amber-600 dark:text-amber-400",
                             )}
                           >
                             {generatorPromptLength}/{MINIMUM_PROMPT_LENGTH} min
@@ -951,23 +952,23 @@ export default function GeneratorStudio({
                       <Button
                         onClick={handleAIGenerator}
                         disabled={isUploading || !isReadyToSubmit}
-                        className="w-full gap-2"
+                        className="w-full gap-2 rounded-full py-6 text-lg font-bold shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98]"
                         size="lg"
                       >
                         {isUploading ? (
                           <>
-                            <Icons.spinner className="size-4 animate-spin" />
-                            Generating...
+                            <Icons.spinner className="size-5 animate-spin" />
+                            Generating Magic...
                           </>
                         ) : (
                           <>
-                            <Icons.arrowRight className="size-4" />
+                            <Icons.arrowRight className="size-5" />
                             Generate with AI
                           </>
                         )}
                       </Button>
                       {!isReadyToSubmit ? (
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-center text-sm font-medium text-muted-foreground">
                           Write at least {MINIMUM_PROMPT_LENGTH} characters to
                           generate.
                         </p>

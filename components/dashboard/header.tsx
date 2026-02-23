@@ -1,3 +1,7 @@
+"use client";
+
+import { motion } from "framer-motion";
+
 interface DashboardHeaderProps {
   heading: string;
   text?: string;
@@ -10,20 +14,25 @@ export function DashboardHeader({
   children,
 }: DashboardHeaderProps) {
   return (
-    <div className="flex flex-wrap items-end justify-between gap-4">
+    <motion.div 
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+      className="border-border/50 mb-8 flex flex-wrap items-end justify-between gap-4 border-b pb-6"
+    >
       <div className="space-y-2">
-        <h1 className="font-heading text-2xl font-semibold text-foreground sm:text-3xl">
+        <h1 className="font-heading text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
           {heading}
         </h1>
         {text ? (
-          <p className="max-w-2xl text-sm text-muted-foreground sm:text-base">
+          <p className="max-w-2xl text-lg text-muted-foreground">
             {text}
           </p>
         ) : null}
       </div>
       {children ? (
-        <div className="flex flex-wrap items-center gap-2">{children}</div>
+        <div className="flex flex-wrap items-center gap-3">{children}</div>
       ) : null}
-    </div>
+    </motion.div>
   );
 }

@@ -1066,10 +1066,10 @@ export default function BookEditor({
           </button>
         </TooltipTrigger>
         <TooltipContent side={side} align="center" className="p-1">
-          <div className="relative h-[40vw] max-h-[480px] w-[40vw] max-w-[480px] bg-background">
+          <div className="relative size-[40vw] max-h-[480px] max-w-[480px] bg-background">
             {!loaded ? (
               <div className="absolute inset-0 flex items-center justify-center">
-                <Icons.spinner className="h-8 w-8 animate-spin text-muted-foreground" />
+                <Icons.spinner className="size-8 animate-spin text-muted-foreground" />
               </div>
             ) : null}
             <Image
@@ -1158,7 +1158,7 @@ export default function BookEditor({
                       onClick={addPage}
                       className="flex-1 sm:flex-none"
                     >
-                      <Icons.add className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
+                      <Icons.add className="mr-1 size-3 sm:mr-2 sm:size-4" />
                       <span className="hidden sm:inline">Add</span>
                     </Button>
                     <Button
@@ -1167,7 +1167,7 @@ export default function BookEditor({
                       onClick={removePage}
                       className="flex-1 sm:flex-none"
                     >
-                      <Icons.trash className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
+                      <Icons.trash className="mr-1 size-3 sm:mr-2 sm:size-4" />
                       <span className="hidden sm:inline">Remove</span>
                     </Button>
                   </div>
@@ -1223,7 +1223,7 @@ export default function BookEditor({
                           onClick={undo}
                           className="h-9 px-2 text-xs sm:h-10 sm:px-3 sm:text-sm"
                         >
-                          <Icons.undo className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
+                          <Icons.undo className="mr-1 size-3 sm:mr-2 sm:size-4" />
                           <span className="hidden sm:inline">Undo</span>
                         </Button>
                       </TooltipTrigger>
@@ -1237,7 +1237,7 @@ export default function BookEditor({
                           onClick={redo}
                           className="h-9 px-2 text-xs sm:h-10 sm:px-3 sm:text-sm"
                         >
-                          <Icons.undo className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
+                          <Icons.undo className="mr-1 size-3 sm:mr-2 sm:size-4" />
                           <span className="hidden sm:inline">Redo</span>
                         </Button>
                       </TooltipTrigger>
@@ -1260,7 +1260,7 @@ export default function BookEditor({
                           onClick={addTextBox}
                           className="h-9 px-2 text-xs sm:h-10 sm:px-3 sm:text-sm"
                         >
-                          <Icons.post className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
+                          <Icons.post className="mr-1 size-3 sm:mr-2 sm:size-4" />
                           <span className="hidden sm:inline">Add text</span>
                         </Button>
                       </TooltipTrigger>
@@ -1273,7 +1273,7 @@ export default function BookEditor({
                           variant="outline"
                           className="h-9 px-2 text-xs sm:h-10 sm:px-3 sm:text-sm"
                         >
-                          <Icons.media className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
+                          <Icons.media className="mr-1 size-3 sm:mr-2 sm:size-4" />
                           <span className="hidden sm:inline">Add image</span>
                         </Button>
                       </PopoverTrigger>
@@ -1320,7 +1320,7 @@ export default function BookEditor({
                       onClick={() => bookRef.current?.flipPrev()}
                       className="h-9 px-2 text-xs sm:h-10 sm:px-3 sm:text-sm"
                     >
-                      <Icons.chevronLeft className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
+                      <Icons.chevronLeft className="mr-1 size-3 sm:mr-2 sm:size-4" />
                       <span className="hidden sm:inline">Prev</span>
                     </Button>
                     <Button
@@ -1346,7 +1346,7 @@ export default function BookEditor({
                       className="h-9 px-2 text-xs sm:h-10 sm:px-3 sm:text-sm"
                     >
                       <span className="hidden sm:inline">Next</span>
-                      <Icons.arrowRight className="ml-1 h-3 w-3 sm:ml-2 sm:h-4 sm:w-4" />
+                      <Icons.arrowRight className="ml-1 size-3 sm:ml-2 sm:size-4" />
                     </Button>
                   </div>
 
@@ -1377,7 +1377,7 @@ export default function BookEditor({
                       onClick={saveBook}
                       className="h-9 px-2 text-xs sm:h-10 sm:px-3 sm:text-sm"
                     >
-                      <Icons.check className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />{" "}
+                      <Icons.check className="mr-1 size-3 sm:mr-2 sm:size-4" />{" "}
                       <span className="hidden sm:inline">
                         {bookId ? "Save" : "Save as New"}
                       </span>
@@ -1387,7 +1387,7 @@ export default function BookEditor({
                       onClick={() => setPropertiesOpen(true)}
                       className="h-9 px-2 text-xs sm:h-10 sm:px-3 sm:text-sm"
                     >
-                      <Icons.settings className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
+                      <Icons.settings className="mr-1 size-3 sm:mr-2 sm:size-4" />
                       <span className="hidden sm:inline">Properties</span>
                     </Button>
                     <DropdownMenu>
@@ -1396,17 +1396,17 @@ export default function BookEditor({
                           variant="outline"
                           className="h-9 px-2 text-xs sm:h-10 sm:px-3 sm:text-sm"
                         >
-                          <Icons.ellipsis className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
+                          <Icons.ellipsis className="mr-1 size-3 sm:mr-2 sm:size-4" />
                           <span className="hidden sm:inline">More</span>
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={loadLatest}>
-                          <Icons.download className="mr-2 h-4 w-4" /> Load
+                          <Icons.download className="mr-2 size-4" /> Load
                           latest
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={exportToPdf}>
-                          <Icons.download className="mr-2 h-4 w-4" /> Export PDF
+                          <Icons.download className="mr-2 size-4" /> Export PDF
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -1417,7 +1417,7 @@ export default function BookEditor({
                           variant="ghost"
                           className="h-9 px-2 text-xs sm:h-10 sm:px-3 sm:text-sm"
                         >
-                          <Icons.settings className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
+                          <Icons.settings className="mr-1 size-3 sm:mr-2 sm:size-4" />
                           <span className="hidden sm:inline">Settings</span>
                         </Button>
                       </DialogTrigger>
@@ -1672,7 +1672,7 @@ export default function BookEditor({
                                         : ""
                                     }`}
                                   >
-                                    <div className="relative h-full w-full">
+                                    <div className="relative size-full">
                                       <div
                                         style={{
                                           position: "absolute",
@@ -1778,7 +1778,7 @@ export default function BookEditor({
                                             >
                                               <div
                                                 title="Drag to position image"
-                                                className="object-pos-handle absolute -left-2 -top-2 h-4 w-4 cursor-grab rounded-full border border-white bg-black/60"
+                                                className="object-pos-handle absolute -left-2 -top-2 size-4 cursor-grab rounded-full border border-white bg-black/60"
                                                 onMouseDown={(e) =>
                                                   e.stopPropagation()
                                                 }
@@ -1799,9 +1799,9 @@ export default function BookEditor({
                                       }}
                                       variant="secondary"
                                       size="icon"
-                                      className="absolute right-1 top-1 hidden h-6 w-6 p-0 group-hover:flex"
+                                      className="absolute right-1 top-1 hidden size-6 p-0 group-hover:flex"
                                     >
-                                      <Icons.close className="h-3 w-3" />
+                                      <Icons.close className="size-3" />
                                     </Button>
                                   </div>
                                 </Draggable>
@@ -2252,7 +2252,7 @@ export default function BookEditor({
                                     className="h-9 px-3 text-xs"
                                   >
                                     <div
-                                      className="mr-2 h-3 w-3 rounded-sm border"
+                                      className="mr-2 size-3 rounded-sm border"
                                       style={{
                                         backgroundColor:
                                           bg.value === "transparent"
@@ -3019,7 +3019,7 @@ export default function BookEditor({
                       onClick={duplicateSelected}
                       className="h-8 px-2 text-xs"
                     >
-                      <Icons.copy className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
+                      <Icons.copy className="mr-1 size-3 sm:mr-2 sm:size-4" />
                       <span className="hidden sm:inline">Duplicate</span>
                     </Button>
                     <Button
@@ -3028,7 +3028,7 @@ export default function BookEditor({
                       onClick={bringToFront}
                       className="h-8 px-2 text-xs"
                     >
-                      <Icons.arrowUpRight className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
+                      <Icons.arrowUpRight className="mr-1 size-3 sm:mr-2 sm:size-4" />
                       <span className="hidden sm:inline">Bring to front</span>
                     </Button>
                     <Button
@@ -3037,7 +3037,7 @@ export default function BookEditor({
                       onClick={sendToBack}
                       className="h-8 px-2 text-xs"
                     >
-                      <Icons.chevronRight className="mr-1 h-3 w-3 rotate-180 sm:mr-2 sm:h-4 sm:w-4" />{" "}
+                      <Icons.chevronRight className="mr-1 size-3 rotate-180 sm:mr-2 sm:size-4" />{" "}
                       <span className="hidden sm:inline">Send to back</span>
                     </Button>
                   </div>
@@ -3048,7 +3048,7 @@ export default function BookEditor({
                     }
                     className="h-8 px-3 text-xs"
                   >
-                    <Icons.trash className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
+                    <Icons.trash className="mr-1 size-3 sm:mr-2 sm:size-4" />
                     <span className="hidden sm:inline">Delete selected</span>
                   </Button>
                 </div>

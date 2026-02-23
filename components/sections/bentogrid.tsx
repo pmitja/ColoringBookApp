@@ -14,7 +14,7 @@ export default function BentoGrid() {
             Kid-First Experience
           </p>
           <h2 className="mt-3 text-balance font-heading text-3xl sm:text-4xl">
-            From photo to coloring fun in three easy steps
+            Use our AI tools to spark imagination
           </h2>
         </div>
 
@@ -28,8 +28,8 @@ export default function BentoGrid() {
               See the transformation instantly
             </h3>
             <p className="mt-3 max-w-xl leading-relaxed text-muted-foreground">
-              Upload your photo and preview clean line art before printing. Keep
-              pages simple for younger kids or add detail for older artists.
+              Turn your images into line art, or type a prompt and watch the AI generate
+              beautiful, colorable pages. Keep them simple for younger kids or add detail for older artists.
             </p>
 
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
@@ -61,24 +61,24 @@ export default function BentoGrid() {
           </article>
 
           <article className="playful-card col-span-full p-5 sm:p-7 lg:col-span-2">
-            <h3 className="font-heading text-2xl">Three Simple Steps</h3>
+            <h3 className="font-heading text-2xl">Three Simple Ways</h3>
             <ol className="mt-5 space-y-4 text-sm">
               <li className="surface-glass rounded-2xl p-3">
-                <p className="font-semibold">1. Upload a memory</p>
+                <p className="font-semibold">1. Image to Lineart</p>
                 <p className="text-muted-foreground">
-                  Portraits, pets, field trips, or favorite toys.
+                  Upload photos of pets or family.
                 </p>
               </li>
               <li className="surface-glass rounded-2xl p-3">
-                <p className="font-semibold">2. Pick a style</p>
+                <p className="font-semibold">2. Text to Page</p>
                 <p className="text-muted-foreground">
-                  Choose lighter or bolder outlines based on age.
+                  Prompt anything you can imagine.
                 </p>
               </li>
               <li className="surface-glass rounded-2xl p-3">
-                <p className="font-semibold">3. Print and color</p>
+                <p className="font-semibold">3. Print and Color</p>
                 <p className="text-muted-foreground">
-                  Download single sheets or a whole book in PDF.
+                  Download as PDF or color online.
                 </p>
               </li>
             </ol>

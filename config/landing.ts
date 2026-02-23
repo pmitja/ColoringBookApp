@@ -2,49 +2,49 @@ import { FeatureLdg, InfoLdg, TestimonialType } from "types";
 
 export const infos: InfoLdg[] = [
   {
-    title: "From Photo to Printable Line Art",
+    title: "Powerful Book Editor & PDF Builder",
     description:
-      "Upload a family photo, pick a style, and get crisp line art that is ready for crayons, markers, or colored pencils.",
-    image: "/illustrations/landing-story.svg",
+      "Visually arrange your generated pages, add custom titles, and compile your own coloring book. Ready to download as a print-ready PDF in seconds.",
+    image: "/illustrations/landing-book.svg",
     list: [
       {
-        title: "Original upload not saved",
+        title: "Drag-and-drop builder",
         description:
-          "We process your photo to create line art, but we do not save the original uploaded image.",
-        icon: "settings",
+          "Easily organize your pages into a cohesive book.",
+        icon: "laptop",
       },
       {
-        title: "Kid-friendly lines",
-        description: "Clean outlines that are easy for little hands to color.",
+        title: "Custom Covers",
+        description: "Generate striking front and back covers.",
         icon: "bookOpen",
       },
       {
-        title: "Fast turnaround",
-        description: "Pages are ready in minutes, not hours.",
-        icon: "lineChart",
+        title: "Print-ready exports",
+        description: "Get crisp PDFs for any home or professional printer.",
+        icon: "download",
       },
     ],
   },
   {
-    title: "Make a Whole Book Together",
+    title: "Color Online Instantly",
     description:
-      "Collect multiple pages, add titles, and export a full coloring book for family nights or classrooms.",
-    image: "/illustrations/landing-book.svg",
+      "Don't want to print? Color your generated pages right in your browser. Our intuitive digital coloring tool is perfect for quick fun on any device.",
+    image: "/illustrations/hero-coloring.svg",
     list: [
       {
-        title: "Multi-page books",
-        description: "Combine favorite photos into a complete book.",
-        icon: "copy",
-      },
-      {
-        title: "Print-ready exports",
-        description: "Get crisp PDFs and PNGs for any printer.",
-        icon: "download",
+        title: "Digital Color Palette",
+        description: "Vibrant colors that stay perfectly inside the lines.",
+        icon: "palette",
       },
       {
         title: "Works everywhere",
-        description: "Create on desktop, tablet, or mobile.",
+        description: "Enjoy coloring on desktop, tablet, or mobile.",
         icon: "laptop",
+      },
+      {
+        title: "Save & Share",
+        description: "Save your masterpiece to your account or share it.",
+        icon: "copy",
       },
     ],
   },
@@ -52,69 +52,69 @@ export const infos: InfoLdg[] = [
 
 export const features: FeatureLdg[] = [
   {
-    title: "Original upload not saved",
+    title: "Image to Lineart",
     description:
-      "We process your photo to create line art, but we do not save the original uploaded image.",
+      "Turn any photo into crisp line art perfect for coloring.",
     link: "/",
-    icon: "settings",
+    icon: "media",
   },
   {
-    title: "Print-ready downloads",
+    title: "Text to Page",
     description:
-      "Export crisp PDFs and PNGs that look great on any home printer.",
+      "Type a prompt and let AI generate a unique coloring page.",
     link: "/",
-    icon: "download",
+    icon: "post",
   },
   {
-    title: "Kid-friendly editor",
+    title: "Whole Book Generation",
     description:
-      "Drag, resize, and arrange pages with big, clear controls.",
+      "Create a full book with covers and pages from a single prompt.",
     link: "/",
     icon: "bookOpen",
   },
   {
-    title: "Fast creation",
+    title: "Consistent Avatars",
     description:
-      "Most photos become line art in minutes, not hours.",
+      "Use an uploaded face to generate consistent characters.",
     link: "/",
-    icon: "lineChart",
+    icon: "user",
   },
   {
-    title: "Multi-page books",
+    title: "Online Coloring",
     description:
-      "Build a full book with titles, covers, and multiple pages.",
+      "Color your creations digitally right in your browser.",
     link: "/",
-    icon: "copy",
+    icon: "palette",
   },
   {
-    title: "Works on any device",
+    title: "Print-Ready PDFs",
     description:
-      "Create on laptop, tablet, or phone without losing progress.",
+      "Export your creations in high-quality PDF format.",
     link: "/",
-    icon: "laptop",
+    icon: "download",
   },
 ];
 
 export const testimonials: TestimonialType[] = [
   {
-    name: "Maya R.",
-    job: "Parent of Two",
+    name: "Sarah L.",
+    job: "Parent",
     image: "/avatars/avatar-01.svg",
     review:
-      "My kids color the pages every weekend. The lines are clean and the prints look amazing on our home printer.",
+      "The whole book generation is pure magic. I typed in 'dragons in space' and we had a 10-page book to color instantly!",
   },
   {
-    name: "Chris T.",
-    job: "Kindergarten Teacher",
+    name: "Mark T.",
+    job: "Teacher",
     image: "/avatars/avatar-02.svg",
     review:
-      "I made a class coloring book from our field trip photos. The kids were thrilled and it printed perfectly.",
+      "Turning class photos into lineart was a huge hit with the kids. The privacy guarantee gives me great peace of mind.",
   },
   {
-    name: "Priya S.",
-    job: "Busy Mom",
+    name: "Elena G.",
+    job: "Digital Artist",
     image: "/avatars/avatar-03.svg",
     review:
-      "The editor is simple enough for my 5-year-old, and I still get professional-looking pages.",
+      "The consistent avatar feature is incredible. I can create ongoing coloring adventures starring my niece!",
   },
 ];

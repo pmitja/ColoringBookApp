@@ -4,6 +4,7 @@ import { useContext } from "react";
 import Link from "next/link";
 import { useSelectedLayoutSegment } from "next/navigation";
 import { useSession } from "next-auth/react";
+import { motion } from "framer-motion";
 
 import { marketingConfig } from "@/config/marketing";
 import { cn } from "@/lib/utils";
@@ -32,27 +33,28 @@ export function NavBar({ scroll = false }: NavBarProps) {
   return (
     <header
       className={cn(
-        "sticky top-0 z-40 flex w-full justify-center px-3 pt-3 transition-[transform,background-color,border-color,box-shadow] duration-300",
-        scroll && !scrolled && "md:pt-4",
+        "sticky top-0 z-50 flex w-full justify-center px-4 pt-4 transition-all duration-500",
+        scroll && scrolled ? "pt-2" : "md:pt-6",
       )}
     >
-      <MaxWidthWrapper className="max-w-7xl px-0">
-        <div
+      <MaxWidthWrapper className="max-w-6xl px-0">
+        <motion.div
+          initial={{ y: -20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
           className={cn(
-            "surface-glass flex h-16 items-center justify-between rounded-2xl px-3 sm:px-4",
-            scroll
-              ? scrolled
-                ? "border-border/90 bg-background/88"
-                : "border-border/70 bg-background/72"
-              : "border-border/90 bg-background/88",
+            "flex h-16 items-center justify-between rounded-full border px-4 shadow-sm transition-all duration-500 sm:px-6",
+            scrolled
+              ? "bg-background/80 border-border shadow-md backdrop-blur-xl"
+              : "bg-background/40 border-border/50 backdrop-blur-md",
           )}
         >
-          <div className="flex items-center gap-2 md:gap-3">
+          <div className="flex items-center gap-4 md:gap-6">
             <Link
               href="/"
-              className="border-border/70 flex items-center rounded-xl border bg-white/70 px-3 py-2 shadow-sm transition-colors hover:bg-white/95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background dark:bg-white/10 dark:hover:bg-white/15"
+              className="flex items-center rounded-full bg-white/90 px-3 py-1.5 shadow-sm transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:bg-white/10"
             >
-              <Icons.logo className="h-8 w-auto sm:h-9" />
+              <Icons.logo className="h-7 w-auto sm:h-8" />
             </Link>
 
             {links && links.length > 0 ? (
@@ -69,14 +71,21 @@ export function NavBar({ scroll = false }: NavBarProps) {
                       href={item.disabled ? "#" : item.href}
                       prefetch={true}
                       className={cn(
-                        "rounded-xl px-3 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                        "relative rounded-full px-4 py-2 text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         isActive
-                          ? "bg-secondary text-secondary-foreground"
-                          : "text-foreground/75 hover:bg-secondary/70 hover:text-foreground",
+                          ? "text-primary"
+                          : "text-foreground/70 hover:bg-muted/50 hover:text-foreground",
                         item.disabled && "cursor-not-allowed opacity-70",
                       )}
                     >
-                      {item.title}
+                      {isActive && (
+                        <motion.div
+                          layoutId="navbar-active"
+                          className="bg-primary/10 absolute inset-0 rounded-full"
+                          transition={{ type: "spring", bounce: 0.25, duration: 0.5 }}
+                        />
+                      )}
+                      <span className="relative z-10">{item.title}</span>
                     </Link>
                   );
                 })}
@@ -84,7 +93,7 @@ export function NavBar({ scroll = false }: NavBarProps) {
             ) : null}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <div className="hidden md:block">
               <ModeToggle />
             </div>
@@ -95,7 +104,7 @@ export function NavBar({ scroll = false }: NavBarProps) {
                 className="hidden md:block"
               >
                 <Button
-                  className="gap-2 px-4 shadow-sm"
+                  className="hover:bg-primary/90 gap-2 bg-primary px-5 text-primary-foreground shadow-sm transition-transform hover:scale-105"
                   size="sm"
                   rounded="full"
                 >
@@ -104,7 +113,7 @@ export function NavBar({ scroll = false }: NavBarProps) {
               </Link>
             ) : status === "unauthenticated" ? (
               <Button
-                className="hidden gap-2 px-4 shadow-sm md:flex"
+                className="hover:bg-primary/90 hidden gap-2 bg-primary px-5 text-primary-foreground shadow-sm transition-transform hover:scale-105 md:flex"
                 size="sm"
                 rounded="full"
                 onClick={() => setShowSignInModal(true)}
@@ -116,8 +125,9 @@ export function NavBar({ scroll = false }: NavBarProps) {
               <Skeleton className="hidden h-9 w-28 rounded-full lg:flex" />
             )}
           </div>
-        </div>
+        </motion.div>
       </MaxWidthWrapper>
     </header>
   );
 }
+

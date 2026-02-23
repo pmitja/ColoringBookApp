@@ -26,7 +26,7 @@ export function DeleteAccountSection() {
                 Confirm account deletion
               </span>
               {userPaidPlan ? (
-                <span className="border-destructive/40 bg-destructive/10 text-destructive inline-flex items-center gap-1 rounded-full border px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.2em]">
+                <span className="border-destructive/40 bg-destructive/10 inline-flex items-center gap-1 rounded-full border px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-destructive">
                   <Icons.warning className="size-3" />
                   Subscription active
                 </span>

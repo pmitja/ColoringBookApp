@@ -41,7 +41,7 @@ export function SearchCommand({ links }: { links: SidebarNavItem[] }) {
       <Button
         variant="outline"
         className={cn(
-          "relative h-9 w-full justify-start rounded-md bg-muted/50 text-sm font-normal text-muted-foreground shadow-none sm:pr-12 md:w-72",
+          "bg-muted/50 relative h-9 w-full justify-start rounded-md text-sm font-normal text-muted-foreground shadow-none sm:pr-12 md:w-72",
         )}
         onClick={() => setOpen(true)}
       >

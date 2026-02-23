@@ -266,10 +266,10 @@ export default async function DashboardPage() {
       </section>
 
       <section className="mt-8 space-y-4">
-        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
-            <h2 className="font-heading text-2xl">Recent Creations</h2>
-            <p className="text-sm text-muted-foreground">
+            <h2 className="font-heading text-2xl font-bold">Recent Creations</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
               Latest generated pages and current status.
             </p>
           </div>
@@ -324,15 +324,16 @@ function MetricCard({
   tone: string;
 }) {
   return (
-    <Card className="playful-card">
-      <CardContent className="flex items-center justify-between p-4">
+    <Card className="playful-card group relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent opacity-0 transition-opacity group-hover:opacity-100 dark:from-white/5" />
+      <CardContent className="relative z-10 flex items-center justify-between p-5">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+          <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
             {label}
           </p>
-          <p className="font-heading mt-2 text-3xl leading-none">{value}</p>
+          <p className="mt-2 font-heading text-4xl font-bold">{value}</p>
         </div>
-        <span className={cn("rounded-xl p-2.5", tone)}>{icon}</span>
+        <span className={cn("rounded-2xl p-4 shadow-sm transition-transform group-hover:scale-110", tone)}>{icon}</span>
       </CardContent>
     </Card>
   );

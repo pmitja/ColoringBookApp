@@ -27,17 +27,15 @@ export default function HeroLanding() {
             </div>
 
             <h1 className="text-balance font-heading text-4xl leading-tight text-foreground sm:text-5xl md:text-6xl">
-              Turn your favorite moments into{" "}
+              Create Your Perfect{" "}
               <span className="font-extrabold text-accent">
-                printable coloring adventures
-              </span>
-              .
+                Coloring Book
+              </span>{" "}
+              with AI.
             </h1>
 
             <p className="mx-auto max-w-xl text-balance text-base leading-relaxed text-muted-foreground sm:text-xl lg:mx-0">
-              Upload a photo, choose your detail level, and export clean pages
-              in minutes. Perfect for families, classrooms, and after-school
-              programs.
+              Turn your photos into lineart, generate pages from text, or create a full book in seconds. We prioritize your privacy—your images are never saved.
             </p>
 
             <div className="flex flex-wrap justify-center gap-3 lg:justify-start">

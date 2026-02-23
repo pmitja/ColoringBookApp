@@ -12,10 +12,10 @@ export function UpgradeCard() {
     <Card className="border-border/80 bg-card/95 rounded-3xl md:max-xl:rounded-none md:max-xl:border-none md:max-xl:shadow-none">
       <CardHeader className="space-y-2 md:max-xl:px-4">
         <CardTitle className="text-base font-semibold">
-          Upgrade to Family Pro
+          Upgrade to Higher Plan
         </CardTitle>
         <CardDescription className="text-xs text-muted-foreground">
-          Unlock unlimited books, priority processing, and classroom packs.
+          Upgrade your tier to a higher plan for more features and priority processing.
         </CardDescription>
       </CardHeader>
       <CardContent className="md:max-xl:px-4">

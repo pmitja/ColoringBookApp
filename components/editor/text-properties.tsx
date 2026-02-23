@@ -487,7 +487,7 @@ export default function TextProperties({
                   className="h-9 rounded-xl px-3 text-xs"
                 >
                   <span
-                    className="mr-2 h-3 w-3 rounded-sm border"
+                    className="mr-2 size-3 rounded-sm border"
                     style={{
                       backgroundColor:
                         bg.value === "transparent" ? "#ffffff" : bg.value,

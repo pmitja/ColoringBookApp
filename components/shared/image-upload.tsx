@@ -68,7 +68,7 @@ export function ImageUpload({
               size="sm"
               className="gap-2"
             >
-              <Icons.close className="h-4 w-4" />
+              <Icons.close className="size-4" />
               Choose Different Photo
             </Button>
           </div>
@@ -77,7 +77,7 @@ export function ImageUpload({
         {/* Error Display */}
         {error && (
           <Alert className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20">
-            <Icons.warning className="h-4 w-4 text-red-600" />
+            <Icons.warning className="size-4 text-red-600" />
             <AlertDescription className="text-red-800 dark:text-red-400">
               {error}
             </AlertDescription>
@@ -95,17 +95,17 @@ export function ImageUpload({
         className={cn(
           "cursor-pointer rounded-lg border-2 border-dashed p-8 text-center transition-colors",
           isDragActive
-            ? "border-primary bg-primary/5"
+            ? "bg-primary/5 border-primary"
             : "border-muted-foreground/25 hover:border-primary/50",
           isUploading && "cursor-not-allowed opacity-50",
         )}
       >
         <input {...getInputProps()} />
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+        <div className="bg-primary/10 mx-auto mb-4 flex size-16 items-center justify-center rounded-full">
           {isUploading ? (
-            <Icons.spinner className="h-8 w-8 animate-spin text-primary" />
+            <Icons.spinner className="size-8 animate-spin text-primary" />
           ) : (
-            <Icons.media className="h-8 w-8 text-primary" />
+            <Icons.media className="size-8 text-primary" />
           )}
         </div>
 
@@ -134,7 +134,7 @@ export function ImageUpload({
       {/* Error Display */}
       {error && (
         <Alert className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20">
-          <Icons.warning className="h-4 w-4 text-red-600" />
+          <Icons.warning className="size-4 text-red-600" />
           <AlertDescription className="text-red-800 dark:text-red-400">
             {error}
           </AlertDescription>

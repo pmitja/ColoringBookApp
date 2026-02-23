@@ -1,24 +1,16 @@
-import { infos } from "@/config/landing";
-import BentoGrid from "@/components/sections/bentogrid";
-import Features from "@/components/sections/features";
-import HeroLanding from "@/components/sections/hero-landing";
-import InfoLanding from "@/components/sections/info-landing";
-import Powered from "@/components/sections/powered";
-import PreviewLanding from "@/components/sections/preview-landing";
+import { HeroV2 } from "@/components/sections/v2/hero-v2";
+import { PrivacyBannerV2 } from "@/components/sections/v2/privacy-banner-v2";
+import { FeaturesBentoV2 } from "@/components/sections/v2/features-bento-v2";
+import { EditorAndColoringV2 } from "@/components/sections/v2/editor-coloring-v2";
 import Testimonials from "@/components/sections/testimonials";
-import InteractiveDemo from "@/components/sections/interactive-demo";
 
 export default function IndexPage() {
   return (
     <>
-      <HeroLanding />
-      <InteractiveDemo />
-      <PreviewLanding />
-      <Powered />
-      <BentoGrid />
-      <InfoLanding data={infos[0]} reverse={true} />
-      <InfoLanding data={infos[1]} />
-      <Features />
+      <HeroV2 />
+      <PrivacyBannerV2 />
+      <FeaturesBentoV2 />
+      <EditorAndColoringV2 />
       <Testimonials />
     </>
   );

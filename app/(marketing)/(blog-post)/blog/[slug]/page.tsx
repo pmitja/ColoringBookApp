@@ -162,7 +162,7 @@ export default async function PostPage({
                 <Link
                   key={post.slug}
                   href={post.slug}
-                  className="flex flex-col space-y-2 rounded-xl border p-5 transition-colors duration-300 hover:bg-muted/80"
+                  className="hover:bg-muted/80 flex flex-col space-y-2 rounded-xl border p-5 transition-colors duration-300"
                 >
                   <h3 className="font-heading text-xl text-foreground">
                     {post.title}

@@ -1516,17 +1516,17 @@ export default function BookEditorV2({
             />
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-neutral-900/60 via-neutral-900/10 to-transparent opacity-0 transition duration-200 group-hover:opacity-100" />
             {asset.name ? (
-              <div className="pointer-events-none absolute bottom-1 left-1 right-1 truncate text-[10px] font-medium text-white opacity-0 transition duration-200 group-hover:opacity-100">
+              <div className="pointer-events-none absolute inset-x-1 bottom-1 truncate text-[10px] font-medium text-white opacity-0 transition duration-200 group-hover:opacity-100">
                 {asset.name}
               </div>
             ) : null}
           </button>
         </TooltipTrigger>
         <TooltipContent side={side} align="center" className="p-1">
-          <div className="relative h-[40vw] max-h-[480px] w-[40vw] max-w-[480px] overflow-hidden rounded-lg border bg-background">
+          <div className="relative size-[40vw] max-h-[480px] max-w-[480px] overflow-hidden rounded-lg border bg-background">
             {!loaded ? (
               <div className="absolute inset-0 flex items-center justify-center">
-                <Icons.spinner className="h-8 w-8 animate-spin text-muted-foreground" />
+                <Icons.spinner className="size-8 animate-spin text-muted-foreground" />
               </div>
             ) : null}
             <Image
@@ -1579,7 +1579,7 @@ export default function BookEditorV2({
           onClick={() => removeElement(selectedElement.data.id)}
           className="mt-3 h-11 w-full rounded-xl text-xs"
         >
-          <Icons.trash className="mr-2 h-4 w-4" />
+          <Icons.trash className="mr-2 size-4" />
           Delete selected
         </Button>
       </div>
@@ -1687,7 +1687,7 @@ export default function BookEditorV2({
             onClick={duplicateSelected}
             className="h-11 rounded-xl text-xs"
           >
-            <Icons.copy className="mr-2 h-4 w-4" />
+            <Icons.copy className="mr-2 size-4" />
             Duplicate
           </Button>
           <Button
@@ -1696,7 +1696,7 @@ export default function BookEditorV2({
             onClick={bringToFront}
             className="h-11 rounded-xl text-xs"
           >
-            <Icons.arrowUpRight className="mr-2 h-4 w-4" />
+            <Icons.arrowUpRight className="mr-2 size-4" />
             Bring to front
           </Button>
           <Button
@@ -1705,7 +1705,7 @@ export default function BookEditorV2({
             onClick={sendToBack}
             className="h-11 rounded-xl text-xs"
           >
-            <Icons.chevronRight className="mr-2 h-4 w-4 rotate-180" />
+            <Icons.chevronRight className="mr-2 size-4 rotate-180" />
             Send to back
           </Button>
         </div>
@@ -1832,7 +1832,7 @@ export default function BookEditorV2({
                 {saveLabel}
               </Badge>
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <Icons.bookOpen className="h-3.5 w-3.5" />
+                <Icons.bookOpen className="size-3.5" />
                 <span>{book.pages.length} pages</span>
               </div>
             </div>
@@ -1844,7 +1844,7 @@ export default function BookEditorV2({
               onClick={openCoverWizard}
               disabled={Boolean(savingCoverOptionId)}
             >
-              <Icons.bookOpen className="mr-1 h-3.5 w-3.5" />
+              <Icons.bookOpen className="mr-1 size-3.5" />
               Cover Wizard
             </Button>
             <DropdownMenu>
@@ -1853,17 +1853,17 @@ export default function BookEditorV2({
                   variant="outline"
                   className="h-10 rounded-xl px-3 text-xs sm:text-sm"
                 >
-                  <Icons.ellipsis className="mr-1 h-3.5 w-3.5" />
+                  <Icons.ellipsis className="mr-1 size-3.5" />
                   Actions
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={loadLatest}>
-                  <Icons.download className="mr-2 h-4 w-4" />
+                  <Icons.download className="mr-2 size-4" />
                   Load latest
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={exportToPdf}>
-                  <Icons.download className="mr-2 h-4 w-4" />
+                  <Icons.download className="mr-2 size-4" />
                   Export PDF
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -1872,7 +1872,7 @@ export default function BookEditorV2({
               className="h-10 rounded-xl px-4 text-xs sm:text-sm"
               onClick={saveBook}
             >
-              <Icons.check className="mr-1 h-3.5 w-3.5" />
+              <Icons.check className="mr-1 size-3.5" />
               {bookId ? "Save" : "Save as New"}
             </Button>
           </div>
@@ -1889,7 +1889,7 @@ export default function BookEditorV2({
                     onClick={undo}
                     className="h-9 px-2 text-xs sm:h-10 sm:px-3 sm:text-sm"
                   >
-                    <Icons.undo className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
+                    <Icons.undo className="mr-1 size-3 sm:mr-2 sm:size-4" />
                     <span className="hidden sm:inline">Undo</span>
                   </Button>
                 </TooltipTrigger>
@@ -1903,7 +1903,7 @@ export default function BookEditorV2({
                     onClick={redo}
                     className="h-9 px-2 text-xs sm:h-10 sm:px-3 sm:text-sm"
                   >
-                    <Icons.undo className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
+                    <Icons.undo className="mr-1 size-3 sm:mr-2 sm:size-4" />
                     <span className="hidden sm:inline">Redo</span>
                   </Button>
                 </TooltipTrigger>
@@ -1924,7 +1924,7 @@ export default function BookEditorV2({
                     onClick={addTextBox}
                     className="h-9 px-2 text-xs sm:h-10 sm:px-3 sm:text-sm"
                   >
-                    <Icons.post className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
+                    <Icons.post className="mr-1 size-3 sm:mr-2 sm:size-4" />
                     <span className="hidden sm:inline">Add text</span>
                   </Button>
                 </TooltipTrigger>
@@ -1937,7 +1937,7 @@ export default function BookEditorV2({
                     variant="outline"
                     className="h-9 px-2 text-xs sm:h-10 sm:px-3 sm:text-sm"
                   >
-                    <Icons.media className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
+                    <Icons.media className="mr-1 size-3 sm:mr-2 sm:size-4" />
                     <span className="hidden sm:inline">Add image</span>
                   </Button>
                 </PopoverTrigger>
@@ -1982,7 +1982,7 @@ export default function BookEditorV2({
                 onClick={() => bookRef.current?.flipPrev()}
                 className="h-9 px-2 text-xs sm:h-10 sm:px-3 sm:text-sm"
               >
-                <Icons.chevronLeft className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
+                <Icons.chevronLeft className="mr-1 size-3 sm:mr-2 sm:size-4" />
                 <span className="hidden sm:inline">Prev</span>
               </Button>
               <div className="bg-muted/60 rounded-full px-3 py-1 text-xs font-medium text-muted-foreground">
@@ -2011,7 +2011,7 @@ export default function BookEditorV2({
                 className="h-9 px-2 text-xs sm:h-10 sm:px-3 sm:text-sm"
               >
                 <span className="hidden sm:inline">Next</span>
-                <Icons.arrowRight className="ml-1 h-3 w-3 sm:ml-2 sm:h-4 sm:w-4" />
+                <Icons.arrowRight className="ml-1 size-3 sm:ml-2 sm:size-4" />
               </Button>
 
               <Separator
@@ -2043,7 +2043,7 @@ export default function BookEditorV2({
                 onClick={() => setPropertiesOpen(true)}
                 className="h-9 px-2 text-xs sm:h-10 sm:px-3 sm:text-sm 2xl:hidden"
               >
-                <Icons.settings className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
+                <Icons.settings className="mr-1 size-3 sm:mr-2 sm:size-4" />
                 <span className="hidden sm:inline">Inspector</span>
               </Button>
             </div>
@@ -2192,7 +2192,7 @@ export default function BookEditorV2({
                                     if (pos) setLastContextPos(pos);
                                   }}
                                 >
-                                  <div className="relative h-full w-full">
+                                  <div className="relative size-full">
                                     <div
                                       ref={stageRef}
                                       className="absolute"
@@ -2301,7 +2301,7 @@ export default function BookEditorV2({
                                               data-element-id={imgEl.id}
                                             >
                                               <div
-                                                className={`group h-full w-full border ${
+                                                className={`group size-full border ${
                                                   selected
                                                     ? "border-amber-500"
                                                     : "border-transparent"
@@ -2314,7 +2314,7 @@ export default function BookEditorV2({
                                               >
                                                 <div
                                                   data-export-clean-frame="true"
-                                                  className="relative h-full w-full overflow-hidden bg-white"
+                                                  className="relative size-full overflow-hidden bg-white"
                                                 >
                                                   <Image
                                                     src={asset.url}
@@ -2487,7 +2487,7 @@ export default function BookEditorV2({
                     onClick={addPage}
                     className="h-8 px-2 text-xs"
                   >
-                    <Icons.add className="mr-1 h-3 w-3" />
+                    <Icons.add className="mr-1 size-3" />
                     Add
                   </Button>
                   <Button
@@ -2496,7 +2496,7 @@ export default function BookEditorV2({
                     onClick={removePage}
                     className="h-8 px-2 text-xs"
                   >
-                    <Icons.trash className="mr-1 h-3 w-3" />
+                    <Icons.trash className="mr-1 size-3" />
                     Remove
                   </Button>
                 </div>
@@ -2602,7 +2602,7 @@ export default function BookEditorV2({
             {coverWizardView === "loading" ? (
               <div className="flex h-[46vh] flex-col items-center justify-center gap-4 px-6 text-center sm:h-[48vh]">
                 <div className="border-primary/30 bg-primary/10 rounded-full border p-4">
-                  <Icons.spinner className="h-8 w-8 animate-spin text-primary" />
+                  <Icons.spinner className="size-8 animate-spin text-primary" />
                 </div>
                 <div className="space-y-1">
                   <p className="text-base font-semibold text-foreground">
@@ -2618,7 +2618,7 @@ export default function BookEditorV2({
 
             {coverWizardView === "form" ? (
               <>
-                <ScrollArea className="h-[46vh] px-4 py-4 sm:h-[48vh]">
+                <ScrollArea className="h-[46vh] p-4 sm:h-[48vh]">
                   <div className="space-y-4 pb-2">
                     <section className="space-y-3 rounded-2xl border bg-card p-4">
                       <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
@@ -2644,7 +2644,7 @@ export default function BookEditorV2({
                             }
                           >
                             {coverTarget === "front" ? (
-                              <Icons.check className="mr-1 h-3.5 w-3.5" />
+                              <Icons.check className="mr-1 size-3.5" />
                             ) : null}
                             Front cover
                           </Button>
@@ -2663,7 +2663,7 @@ export default function BookEditorV2({
                             }
                           >
                             {coverTarget === "back" ? (
-                              <Icons.check className="mr-1 h-3.5 w-3.5" />
+                              <Icons.check className="mr-1 size-3.5" />
                             ) : null}
                             Back cover
                           </Button>
@@ -2881,7 +2881,7 @@ export default function BookEditorV2({
 
             {coverWizardView === "results" ? (
               <>
-                <ScrollArea className="h-[46vh] px-4 py-4 sm:h-[48vh]">
+                <ScrollArea className="h-[46vh] p-4 sm:h-[48vh]">
                   <div className="space-y-4 pb-2">
                     <section className="space-y-3 rounded-2xl border bg-card p-4">
                       <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
@@ -2935,7 +2935,7 @@ export default function BookEditorV2({
                               >
                                 {savingCoverOptionId === option.id ? (
                                   <>
-                                    <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+                                    <Icons.spinner className="mr-2 size-4 animate-spin" />
                                     Saving selected option...
                                   </>
                                 ) : coverTarget === "front" ? (
@@ -2980,7 +2980,7 @@ export default function BookEditorV2({
                       >
                         {isGeneratingCovers ? (
                           <>
-                            <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+                            <Icons.spinner className="mr-2 size-4 animate-spin" />
                             Regenerating...
                           </>
                         ) : (

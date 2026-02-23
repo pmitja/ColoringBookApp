@@ -57,7 +57,7 @@ export function Modal({
           }
         }}
       >
-        <Drawer.Overlay className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm" />
+        <Drawer.Overlay className="bg-background/80 fixed inset-0 z-40 backdrop-blur-sm" />
         <Drawer.Portal>
           <Drawer.Content
             className={cn(
@@ -66,7 +66,7 @@ export function Modal({
             )}
           >
             <div className="sticky top-0 z-20 flex w-full items-center justify-center bg-inherit">
-              <div className="my-3 h-1.5 w-16 rounded-full bg-muted-foreground/20" />
+              <div className="bg-muted-foreground/20 my-3 h-1.5 w-16 rounded-full" />
             </div>
             {children}
           </Drawer.Content>

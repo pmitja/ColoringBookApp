@@ -2,14 +2,12 @@ import dynamic from "next/dynamic";
 
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
+import { isUserOnPaidPlan } from "@/lib/subscription";
 import { constructMetadata } from "@/lib/utils";
 
-const BookEditor = dynamic(
-  () => import("@/components/editor/book-editor-v2"),
-  {
-    ssr: false,
-  },
-);
+const BookEditor = dynamic(() => import("@/components/editor/book-editor-v2"), {
+  ssr: false,
+});
 
 export const metadata = constructMetadata({
   title: "Edit Book – Colorline AI",
@@ -19,16 +17,56 @@ export const metadata = constructMetadata({
 // Minimal shape needed for the editor
 interface BookState {
   title: string;
-  pages: Array<{ id: string; elements: any[]; background?: string }>; // eslint-disable-line @typescript-eslint/no-explicit-any
+  pages: Array<{
+    id: string;
+    elements: Array<Record<string, unknown>>;
+    background?: string;
+  }>;
 }
 
 function isBookState(value: unknown): value is BookState {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    Array.isArray((value as any).pages) && // eslint-disable-line @typescript-eslint/no-explicit-any
-    typeof (value as any).title === "string" // eslint-disable-line @typescript-eslint/no-explicit-any
-  );
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+
+  const maybeBook = value as {
+    title?: unknown;
+    pages?: unknown;
+  };
+
+  if (typeof maybeBook.title !== "string" || !Array.isArray(maybeBook.pages)) {
+    return false;
+  }
+
+  return maybeBook.pages.every((page) => {
+    if (typeof page !== "object" || page === null) {
+      return false;
+    }
+
+    const maybePage = page as {
+      id?: unknown;
+      elements?: unknown;
+      background?: unknown;
+    };
+
+    if (
+      typeof maybePage.id !== "string" ||
+      !Array.isArray(maybePage.elements)
+    ) {
+      return false;
+    }
+
+    if (
+      maybePage.background !== undefined &&
+      typeof maybePage.background !== "string"
+    ) {
+      return false;
+    }
+
+    return maybePage.elements.every(
+      (element) => typeof element === "object" && element !== null,
+    );
+  });
 }
 
 async function getUserCreations(userId: string) {
@@ -59,6 +97,7 @@ export default async function EditBookPage({
   const user = await getCurrentUser();
   const userId = user?.id;
   const assets = userId ? await getUserCreations(userId) : [];
+  const isPaidUser = userId ? await isUserOnPaidPlan(userId) : false;
 
   if (!userId) {
     return null;
@@ -79,6 +118,7 @@ export default async function EditBookPage({
         assets={assets}
         initialBookId={book?.id || null}
         initialBook={initialBook}
+        isPaidUser={isPaidUser}
       />
     </>
   );

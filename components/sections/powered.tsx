@@ -5,18 +5,18 @@ const highlights = [
   {
     title: "Classroom Friendly",
     description:
-      "Simple flow for teachers and parents. No design tools needed.",
+      "Simple flow for teachers and parents with clear controls and safe defaults.",
     icon: "bookOpen",
   },
   {
     title: "Fast Turnaround",
-    description: "Most photos become printable line art in about two minutes.",
+    description: "Most photos become printable line art in around two minutes.",
     icon: "lineChart",
   },
   {
     title: "Privacy First",
     description:
-      "Original uploads are processed and not kept as stored assets.",
+      "Original uploads are processed for generation and are not stored as files.",
     icon: "settings",
   },
   {
@@ -31,12 +31,12 @@ export default function Powered() {
   return (
     <section className="py-8 sm:py-12">
       <MaxWidthWrapper>
-        <div className="playful-card px-4 py-8 sm:px-8">
+        <div className="playful-card px-4 py-8 sm:px-8 sm:py-10">
           <div className="mx-auto max-w-2xl text-center">
-            <p className="text-gradient_indigo-purple text-sm font-semibold uppercase tracking-[0.2em]">
+            <p className="playful-pill mx-auto w-fit text-xs font-semibold uppercase tracking-[0.2em]">
               Built for Families
             </p>
-            <h2 className="font-heading mt-2 text-3xl sm:text-4xl">
+            <h2 className="font-heading mt-3 text-balance text-3xl sm:text-4xl">
               Everything you need for happy coloring time
             </h2>
           </div>
@@ -48,7 +48,7 @@ export default function Powered() {
               return (
                 <article
                   key={item.title}
-                  className="border-border/70 rounded-3xl border bg-white/75 p-4 dark:bg-white/5"
+                  className="surface-glass rounded-3xl p-4 transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-1 hover:shadow-md"
                 >
                   <div className="flex size-11 items-center justify-center rounded-2xl bg-secondary text-primary">
                     <Icon className="size-5" />
@@ -56,7 +56,7 @@ export default function Powered() {
                   <h3 className="font-heading mt-4 text-xl leading-tight">
                     {item.title}
                   </h3>
-                  <p className="mt-2 text-sm text-muted-foreground">
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                     {item.description}
                   </p>
                 </article>

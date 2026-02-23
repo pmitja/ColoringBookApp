@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
-import GeneratorStudio from "@/components/generator/generator-studio";
 import { getCurrentUser } from "@/lib/session";
 import { isUserOnPaidPlan } from "@/lib/subscription";
+import GeneratorStudio from "@/components/generator/generator-studio";
 
 export const metadata: Metadata = {
   title: "Upload Photo – Colorline AI",
@@ -16,7 +16,7 @@ export default async function UploadPage() {
   return (
     <GeneratorStudio
       heading="Upload Photo"
-      text="Choose a family photo to transform into a coloring book."
+      text="Upload one image, choose a style, and generate a clean printable page."
       enabledModes={["photo"]}
       defaultMode="photo"
       isPaidUser={isPaidUser}

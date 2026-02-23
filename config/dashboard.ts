@@ -7,6 +7,8 @@ export const sidebarLinks: SidebarNavItem[] = [
       { href: "/dashboard", icon: "dashboard", title: "Dashboard" },
       { href: "/upload", icon: "media", title: "Upload Photo" },
       { href: "/ai-generator", icon: "messages", title: "AI Generator" },
+      { href: "/name-generator", icon: "post", title: "AI Name Generator" },
+      { href: "/ai-color-book", icon: "bookOpen", title: "AI Color Book" },
       { href: "/creations", icon: "bookOpen", title: "My Creations" },
       { href: "/dashboard/coloring", icon: "palette", title: "Color Online" },
       {

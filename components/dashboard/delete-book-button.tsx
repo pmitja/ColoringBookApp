@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-import { Button, type ButtonProps } from "@/components/ui/button";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -15,6 +14,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Button, type ButtonProps } from "@/components/ui/button";
 import { Icons } from "@/components/shared/icons";
 
 interface DeleteBookButtonProps {
@@ -47,7 +47,7 @@ export function DeleteBookButton({
         throw new Error(text || "Failed to delete book.");
       }
 
-      toast.success(`Deleted "${safeTitle}".`);
+      toast.success(`Deleted “${safeTitle}”.`);
       setOpen(false);
       router.refresh();
     } catch (error) {
@@ -71,7 +71,7 @@ export function DeleteBookButton({
           type="button"
           size={size}
           variant="outline"
-          className="gap-1.5 border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive"
+          className="text-destructive hover:bg-destructive/10 hover:text-destructive border-destructive/30 gap-1.5"
           disabled={isDeleting}
         >
           {isDeleting ? (
@@ -87,7 +87,7 @@ export function DeleteBookButton({
         <AlertDialogHeader>
           <AlertDialogTitle>Delete this book?</AlertDialogTitle>
           <AlertDialogDescription>
-            This will permanently delete "{safeTitle}". This action cannot be
+            This permanently deletes “{safeTitle}”. This action cannot be
             undone.
           </AlertDialogDescription>
         </AlertDialogHeader>

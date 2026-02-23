@@ -14,5 +14,9 @@ export default async function AuthLayout({ children }: AuthLayoutProps) {
     redirect("/dashboard");
   }
 
-  return <div className="min-h-screen">{children}</div>;
+  return (
+    <main id="main-content" className="min-h-screen">
+      {children}
+    </main>
+  );
 }

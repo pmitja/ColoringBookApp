@@ -14,10 +14,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { DashboardHeader } from "@/components/dashboard/header";
 import CreationsManager, {
   type CreationListItem,
 } from "@/components/creations/creations-manager";
+import { DashboardHeader } from "@/components/dashboard/header";
 import { EmptyPlaceholder } from "@/components/shared/empty-placeholder";
 import { Icons } from "@/components/shared/icons";
 
@@ -26,14 +26,18 @@ export const metadata = constructMetadata({
   description: "Browse all your coloring book creations.",
 });
 
+type FilterStatus = "all" | "DONE" | "PROCESSING" | "FAILED" | "QUEUED";
+type SortMode = "newest" | "oldest" | "name";
+type ViewMode = "grid" | "list";
+
 export default async function CreationsPage({
   searchParams,
 }: {
   searchParams: {
     q?: string;
-    status?: "all" | "DONE" | "PROCESSING" | "FAILED" | "QUEUED";
-    sort?: "newest" | "oldest" | "name";
-    view?: "grid" | "list";
+    status?: FilterStatus;
+    sort?: SortMode;
+    view?: ViewMode;
   };
 }) {
   const user = await getCurrentUser();
@@ -43,7 +47,7 @@ export default async function CreationsPage({
       <>
         <DashboardHeader
           heading="My Creations"
-          text="Browse and manage all your coloring book creations."
+          text="Sign in to view and manage your generated pages."
         />
         <div className="mx-auto max-w-2xl">
           <EmptyPlaceholder>
@@ -61,16 +65,10 @@ export default async function CreationsPage({
   }
 
   const q = (searchParams?.q ?? "").trim();
-  const status = (searchParams?.status ?? "all") as
-    | "all"
-    | "DONE"
-    | "PROCESSING"
-    | "FAILED"
-    | "QUEUED";
-  const sort = (searchParams?.sort ?? "newest") as "newest" | "oldest" | "name";
-  const view = (searchParams?.view ?? "grid") as "grid" | "list";
+  const status = (searchParams?.status ?? "all") as FilterStatus;
+  const sort = (searchParams?.sort ?? "newest") as SortMode;
+  const view = (searchParams?.view ?? "grid") as ViewMode;
 
-  // Fetch actual user creations from database (with filters)
   const creations = await prisma.imageJob.findMany({
     where: {
       userId: user.id,
@@ -83,14 +81,14 @@ export default async function CreationsPage({
               },
             }
           : {},
-        status && status !== "all" ? { status } : {},
+        status !== "all" ? { status } : {},
       ],
     },
     orderBy:
       sort === "name"
         ? { inputFileName: "asc" }
         : { createdAt: sort === "oldest" ? "asc" : "desc" },
-    take: 50, // Limit to recent 50 creations
+    take: 50,
   });
 
   const creationItems: CreationListItem[] = creations.map((creation) => ({
@@ -100,13 +98,23 @@ export default async function CreationsPage({
     status: creation.status,
     createdAt: creation.createdAt.toISOString(),
   }));
+  const readyCount = creationItems.filter(
+    (item) => item.status === "DONE",
+  ).length;
+  const processingCount = creationItems.filter(
+    (item) => item.status === "PROCESSING" || item.status === "QUEUED",
+  ).length;
+  const failedCount = creationItems.filter(
+    (item) => item.status === "FAILED",
+  ).length;
 
   const buildHref = (updates: Record<string, string | undefined>) => {
     const params = new URLSearchParams();
     if (q) params.set("q", q);
-    if (status && status !== "all") params.set("status", status);
-    if (sort && sort !== "newest") params.set("sort", sort);
-    if (view && view !== "grid") params.set("view", view);
+    if (status !== "all") params.set("status", status);
+    if (sort !== "newest") params.set("sort", sort);
+    if (view !== "grid") params.set("view", view);
+
     Object.entries(updates).forEach(([key, value]) => {
       if (!value || value === "all" || value === "newest" || value === "grid") {
         params.delete(key);
@@ -114,6 +122,7 @@ export default async function CreationsPage({
       }
       params.set(key, value);
     });
+
     const query = params.toString();
     return query ? `/creations?${query}` : "/creations";
   };
@@ -122,169 +131,156 @@ export default async function CreationsPage({
     <>
       <DashboardHeader
         heading="My Creations"
-        text="Browse and manage all your coloring book creations."
+        text="Browse, filter, and manage your generated coloring pages."
       >
-        <div className="hidden items-center gap-2 sm:flex">
-          <Link href="/dashboard/book-editor/new">
-            <Button
-              variant="outline"
-              className="gap-2 border-slate-200/70 bg-white/80 hover:bg-slate-100/80 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
-            >
-              <Icons.media className="h-4 w-4" />
-              New Book
-            </Button>
-          </Link>
-          <Link href="/upload">
-            <Button className="gap-2">
-              <Icons.media className="h-4 w-4" />
-              Upload Image
-            </Button>
-          </Link>
-        </div>
+        <Link href="/dashboard/book-editor/new">
+          <Button variant="outline" className="gap-2 rounded-full">
+            <Icons.bookOpen className="size-4" />
+            New Book
+          </Button>
+        </Link>
+        <Link href="/upload">
+          <Button className="gap-2 rounded-full">
+            <Icons.media className="size-4" />
+            New Page
+          </Button>
+        </Link>
       </DashboardHeader>
 
-      {/* Mobile actions */}
-      <div className="sm:hidden">
-        <div className="mt-3 flex flex-wrap gap-2">
-          <Link
-            href="/dashboard/book-editor/new"
-            className="min-w-[140px] flex-1"
-          >
-            <Button
-              variant="outline"
-              className="w-full gap-2 border-slate-200/70 bg-white/80 hover:bg-slate-100/80 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
-            >
-              <Icons.media className="h-4 w-4" />
-              New Book
-            </Button>
-          </Link>
-          <Link href="/upload" className="min-w-[140px] flex-1">
-            <Button className="w-full gap-2">
-              <Icons.media className="h-4 w-4" />
-              Upload Image
-            </Button>
-          </Link>
-        </div>
-      </div>
-
       <div className="space-y-6 overflow-x-hidden pb-10">
-        {/* Controls */}
-        <Card className="border-slate-200/70 bg-white/80 dark:border-white/10 dark:bg-white/5">
-          <CardContent className="space-y-4 p-6">
-            <div className="flex flex-col gap-4">
-              {/* Top row: search + sort + view */}
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <form className="flex-1" action={"/creations"} method="GET">
-                  {/* preserve other params */}
-                  {status && status !== "all" && (
-                    <input type="hidden" name="status" value={status} />
-                  )}
-                  {sort && sort !== "newest" && (
-                    <input type="hidden" name="sort" value={sort} />
-                  )}
-                  {view && view !== "grid" && (
-                    <input type="hidden" name="view" value={view} />
-                  )}
-                  <div className="relative">
-                    <Icons.search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                      name="q"
-                      defaultValue={q}
-                      placeholder="Search by filename..."
-                      className="border-slate-200/70 bg-white/80 pl-10 dark:border-white/10 dark:bg-white/5"
-                    />
-                  </div>
-                </form>
-
-                <div className="flex items-center gap-2 sm:justify-end">
-                  {/* Sort menu */}
-                  <div className="hidden sm:block">
-                    <SortMenu
-                      current={sort}
-                      hrefNewest={buildHref({ sort: "newest" })}
-                      hrefOldest={buildHref({ sort: "oldest" })}
-                      hrefName={buildHref({ sort: "name" })}
-                    />
-                  </div>
-                  {/* View toggle */}
-                  <div className="inline-flex items-center gap-1 rounded-full border border-slate-200/70 bg-white/80 p-1 dark:border-white/10 dark:bg-white/5">
-                    <Link href={buildHref({ view: "grid" })}>
-                      <Button
-                        variant={view === "grid" ? "default" : "ghost"}
-                        size="sm"
-                        className={cn(
-                          "gap-1 rounded-full px-3",
-                          view !== "grid" &&
-                            "text-muted-foreground hover:text-foreground",
-                        )}
-                      >
-                        <Icons.dashboard className="h-4 w-4" /> Grid
-                      </Button>
-                    </Link>
-                    <Link href={buildHref({ view: "list" })}>
-                      <Button
-                        variant={view === "list" ? "default" : "ghost"}
-                        size="sm"
-                        className={cn(
-                          "gap-1 rounded-full px-3",
-                          view !== "list" &&
-                            "text-muted-foreground hover:text-foreground",
-                        )}
-                      >
-                        <Icons.post className="h-4 w-4" /> List
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-              </div>
-
-              {/* Status filters */}
-              <div className="flex flex-wrap items-center gap-2">
-                {[
-                  { key: "all", label: "All" },
-                  { key: "DONE", label: "Completed" },
-                  { key: "PROCESSING", label: "Processing" },
-                  { key: "QUEUED", label: "Queued" },
-                  { key: "FAILED", label: "Failed" },
-                ].map(({ key, label }) => (
-                  <Link key={key} href={buildHref({ status: key })}>
-                    <Button
-                      size="sm"
-                      variant={status === (key as any) ? "default" : "outline"}
-                      className={cn(
-                        "rounded-full text-xs",
-                        status === (key as any)
-                          ? "border-transparent"
-                          : "border-slate-200/70 bg-white/80 text-muted-foreground hover:text-foreground dark:border-white/10 dark:bg-white/5 dark:text-muted-foreground dark:hover:text-foreground",
-                      )}
-                    >
-                      {label}
-                    </Button>
-                  </Link>
-                ))}
-              </div>
+        <Card className="border-border/80 bg-card/95 rounded-3xl border">
+          <CardContent className="flex flex-wrap items-center justify-between gap-4 p-5">
+            <div>
+              <p className="text-sm font-semibold text-foreground">
+                {creationItems.length} total page
+                {creationItems.length === 1 ? "" : "s"}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Keep only the pages you still want to color, print, or export.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2 text-xs">
+              <span className="border-border/70 bg-background/60 rounded-full border px-3 py-1 text-muted-foreground">
+                Ready: {readyCount}
+              </span>
+              <span className="border-border/70 bg-background/60 rounded-full border px-3 py-1 text-muted-foreground">
+                In progress: {processingCount}
+              </span>
+              <span className="border-border/70 bg-background/60 rounded-full border px-3 py-1 text-muted-foreground">
+                Failed: {failedCount}
+              </span>
             </div>
           </CardContent>
         </Card>
 
-        {/* Content */}
-        <CreationsManager creations={creationItems} view={view} />
+        <Card className="border-border/80 bg-card/95 rounded-3xl">
+          <CardContent className="space-y-4 p-5">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+              <form className="flex-1" action="/creations" method="GET">
+                {status !== "all" ? (
+                  <input type="hidden" name="status" value={status} />
+                ) : null}
+                {sort !== "newest" ? (
+                  <input type="hidden" name="sort" value={sort} />
+                ) : null}
+                {view !== "grid" ? (
+                  <input type="hidden" name="view" value={view} />
+                ) : null}
 
-        {/* Load More Button */}
-        {creations.length >= 50 && (
+                <div className="relative">
+                  <Icons.search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    name="q"
+                    defaultValue={q}
+                    placeholder="Search by file name"
+                    className="pl-10"
+                  />
+                </div>
+              </form>
+
+              <div className="flex flex-wrap items-center gap-2 lg:justify-end">
+                <div className="border-border/80 bg-background/60 inline-flex items-center gap-1 rounded-full border p-1">
+                  <Link href={buildHref({ view: "grid" })}>
+                    <Button
+                      variant={view === "grid" ? "default" : "ghost"}
+                      size="sm"
+                      className={cn(
+                        "rounded-full px-3",
+                        view !== "grid" && "text-muted-foreground",
+                      )}
+                    >
+                      <Icons.dashboard className="mr-1 size-4" />
+                      Grid
+                    </Button>
+                  </Link>
+                  <Link href={buildHref({ view: "list" })}>
+                    <Button
+                      variant={view === "list" ? "default" : "ghost"}
+                      size="sm"
+                      className={cn(
+                        "rounded-full px-3",
+                        view !== "list" && "text-muted-foreground",
+                      )}
+                    >
+                      <Icons.post className="mr-1 size-4" />
+                      List
+                    </Button>
+                  </Link>
+                </div>
+
+                <SortMenu
+                  current={sort}
+                  hrefNewest={buildHref({ sort: "newest" })}
+                  hrefOldest={buildHref({ sort: "oldest" })}
+                  hrefName={buildHref({ sort: "name" })}
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {[
+                { key: "all", label: "All" },
+                { key: "DONE", label: "Ready" },
+                { key: "PROCESSING", label: "Processing" },
+                { key: "QUEUED", label: "Queued" },
+                { key: "FAILED", label: "Failed" },
+              ].map(({ key, label }) => (
+                <Link key={key} href={buildHref({ status: key })}>
+                  <Button
+                    size="sm"
+                    variant={
+                      status === (key as FilterStatus) ? "default" : "outline"
+                    }
+                    className="rounded-full text-xs"
+                  >
+                    {label}
+                  </Button>
+                </Link>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        <CreationsManager
+          creations={creationItems}
+          view={view}
+          query={{ q, status, sort }}
+        />
+
+        {creations.length >= 50 ? (
           <div className="pt-6 text-center">
             <Button variant="outline" size="lg">
               Load More Creations
             </Button>
           </div>
-        )}
+        ) : null}
       </div>
     </>
   );
 }
 
 interface SortMenuProps {
-  current: "newest" | "oldest" | "name";
+  current: SortMode;
   hrefNewest: string;
   hrefOldest: string;
   hrefName: string;
@@ -302,14 +298,12 @@ function SortMenu({
       : current === "oldest"
         ? "Oldest First"
         : "Newest First";
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="outline"
-          className="gap-2 border-slate-200/70 bg-white/80 hover:bg-slate-100/80 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
-        >
-          <Icons.arrowUpRight className="h-4 w-4 rotate-90" />
+        <Button variant="outline" className="gap-2 rounded-full">
+          <Icons.arrowUpRight className="size-4 rotate-90" />
           Sort: {currentLabel}
         </Button>
       </DropdownMenuTrigger>

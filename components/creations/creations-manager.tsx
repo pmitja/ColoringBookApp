@@ -1,15 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,6 +16,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -42,24 +48,31 @@ export type CreationListItem = {
 };
 
 type ViewMode = "grid" | "list";
+type FilterStatus = "all" | CreationStatus;
+type SortMode = "newest" | "oldest" | "name";
 
 interface CreationsManagerProps {
   creations: CreationListItem[];
   view: ViewMode;
+  query: {
+    q: string;
+    status: FilterStatus;
+    sort: SortMode;
+  };
 }
 
 function getStatusColor(status: CreationStatus) {
   switch (status) {
     case "DONE":
-      return "border-emerald-400/30 bg-emerald-500/15 text-emerald-800 dark:text-emerald-100";
+      return "border-emerald-200 bg-emerald-100 text-emerald-800 dark:border-emerald-900/40 dark:bg-emerald-900/25 dark:text-emerald-300";
     case "PROCESSING":
-      return "border-sky-400/30 bg-sky-500/15 text-sky-800 dark:text-sky-100";
+      return "border-sky-200 bg-sky-100 text-sky-800 dark:border-sky-900/40 dark:bg-sky-900/25 dark:text-sky-300";
     case "QUEUED":
-      return "border-amber-400/30 bg-amber-500/15 text-amber-800 dark:text-amber-100";
+      return "border-amber-200 bg-amber-100 text-amber-800 dark:border-amber-900/40 dark:bg-amber-900/25 dark:text-amber-300";
     case "FAILED":
-      return "border-rose-400/30 bg-rose-500/15 text-rose-800 dark:text-rose-100";
+      return "border-rose-200 bg-rose-100 text-rose-800 dark:border-rose-900/40 dark:bg-rose-900/25 dark:text-rose-300";
     default:
-      return "border-slate-200/70 bg-white/80 text-muted-foreground dark:border-white/10 dark:bg-white/5";
+      return "border-border bg-background/60 text-muted-foreground";
   }
 }
 
@@ -90,11 +103,10 @@ function getCardLinkForCreation(creation: CreationListItem) {
 export default function CreationsManager({
   creations,
   view,
+  query,
 }: CreationsManagerProps) {
   const [items, setItems] = useState<CreationListItem[]>(creations);
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(
-    () => new Set(),
-  );
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
   const [pendingDeleteIds, setPendingDeleteIds] = useState<string[] | null>(
     null,
   );
@@ -104,6 +116,74 @@ export default function CreationsManager({
     setItems(creations);
     setSelectedIds(new Set());
   }, [creations]);
+
+  const refreshCreations = useCallback(async () => {
+    const params = new URLSearchParams();
+    if (query.q) {
+      params.set("q", query.q);
+    }
+    if (query.status !== "all") {
+      params.set("status", query.status);
+    }
+    if (query.sort !== "newest") {
+      params.set("sort", query.sort);
+    }
+
+    const endpoint = params.toString()
+      ? `/api/creations?${params.toString()}`
+      : "/api/creations";
+
+    try {
+      const response = await fetch(endpoint, { cache: "no-store" });
+      if (!response.ok) {
+        throw new Error("Failed to refresh creations.");
+      }
+
+      const payload = (await response.json()) as { creations: CreationListItem[] };
+      if (!Array.isArray(payload.creations)) return;
+
+      setItems(payload.creations);
+      setSelectedIds((prev) => {
+        const availableIds = new Set(payload.creations.map((item) => item.id));
+        const next = new Set<string>();
+        prev.forEach((id) => {
+          if (availableIds.has(id)) {
+            next.add(id);
+          }
+        });
+        return next;
+      });
+    } catch (error) {
+      console.error("Creations refresh error:", error);
+    }
+  }, [query.q, query.sort, query.status]);
+
+  useEffect(() => {
+    void refreshCreations();
+  }, [refreshCreations]);
+
+  const hasActiveJobs = items.some(
+    (item) => item.status === "PROCESSING" || item.status === "QUEUED",
+  );
+
+  useEffect(() => {
+    if (!hasActiveJobs) return;
+
+    const pollInterval = setInterval(() => {
+      void refreshCreations();
+    }, 4000);
+
+    return () => clearInterval(pollInterval);
+  }, [hasActiveJobs, refreshCreations]);
+
+  useEffect(() => {
+    const handleFocus = () => {
+      void refreshCreations();
+    };
+
+    window.addEventListener("focus", handleFocus);
+    return () => window.removeEventListener("focus", handleFocus);
+  }, [refreshCreations]);
 
   const allSelected = items.length > 0 && selectedIds.size === items.length;
   const someSelected = selectedIds.size > 0 && !allSelected;
@@ -118,10 +198,7 @@ export default function CreationsManager({
     );
   };
 
-  const handleSelectOne = (
-    id: string,
-    checked: boolean | "indeterminate",
-  ) => {
+  const handleSelectOne = (id: string, checked: boolean | "indeterminate") => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
       if (checked === true) {
@@ -146,6 +223,7 @@ export default function CreationsManager({
 
   const handleDelete = async () => {
     if (!pendingDeleteIds || pendingDeleteIds.length === 0) return;
+
     setDeleting(true);
     try {
       const response = await fetch("/api/creations", {
@@ -157,9 +235,7 @@ export default function CreationsManager({
       const payload = await response.json().catch(() => null);
       if (!response.ok) {
         const message =
-          payload?.error ||
-          payload?.message ||
-          "Failed to delete creations.";
+          payload?.error || payload?.message || "Failed to delete creations.";
         throw new Error(message);
       }
 
@@ -197,15 +273,14 @@ export default function CreationsManager({
     return (
       <EmptyPlaceholder>
         <EmptyPlaceholder.Icon name="media" />
-        <EmptyPlaceholder.Title>No coloring books yet</EmptyPlaceholder.Title>
+        <EmptyPlaceholder.Title>No creations yet</EmptyPlaceholder.Title>
         <EmptyPlaceholder.Description>
-          You haven't created any coloring books yet. Upload your first family
-          photo to get started!
+          Create your first coloring page to start building your library.
         </EmptyPlaceholder.Description>
         <Link href="/upload">
-          <Button className="gap-2">
-            <Icons.media className="h-4 w-4" />
-            Create First Coloring Book
+          <Button className="gap-2 rounded-full">
+            <Icons.media className="size-4" />
+            Create First Page
           </Button>
         </Link>
       </EmptyPlaceholder>
@@ -214,10 +289,12 @@ export default function CreationsManager({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200/70 bg-white/80 p-3 shadow-sm dark:border-white/10 dark:bg-white/5">
+      <div className="border-border/80 bg-card/95 flex flex-wrap items-center justify-between gap-3 rounded-3xl border p-4">
         <div className="flex items-center gap-2">
           <Checkbox
-            checked={allSelected ? true : someSelected ? "indeterminate" : false}
+            checked={
+              allSelected ? true : someSelected ? "indeterminate" : false
+            }
             onCheckedChange={handleSelectAll}
             aria-label="Select all creations"
           />
@@ -226,28 +303,28 @@ export default function CreationsManager({
           </span>
         </div>
         <div className="flex items-center gap-2">
-          {selectedIds.size > 0 && (
+          {selectedIds.size > 0 ? (
             <Button
               size="sm"
               variant="outline"
-              className="border-slate-200/70 bg-white/80 text-muted-foreground hover:text-foreground dark:border-white/10 dark:bg-white/5"
+              className="rounded-full"
               onClick={() => setSelectedIds(new Set())}
               disabled={deleting}
             >
               Clear
             </Button>
-          )}
+          ) : null}
           <Button
             size="sm"
             variant="destructive"
-            className="gap-2"
+            className="gap-2 rounded-full"
             onClick={() => openDeleteDialog(Array.from(selectedIds))}
             disabled={selectedIds.size === 0 || deleting}
           >
             {deleting ? (
-              <Icons.spinner className="h-4 w-4 animate-spin" />
+              <Icons.spinner className="size-4 animate-spin" />
             ) : (
-              <Icons.trash className="h-4 w-4" />
+              <Icons.trash className="size-4" />
             )}
             Delete Selected
           </Button>
@@ -263,7 +340,7 @@ export default function CreationsManager({
           onDeleteOne={(id) => openDeleteDialog([id])}
         />
       ) : (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {items.map((creation) => (
             <CreationCard
               key={creation.id}
@@ -280,11 +357,12 @@ export default function CreationsManager({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              Delete {pendingDeleteIds?.length === 1 ? "creation" : "creations"}?
+              Delete {pendingDeleteIds?.length === 1 ? "creation" : "creations"}
+              ?
             </AlertDialogTitle>
             <AlertDialogDescription>
-              This will remove the selected creations from your account and
-              delete their files from storage. This action cannot be undone.
+              This removes selected creations and their stored files
+              permanently.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -292,7 +370,7 @@ export default function CreationsManager({
             <AlertDialogAction
               onClick={handleDelete}
               disabled={deleting}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="hover:bg-destructive/90 bg-destructive text-destructive-foreground"
             >
               {deleting ? "Deleting..." : "Delete"}
             </AlertDialogAction>
@@ -321,22 +399,23 @@ function CreationCard({
   return (
     <Card
       className={cn(
-        "group overflow-hidden border-slate-200/70 bg-white/80 shadow-[0_0_0_1px_rgba(15,23,42,0.05)] transition hover:-translate-y-0.5 hover:shadow-xl dark:border-white/10 dark:bg-white/5 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.04)]",
-        selected && "ring-2 ring-rose-500/40",
+        "border-border/80 bg-card/95 group overflow-hidden rounded-3xl border transition hover:-translate-y-0.5 hover:shadow-md",
+        selected && "ring-primary/35 ring-2",
       )}
     >
-      <div className="relative aspect-[3/4] bg-slate-100 sm:aspect-[4/5] dark:bg-slate-950/40">
-        <div className="absolute left-2 top-2 z-10 rounded-md bg-white/80 p-1 shadow-sm dark:bg-slate-900/80">
+      <div className="bg-background/60 relative aspect-[3/4] sm:aspect-[4/5]">
+        <div className="bg-background/95 absolute left-2 top-2 z-10 rounded-md p-1 shadow-sm">
           <Checkbox
             checked={selected}
             onCheckedChange={onSelect}
             aria-label={`Select ${creation.inputFileName}`}
           />
         </div>
+
         {creation.status === "DONE" && creation.lineartUrl ? (
           <Image
             src={creation.lineartUrl}
-            alt={`Coloring book from ${creation.inputFileName}`}
+            alt={`Coloring page from ${creation.inputFileName}`}
             fill
             className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
           />
@@ -344,17 +423,17 @@ function CreationCard({
           <div className="flex h-full items-center justify-center">
             <div className="text-center">
               {creation.status === "PROCESSING" ? (
-                <Icons.spinner className="mx-auto mb-2 h-8 w-8 animate-spin text-muted-foreground" />
+                <Icons.spinner className="mx-auto mb-2 size-8 animate-spin text-muted-foreground" />
               ) : creation.status === "QUEUED" ? (
-                <Icons.help className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
+                <Icons.help className="mx-auto mb-2 size-8 text-muted-foreground" />
               ) : creation.status === "FAILED" ? (
-                <Icons.warning className="mx-auto mb-2 h-8 w-8 text-red-500" />
+                <Icons.warning className="mx-auto mb-2 size-8 text-rose-500" />
               ) : (
-                <Icons.media className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
+                <Icons.media className="mx-auto mb-2 size-8 text-muted-foreground" />
               )}
               <p className="text-sm text-muted-foreground">
-                {creation.status === "PROCESSING" && "Processing..."}
-                {creation.status === "QUEUED" && "In Queue"}
+                {creation.status === "PROCESSING" && "Processing"}
+                {creation.status === "QUEUED" && "Queued"}
                 {creation.status === "FAILED" && "Failed"}
                 {creation.status === "DONE" && "Preview"}
               </p>
@@ -365,7 +444,10 @@ function CreationCard({
         <div className="absolute right-2 top-2">
           <Badge
             variant="outline"
-            className={cn("text-xs", getStatusColor(creation.status))}
+            className={cn(
+              "rounded-full text-xs",
+              getStatusColor(creation.status),
+            )}
           >
             {creation.status}
           </Badge>
@@ -373,33 +455,31 @@ function CreationCard({
       </div>
 
       <CardHeader className="pb-2">
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0 flex-1">
-            <CardTitle className="truncate text-sm font-semibold">
-              {creation.inputFileName.replace(/\.[^/.]+$/, "")}
-            </CardTitle>
-            <CardDescription className="text-xs">
-              {formatDate(creation.createdAt)}
-            </CardDescription>
-          </div>
+        <div className="min-w-0">
+          <CardTitle className="truncate text-sm font-semibold">
+            {creation.inputFileName.replace(/\.[^/.]+$/, "")}
+          </CardTitle>
+          <CardDescription className="text-xs">
+            {formatDate(creation.createdAt)}
+          </CardDescription>
         </div>
       </CardHeader>
 
       <CardContent className="pt-0">
         <div className="flex gap-2">
           <Link href={cardLink} className="flex-1">
-            <Button size="sm" className="w-full">
-              {creation.status === "DONE" ? "View Results" : "View Details"}
+            <Button size="sm" className="w-full rounded-full">
+              {creation.status === "DONE" ? "Open" : "View"}
             </Button>
           </Link>
           <Button
             size="sm"
             variant="outline"
-            className="border-rose-200/70 text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:border-rose-400/30 dark:hover:bg-rose-500/10"
+            className="border-destructive/30 hover:bg-destructive/10 rounded-full text-destructive"
             onClick={onDelete}
             aria-label={`Delete ${creation.inputFileName}`}
           >
-            <Icons.trash className="h-4 w-4" />
+            <Icons.trash className="size-4" />
           </Button>
         </div>
       </CardContent>
@@ -427,14 +507,16 @@ function CreationsTable({
   const someSelected = selectedIds.size > 0 && !allSelected;
 
   return (
-    <Card className="border-slate-200/70 bg-white/80 dark:border-white/10 dark:bg-white/5">
+    <Card className="border-border/80 bg-card/95 rounded-3xl">
       <CardContent className="pt-6">
         <Table className="min-w-[420px] sm:min-w-[640px]">
           <TableHeader>
             <TableRow>
               <TableHead className="w-[48px] text-xs uppercase tracking-[0.2em] text-muted-foreground">
                 <Checkbox
-                  checked={allSelected ? true : someSelected ? "indeterminate" : false}
+                  checked={
+                    allSelected ? true : someSelected ? "indeterminate" : false
+                  }
                   onCheckedChange={onSelectAll}
                   aria-label="Select all creations"
                 />
@@ -459,9 +541,8 @@ function CreationsTable({
               <TableRow
                 key={creation.id}
                 className={cn(
-                  "hover:bg-slate-100 dark:hover:bg-white/5",
-                  selectedIds.has(creation.id) &&
-                    "bg-rose-50/70 dark:bg-rose-500/10",
+                  "hover:bg-secondary/30",
+                  selectedIds.has(creation.id) && "bg-secondary/35",
                 )}
               >
                 <TableCell>
@@ -474,7 +555,7 @@ function CreationsTable({
                   />
                 </TableCell>
                 <TableCell className="hidden sm:table-cell">
-                  <div className="relative h-12 w-12 overflow-hidden rounded-lg bg-slate-100 dark:bg-white/5">
+                  <div className="border-border/70 bg-background/60 relative size-12 overflow-hidden rounded-lg border">
                     {creation.lineartUrl ? (
                       <Image
                         src={creation.lineartUrl}
@@ -483,8 +564,8 @@ function CreationsTable({
                         className="object-cover"
                       />
                     ) : (
-                      <div className="flex h-full w-full items-center justify-center text-muted-foreground">
-                        <Icons.media className="h-5 w-5" />
+                      <div className="flex size-full items-center justify-center text-muted-foreground">
+                        <Icons.media className="size-5" />
                       </div>
                     )}
                   </div>
@@ -495,7 +576,10 @@ function CreationsTable({
                 <TableCell className="hidden sm:table-cell">
                   <Badge
                     variant="outline"
-                    className={cn("text-xs", getStatusColor(creation.status))}
+                    className={cn(
+                      "rounded-full text-xs",
+                      getStatusColor(creation.status),
+                    )}
                   >
                     {creation.status}
                   </Badge>
@@ -506,16 +590,18 @@ function CreationsTable({
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-2">
                     <Link href={getCardLinkForCreation(creation)}>
-                      <Button size="sm">View</Button>
+                      <Button size="sm" className="rounded-full">
+                        View
+                      </Button>
                     </Link>
                     <Button
                       size="sm"
                       variant="outline"
-                      className="border-rose-200/70 text-rose-600 hover:bg-rose-50 hover:text-rose-700 dark:border-rose-400/30 dark:hover:bg-rose-500/10"
+                      className="border-destructive/30 hover:bg-destructive/10 rounded-full text-destructive"
                       onClick={() => onDeleteOne(creation.id)}
                       aria-label={`Delete ${creation.inputFileName}`}
                     >
-                      <Icons.trash className="h-4 w-4" />
+                      <Icons.trash className="size-4" />
                     </Button>
                   </div>
                 </TableCell>

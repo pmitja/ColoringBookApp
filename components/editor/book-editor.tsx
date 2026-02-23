@@ -391,7 +391,7 @@ export default function BookEditor({
         throw new Error("No pages available for export");
       }
 
-      exportImagesAsPdf({
+      await exportImagesAsPdf({
         images,
         pageFormat,
         orientation: pageOrientation,

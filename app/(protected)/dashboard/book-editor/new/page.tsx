@@ -2,6 +2,7 @@ import dynamic from "next/dynamic";
 
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
+import { isUserOnPaidPlan } from "@/lib/subscription";
 import { constructMetadata } from "@/lib/utils";
 const BookEditor = dynamic(() => import("@/components/editor/book-editor-v2"), {
   ssr: false,
@@ -35,6 +36,14 @@ async function getUserCreations(userId: string) {
 export default async function NewBookPage() {
   const user = await getCurrentUser();
   const assets = user?.id ? await getUserCreations(user.id) : [];
+  const isPaidUser = user?.id ? await isUserOnPaidPlan(user.id) : false;
 
-  return <BookEditor assets={assets} initialBookId={null} initialBook={null} />;
+  return (
+    <BookEditor
+      assets={assets}
+      initialBookId={null}
+      initialBook={null}
+      isPaidUser={isPaidUser}
+    />
+  );
 }

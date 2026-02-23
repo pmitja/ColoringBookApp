@@ -10,7 +10,6 @@ import {
   resolveGenerationPlanLimit,
 } from "@/lib/subscription";
 
-type UploadVariant = "styled" | "lineart";
 const EDIT_MODEL = "xai/grok-imagine-image/edit";
 const MAX_BATCH_COUNT = 5;
 
@@ -81,7 +80,7 @@ async function processJob(
     const finalStylePrompt =
       (stylePrompt ?? "").trim().length > 0
         ? (stylePrompt ?? "").trim()
-        : BASE_STYLES.FAST;
+        : BASE_STYLES.DEFAULT;
     if (finalStylePrompt !== stylePrompt) {
       console.warn("Empty style prompt computed, applying fallback prompt");
     }
@@ -130,20 +129,10 @@ async function processJob(
     if (!lineartImageUrl)
       throw new Error("No lineart image returned from FAL.AI");
 
-    // 3. Upload both styled and lineart images to UploadThing for permanent storage
-    const styledUrl = await fetchAndUploadToUploadThing(
-      styledImageUrl,
-      `styled-${jobId}.jpg`,
-      "styled",
-      isUpscaled,
-    );
-    if (!styledUrl)
-      throw new Error("Failed to upload styled image to UploadThing");
-
+    // 3. Upload only the final lineart image to UploadThing for permanent storage
     const lineartUrl = await fetchAndUploadToUploadThing(
       lineartImageUrl,
       `lineart-${jobId}.png`,
-      "lineart",
       isUpscaled,
     );
     if (!lineartUrl)
@@ -155,7 +144,7 @@ async function processJob(
       data: {
         status: "DONE",
         inputUrl: null, // No original image URL stored
-        cartoonUrl: styledUrl,
+        cartoonUrl: null,
         lineartUrl: lineartUrl,
         isUpscaled,
         errorMessage: null,
@@ -172,7 +161,9 @@ async function processJob(
 
     const baseMessage =
       error instanceof Error ? error.message : "Unknown error";
-    const errorMessage = detail ? `${baseMessage} | detail: ${detail}` : baseMessage;
+    const errorMessage = detail
+      ? `${baseMessage} | detail: ${detail}`
+      : baseMessage;
 
     await prisma.imageJob.update({
       where: { id: jobId },
@@ -187,7 +178,6 @@ async function processJob(
 async function fetchAndUploadToUploadThing(
   imageUrl: string,
   filename: string,
-  variant: UploadVariant = "styled",
   isUpscaled = false,
 ): Promise<string | null> {
   try {
@@ -207,34 +197,23 @@ async function fetchAndUploadToUploadThing(
     // 2. Optimize image for storage and downstream print quality
     const targetResolution = isUpscaled ? 2200 : 1200;
 
-    const processedBuffer =
-      variant === "lineart"
-        ? await sharp
-            .default(buffer)
-            .resize({
-              width: targetResolution,
-              height: targetResolution,
-              fit: "inside",
-            })
-            .flatten({ background: "#ffffff" })
-            .grayscale()
-            .normalise()
-            .threshold(215, { grayscale: true })
-            .png({ compressionLevel: 9, palette: true })
-            .toBuffer()
-        : await sharp
-            .default(buffer)
-            .resize({
-              width: targetResolution,
-              height: targetResolution,
-              fit: "inside",
-            })
-            .jpeg({ quality: 80, progressive: true })
-            .toBuffer();
+    const processedBuffer = await sharp
+      .default(buffer)
+      .resize({
+        width: targetResolution,
+        height: targetResolution,
+        fit: "inside",
+      })
+      .flatten({ background: "#ffffff" })
+      .grayscale()
+      .normalise()
+      .threshold(215, { grayscale: true })
+      .png({ compressionLevel: 9, palette: true })
+      .toBuffer();
 
     // 3. Convert to File
     const file = new File([processedBuffer], filename, {
-      type: variant === "lineart" ? "image/png" : "image/jpeg",
+      type: "image/png",
     });
 
     // 4. Upload to UploadThing
@@ -277,6 +256,7 @@ export async function POST(request: NextRequest) {
       where: { id: userId },
       select: {
         id: true,
+        role: true,
         stripePriceId: true,
         stripeCurrentPeriodEnd: true,
       },
@@ -290,8 +270,9 @@ export async function POST(request: NextRequest) {
     const isPaidUser =
       Boolean(dbUser.stripePriceId) &&
       Boolean(dbUser.stripeCurrentPeriodEnd) &&
-      (dbUser.stripeCurrentPeriodEnd?.getTime() ?? 0) + 86_400_000 >
-        Date.now();
+      (dbUser.stripeCurrentPeriodEnd?.getTime() ?? 0) + 86_400_000 > Date.now();
+    const isSuperAdmin = dbUser.role === "ADMIN";
+    const hasPremiumAccess = isPaidUser || isSuperAdmin;
 
     // Check if FAL API key is configured
     if (!process.env.FAL_API_KEY) {
@@ -304,7 +285,7 @@ export async function POST(request: NextRequest) {
     // Parse form data
     const formData = await request.formData();
     const file = formData.get("image") as File;
-    const style = (formData.get("style") as string) || "FAST";
+    const style = (formData.get("style") as string) || "DEFAULT";
     const requestedPrivate = parseBooleanField(formData.get("private"));
     const requestedUpscale = parseBooleanField(formData.get("upscale"));
     const batchCount = parseBatchCount(formData.get("batchCount"));
@@ -341,8 +322,8 @@ export async function POST(request: NextRequest) {
     }
 
     const isPrivate =
-      requestedPrivate === null ? isPaidUser : requestedPrivate;
-    if (isPrivate && !isPaidUser) {
+      requestedPrivate === null ? hasPremiumAccess : requestedPrivate;
+    if (isPrivate && !hasPremiumAccess) {
       return NextResponse.json(
         { error: "Private mode is available for paid plans only." },
         { status: 403 },
@@ -350,33 +331,35 @@ export async function POST(request: NextRequest) {
     }
 
     const isUpscaled = requestedUpscale ?? false;
-    if (isUpscaled && !isPaidUser) {
+    if (isUpscaled && !hasPremiumAccess) {
       return NextResponse.json(
         { error: "Upscale is available for paid plans only." },
         { status: 403 },
       );
     }
 
-    const planLimits = resolveGenerationPlanLimit(dbUser);
-    const usedThisMonth = await getUserMonthlyGenerationUsage(
-      userId,
-      getCurrentMonthStartUtc(),
-    );
-    const remainingThisMonth = Math.max(
-      planLimits.monthlyGenerationLimit - usedThisMonth,
-      0,
-    );
-
-    if (batchCount > remainingThisMonth) {
-      return NextResponse.json(
-        {
-          error:
-            remainingThisMonth <= 0
-              ? `You have no generations left this month on the ${planLimits.planTitle} plan. Upgrade to a higher plan to keep generating.`
-              : `You only have ${remainingThisMonth} generation${remainingThisMonth === 1 ? "" : "s"} left this month on the ${planLimits.planTitle} plan. Reduce batch size or upgrade to a higher plan.`,
-        },
-        { status: 403 },
+    if (!isSuperAdmin) {
+      const planLimits = resolveGenerationPlanLimit(dbUser);
+      const usedThisMonth = await getUserMonthlyGenerationUsage(
+        userId,
+        getCurrentMonthStartUtc(),
       );
+      const remainingThisMonth = Math.max(
+        planLimits.monthlyGenerationLimit - usedThisMonth,
+        0,
+      );
+
+      if (batchCount > remainingThisMonth) {
+        return NextResponse.json(
+          {
+            error:
+              remainingThisMonth <= 0
+                ? `You have no generations left this month on the ${planLimits.planTitle} plan. Upgrade to a higher plan to keep generating.`
+                : `You only have ${remainingThisMonth} generation${remainingThisMonth === 1 ? "" : "s"} left this month on the ${planLimits.planTitle} plan. Reduce batch size or upgrade to a higher plan.`,
+          },
+          { status: 403 },
+        );
+      }
     }
 
     // Convert file to buffer for processing

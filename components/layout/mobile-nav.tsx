@@ -17,23 +17,26 @@ export function NavMobile() {
   const [open, setOpen] = useState(false);
   const links = marketingConfig.mainNav;
 
-  // prevent body scroll when modal is open
   useEffect(() => {
-    if (open) {
-      document.body.style.overflow = "hidden";
-    } else {
+    document.body.style.overflow = open ? "hidden" : "auto";
+
+    return () => {
       document.body.style.overflow = "auto";
-    }
+    };
   }, [open]);
 
   return (
     <>
       <button
+        type="button"
         onClick={() => setOpen(!open)}
         aria-label={open ? "Close navigation menu" : "Open navigation menu"}
+        aria-expanded={open}
+        aria-controls="mobile-nav"
         className={cn(
-          "border-border/70 bg-background/90 hover:bg-secondary/80 active:bg-secondary/80 fixed right-3 top-3 z-50 rounded-full border p-2.5 transition-colors duration-200 focus:outline-none md:hidden",
-          open && "hover:bg-muted active:bg-muted",
+          "border-border/80 bg-background/88 hover:bg-secondary/90 active:bg-secondary/95 fixed right-3 top-3 z-50 rounded-full border p-2.5 shadow-sm backdrop-blur focus-visible:ring-ring focus-visible:ring-offset-background md:hidden",
+          "transition-[background-color,box-shadow,border-color] duration-200",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
         )}
       >
         {open ? (
@@ -44,81 +47,99 @@ export function NavMobile() {
       </button>
 
       <nav
+        id="mobile-nav"
+        aria-label="Mobile"
         className={cn(
-          "bg-background fixed inset-0 z-20 hidden w-full overflow-auto px-5 py-16 lg:hidden",
-          open && "block",
+          "bg-background/95 fixed inset-0 z-20 hidden w-full overflow-auto px-5 pb-8 pt-20 backdrop-blur-xl lg:hidden",
+          open && "animate-rise block",
         )}
       >
-        <ul className="divide-border/50 grid divide-y">
-          {links &&
-            links.length > 0 &&
-            links.map(({ title, href }) => (
-              <li key={href} className="py-3">
+        <div className="surface-glass rounded-3xl p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <Link
+              href="/"
+              onClick={() => setOpen(false)}
+              className="rounded-lg"
+            >
+              <Icons.logo className="h-8 w-auto" />
+              <span className="sr-only">Colorline AI</span>
+            </Link>
+            <ModeToggle />
+          </div>
+
+          <ul className="divide-border/60 grid divide-y" role="list">
+            {links?.map(({ title, href }) => (
+              <li key={href} className="py-1.5">
                 <Link
                   href={href}
                   onClick={() => setOpen(false)}
-                  className="hover:bg-secondary/70 flex w-full rounded-full px-4 py-2 font-semibold capitalize"
+                  className="hover:bg-secondary/70 flex w-full rounded-xl px-4 py-2.5 font-semibold capitalize transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                 >
                   {title}
                 </Link>
               </li>
             ))}
 
-          {session ? (
-            <>
-              {session.user.role === "ADMIN" ? (
-                <li className="py-3">
+            {session ? (
+              <>
+                {session.user.role === "ADMIN" ? (
+                  <li className="py-1.5">
+                    <Link
+                      href="/admin"
+                      onClick={() => setOpen(false)}
+                      className="hover:bg-secondary/70 flex w-full rounded-xl px-4 py-2.5 font-semibold capitalize transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                    >
+                      Admin
+                    </Link>
+                  </li>
+                ) : null}
+
+                <li className="py-1.5">
                   <Link
-                    href="/admin"
+                    href="/dashboard"
                     onClick={() => setOpen(false)}
-                    className="hover:bg-secondary/70 flex w-full rounded-full px-4 py-2 font-semibold capitalize"
+                    className="hover:bg-secondary/70 flex w-full rounded-xl px-4 py-2.5 font-semibold capitalize transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                   >
-                    Admin
+                    Dashboard
                   </Link>
                 </li>
-              ) : null}
+              </>
+            ) : (
+              <>
+                <li className="py-1.5">
+                  <Link
+                    href="/login"
+                    onClick={() => setOpen(false)}
+                    className="hover:bg-secondary/70 flex w-full rounded-xl px-4 py-2.5 font-semibold capitalize transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                  >
+                    Login
+                  </Link>
+                </li>
 
-              <li className="py-3">
-                <Link
-                  href="/dashboard"
-                  onClick={() => setOpen(false)}
-                  className="hover:bg-secondary/70 flex w-full rounded-full px-4 py-2 font-semibold capitalize"
-                >
-                  Dashboard
-                </Link>
-              </li>
-            </>
-          ) : (
-            <>
-              <li className="py-3">
-                <Link
-                  href="/login"
-                  onClick={() => setOpen(false)}
-                  className="hover:bg-secondary/70 flex w-full rounded-full px-4 py-2 font-semibold capitalize"
-                >
-                  Login
-                </Link>
-              </li>
+                <li className="py-1.5">
+                  <Link
+                    href="/register"
+                    onClick={() => setOpen(false)}
+                    className="hover:bg-primary/90 flex w-full rounded-xl bg-primary px-4 py-2.5 font-semibold capitalize text-primary-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+                  >
+                    Sign Up
+                  </Link>
+                </li>
+              </>
+            )}
+          </ul>
 
-              <li className="py-3">
-                <Link
-                  href="/register"
-                  onClick={() => setOpen(false)}
-                  className="hover:bg-secondary/70 flex w-full rounded-full px-4 py-2 font-semibold capitalize"
-                >
-                  Sign up
-                </Link>
-              </li>
-            </>
-          )}
-        </ul>
-
-        <div className="mt-5 flex items-center justify-end space-x-4">
-          <Link href={siteConfig.links.github} target="_blank" rel="noreferrer">
-            <Icons.gitHub className="size-6" />
-            <span className="sr-only">GitHub</span>
-          </Link>
-          <ModeToggle />
+          <div className="mt-5 flex items-center justify-end">
+            <Link
+              href={siteConfig.links.github}
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-lg p-2 text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            >
+              <Icons.gitHub className="size-6" />
+              <span className="sr-only">GitHub</span>
+            </Link>
+          </div>
         </div>
       </nav>
     </>

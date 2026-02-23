@@ -14,11 +14,7 @@ const GENERATOR_MODEL = "xai/grok-imagine-image";
 const EDIT_MODEL = "xai/grok-imagine-image/edit";
 const MAX_BATCH_COUNT = 5;
 
-const ASPECT_RATIOS = new Set(["auto", "3:4", "1:1", "4:3"]);
-
-type AspectRatio = "auto" | "3:4" | "1:1" | "4:3";
 type GenerateMode = "prompt" | "consistent";
-type UploadVariant = "styled" | "lineart";
 
 function getFalErrorDetails(error: unknown): string | null {
   const falError = error as any;
@@ -37,7 +33,9 @@ if (process.env.FAL_API_KEY) {
   });
 }
 
-function buildPromptGeneratorPrompt(prompt: string, style: StyleId) {
+function buildPromptGeneratorPrompt(prompt: string, style: StyleId | null) {
+  if (!style) return prompt;
+
   return `${prompt}\n\nArt direction: ${BASE_STYLES[style]}`;
 }
 
@@ -53,7 +51,6 @@ function buildConsistentPrompt(prompt: string, style: StyleId) {
 async function fetchAndUploadToUploadThing(
   imageUrl: string,
   filename: string,
-  variant: UploadVariant = "styled",
   isUpscaled = false,
 ): Promise<string | null> {
   try {
@@ -71,33 +68,22 @@ async function fetchAndUploadToUploadThing(
 
     const targetResolution = isUpscaled ? 2400 : 1400;
 
-    const processedBuffer =
-      variant === "lineart"
-        ? await sharp
-            .default(buffer)
-            .resize({
-              width: targetResolution,
-              height: targetResolution,
-              fit: "inside",
-            })
-            .flatten({ background: "#ffffff" })
-            .grayscale()
-            .normalise()
-            .threshold(215, { grayscale: true })
-            .png({ compressionLevel: 9, palette: true })
-            .toBuffer()
-        : await sharp
-            .default(buffer)
-            .resize({
-              width: targetResolution,
-              height: targetResolution,
-              fit: "inside",
-            })
-            .jpeg({ quality: 84, progressive: true })
-            .toBuffer();
+    const processedBuffer = await sharp
+      .default(buffer)
+      .resize({
+        width: targetResolution,
+        height: targetResolution,
+        fit: "inside",
+      })
+      .flatten({ background: "#ffffff" })
+      .grayscale()
+      .normalise()
+      .threshold(215, { grayscale: true })
+      .png({ compressionLevel: 9, palette: true })
+      .toBuffer();
 
     const file = new File([processedBuffer], filename, {
-      type: variant === "lineart" ? "image/png" : "image/jpeg",
+      type: "image/png",
     });
     const uploadRes = await utapi.uploadFiles(file);
     if (uploadRes.error) throw new Error(uploadRes.error.message);
@@ -112,7 +98,9 @@ async function fetchAndUploadToUploadThing(
 async function updateJobFailed(jobId: string, error: unknown) {
   const detail = getFalErrorDetails(error);
   const baseMessage = error instanceof Error ? error.message : "Unknown error";
-  const errorMessage = detail ? `${baseMessage} | detail: ${detail}` : baseMessage;
+  const errorMessage = detail
+    ? `${baseMessage} | detail: ${detail}`
+    : baseMessage;
 
   if (detail) {
     console.error(`FAL validation details for job ${jobId}:`, detail);
@@ -129,7 +117,6 @@ async function updateJobFailed(jobId: string, error: unknown) {
 
 async function updateJobDone(
   jobId: string,
-  styledUrl: string,
   lineartUrl: string,
   isUpscaled: boolean,
 ) {
@@ -138,7 +125,7 @@ async function updateJobDone(
     data: {
       status: "DONE",
       inputUrl: null,
-      cartoonUrl: styledUrl,
+      cartoonUrl: null,
       lineartUrl,
       isUpscaled,
       errorMessage: null,
@@ -149,8 +136,7 @@ async function updateJobDone(
 async function processPromptJob(
   jobId: string,
   prompt: string,
-  style: StyleId,
-  aspectRatio: AspectRatio,
+  style: StyleId | null,
   isUpscaled: boolean,
 ) {
   try {
@@ -167,7 +153,6 @@ async function processPromptJob(
         prompt: buildPromptGeneratorPrompt(prompt, style),
         num_images: 1,
         output_format: "png",
-        aspect_ratio: aspectRatio,
       } as any,
       logs: true,
       onQueueUpdate: (update) => {
@@ -204,25 +189,15 @@ async function processPromptJob(
     if (!lineartImageUrl)
       throw new Error("No lineart image returned from FAL.AI");
 
-    const styledUrl = await fetchAndUploadToUploadThing(
-      generatedImageUrl,
-      `styled-${jobId}.jpg`,
-      "styled",
-      isUpscaled,
-    );
-    if (!styledUrl)
-      throw new Error("Failed to upload styled image to UploadThing");
-
     const lineartUrl = await fetchAndUploadToUploadThing(
       lineartImageUrl,
       `lineart-${jobId}.png`,
-      "lineart",
       isUpscaled,
     );
     if (!lineartUrl)
       throw new Error("Failed to upload lineart image to UploadThing");
 
-    await updateJobDone(jobId, styledUrl, lineartUrl, isUpscaled);
+    await updateJobDone(jobId, lineartUrl, isUpscaled);
   } catch (error) {
     console.error(`Error processing prompt job ${jobId}:`, error);
     await updateJobFailed(jobId, error);
@@ -287,25 +262,15 @@ async function processConsistentJob(
     if (!lineartImageUrl)
       throw new Error("No lineart image returned from FAL.AI");
 
-    const styledUrl = await fetchAndUploadToUploadThing(
-      styledImageUrl,
-      `styled-${jobId}.jpg`,
-      "styled",
-      isUpscaled,
-    );
-    if (!styledUrl)
-      throw new Error("Failed to upload styled image to UploadThing");
-
     const lineartUrl = await fetchAndUploadToUploadThing(
       lineartImageUrl,
       `lineart-${jobId}.png`,
-      "lineart",
       isUpscaled,
     );
     if (!lineartUrl)
       throw new Error("Failed to upload lineart image to UploadThing");
 
-    await updateJobDone(jobId, styledUrl, lineartUrl, isUpscaled);
+    await updateJobDone(jobId, lineartUrl, isUpscaled);
   } catch (error) {
     console.error(`Error processing consistent job ${jobId}:`, error);
     await updateJobFailed(jobId, error);
@@ -344,6 +309,7 @@ export async function POST(request: NextRequest) {
       where: { id: userId },
       select: {
         id: true,
+        role: true,
         stripePriceId: true,
         stripeCurrentPeriodEnd: true,
       },
@@ -355,8 +321,9 @@ export async function POST(request: NextRequest) {
     const isPaidUser =
       Boolean(dbUser.stripePriceId) &&
       Boolean(dbUser.stripeCurrentPeriodEnd) &&
-      (dbUser.stripeCurrentPeriodEnd?.getTime() ?? 0) + 86_400_000 >
-        Date.now();
+      (dbUser.stripeCurrentPeriodEnd?.getTime() ?? 0) + 86_400_000 > Date.now();
+    const isSuperAdmin = dbUser.role === "ADMIN";
+    const hasPremiumAccess = isPaidUser || isSuperAdmin;
 
     if (!process.env.FAL_API_KEY) {
       return NextResponse.json(
@@ -368,9 +335,11 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const mode = ((formData.get("mode") as string) || "prompt") as GenerateMode;
     const prompt = (formData.get("prompt") as string)?.trim();
-    const style = ((formData.get("style") as string) || "FAST") as StyleId;
-    const aspectRatioRaw = ((formData.get("aspectRatio") as string) ||
-      "auto") as AspectRatio;
+    const styleField = formData.get("style");
+    const style =
+      typeof styleField === "string" && styleField.trim().length > 0
+        ? (styleField.trim() as StyleId)
+        : null;
     const requestedPrivate = parseBooleanField(formData.get("private"));
     const requestedUpscale = parseBooleanField(formData.get("upscale"));
     const batchCount = parseBatchCount(formData.get("batchCount"));
@@ -382,16 +351,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!BASE_STYLES[style]) {
+    if (style && !BASE_STYLES[style]) {
       return NextResponse.json(
         { error: "Invalid style selected" },
-        { status: 400 },
-      );
-    }
-
-    if (!ASPECT_RATIOS.has(aspectRatioRaw)) {
-      return NextResponse.json(
-        { error: "Invalid aspect ratio" },
         { status: 400 },
       );
     }
@@ -404,8 +366,8 @@ export async function POST(request: NextRequest) {
     }
 
     const isPrivate =
-      requestedPrivate === null ? isPaidUser : requestedPrivate;
-    if (isPrivate && !isPaidUser) {
+      requestedPrivate === null ? hasPremiumAccess : requestedPrivate;
+    if (isPrivate && !hasPremiumAccess) {
       return NextResponse.json(
         { error: "Private mode is available for paid plans only." },
         { status: 403 },
@@ -413,36 +375,37 @@ export async function POST(request: NextRequest) {
     }
 
     const isUpscaled = requestedUpscale ?? false;
-    if (isUpscaled && !isPaidUser) {
+    if (isUpscaled && !hasPremiumAccess) {
       return NextResponse.json(
         { error: "Upscale is available for paid plans only." },
         { status: 403 },
       );
     }
 
-    const planLimits = resolveGenerationPlanLimit(dbUser);
-    const usedThisMonth = await getUserMonthlyGenerationUsage(
-      userId,
-      getCurrentMonthStartUtc(),
-    );
-    const remainingThisMonth = Math.max(
-      planLimits.monthlyGenerationLimit - usedThisMonth,
-      0,
-    );
-
-    if (batchCount > remainingThisMonth) {
-      return NextResponse.json(
-        {
-          error:
-            remainingThisMonth <= 0
-              ? `You have no generations left this month on the ${planLimits.planTitle} plan. Upgrade to a higher plan to keep generating.`
-              : `You only have ${remainingThisMonth} generation${remainingThisMonth === 1 ? "" : "s"} left this month on the ${planLimits.planTitle} plan. Reduce batch size or upgrade to a higher plan.`,
-        },
-        { status: 403 },
+    if (!isSuperAdmin) {
+      const planLimits = resolveGenerationPlanLimit(dbUser);
+      const usedThisMonth = await getUserMonthlyGenerationUsage(
+        userId,
+        getCurrentMonthStartUtc(),
       );
+      const remainingThisMonth = Math.max(
+        planLimits.monthlyGenerationLimit - usedThisMonth,
+        0,
+      );
+
+      if (batchCount > remainingThisMonth) {
+        return NextResponse.json(
+          {
+            error:
+              remainingThisMonth <= 0
+                ? `You have no generations left this month on the ${planLimits.planTitle} plan. Upgrade to a higher plan to keep generating.`
+                : `You only have ${remainingThisMonth} generation${remainingThisMonth === 1 ? "" : "s"} left this month on the ${planLimits.planTitle} plan. Reduce batch size or upgrade to a higher plan.`,
+          },
+          { status: 403 },
+        );
+      }
     }
 
-    const aspectRatio = aspectRatioRaw as AspectRatio;
     let referenceImageUrl: string | null = null;
 
     if (mode === "consistent") {
@@ -462,7 +425,7 @@ export async function POST(request: NextRequest) {
         });
 
         referenceImageUrl =
-          referenceJob?.cartoonUrl || referenceJob?.lineartUrl || null;
+          referenceJob?.lineartUrl || referenceJob?.cartoonUrl || null;
       }
 
       if (!referenceImageUrl) {
@@ -486,7 +449,8 @@ export async function POST(request: NextRequest) {
           );
         }
 
-        referenceImageUrl = await uploadReferenceFileToFalStorage(referenceImage);
+        referenceImageUrl =
+          await uploadReferenceFileToFalStorage(referenceImage);
       }
     }
 
@@ -519,14 +483,14 @@ export async function POST(request: NextRequest) {
           processConsistentJob(
             job.id,
             prompt,
-            style,
+            style ?? "DEFAULT",
             referenceImageUrl as string,
             isUpscaled,
           );
         });
       } else {
         process.nextTick(() => {
-          processPromptJob(job.id, prompt, style, aspectRatio, isUpscaled);
+          processPromptJob(job.id, prompt, style, isUpscaled);
         });
       }
     }

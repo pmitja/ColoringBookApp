@@ -33,8 +33,9 @@ function formatPrice(value: number) {
 export function PricingCards({ userId, subscriptionPlan }: PricingCardsProps) {
   const defaultBillingInterval: BillingInterval =
     subscriptionPlan?.interval === "year" ? "yearly" : "monthly";
-  const [billingInterval, setBillingInterval] =
-    useState<BillingInterval>(defaultBillingInterval);
+  const [billingInterval, setBillingInterval] = useState<BillingInterval>(
+    defaultBillingInterval,
+  );
   const isYearly = billingInterval === "yearly";
   const { setShowSignInModal } = useContext(ModalContext);
 
@@ -48,14 +49,14 @@ export function PricingCards({ userId, subscriptionPlan }: PricingCardsProps) {
     return (
       <div
         className={cn(
-          "relative flex flex-col overflow-hidden rounded-3xl border shadow-sm",
+          "surface-glass relative flex flex-col overflow-hidden rounded-3xl",
           offer.title.toLocaleLowerCase() === "pro"
-            ? "border-primary/80 -m-0.5 border-2 shadow-[0_16px_34px_-22px_hsl(var(--primary)/0.85)]"
+            ? "border-primary/80 shadow-[0_20px_38px_-24px_rgb(15_118_110/0.55)] dark:shadow-[0_24px_44px_-24px_rgb(45_212_191/0.45)]"
             : "",
         )}
         key={offer.title}
       >
-        <div className="bg-muted/50 min-h-[150px] items-start space-y-4 p-6">
+        <div className="bg-muted/45 min-h-[150px] items-start space-y-4 p-6">
           <p className="font-urban flex text-sm font-bold uppercase tracking-wider text-muted-foreground">
             {offer.title}
           </p>
@@ -159,7 +160,7 @@ export function PricingCards({ userId, subscriptionPlan }: PricingCardsProps) {
               }
             }}
             aria-label="billing interval"
-            className="h-9 overflow-hidden rounded-full border bg-background p-1 *:h-7 *:text-muted-foreground"
+            className="border-border/80 bg-card/70 h-9 overflow-hidden rounded-full border p-1 backdrop-blur-sm *:h-7 *:text-muted-foreground"
           >
             <ToggleGroupItem
               value="monthly"

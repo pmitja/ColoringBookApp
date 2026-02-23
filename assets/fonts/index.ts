@@ -1,10 +1,9 @@
 import {
   Nunito as FontPlayfulBody,
   Baloo_2 as FontPlayfulHeading,
-  Inter as FontSans,
+  Plus_Jakarta_Sans as FontSans,
   Urbanist,
 } from "next/font/google";
-import localFont from "next/font/local";
 
 export const fontSans = FontSans({
   subsets: ["latin"],
@@ -16,13 +15,13 @@ export const fontUrban = Urbanist({
   variable: "--font-urban",
 });
 
-export const fontHeading = localFont({
-  src: "./CalSans-SemiBold.woff2",
+export const fontHeading = Urbanist({
+  subsets: ["latin"],
   variable: "--font-heading",
 });
 
-export const fontGeist = localFont({
-  src: "./GeistVF.woff2",
+export const fontGeist = FontSans({
+  subsets: ["latin"],
   variable: "--font-geist",
 });
 

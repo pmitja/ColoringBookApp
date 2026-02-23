@@ -26,7 +26,7 @@ export default async function DashboardColoringPage({
       <>
         <DashboardHeader
           heading="Color Online"
-          text="Please sign in to color your generated pages."
+          text="Sign in to open and color your generated pages."
         />
         <div className="mx-auto max-w-2xl">
           <EmptyPlaceholder>
@@ -77,7 +77,7 @@ export default async function DashboardColoringPage({
     <>
       <DashboardHeader
         heading="Color Online"
-        text="Select a generated page and fill near-white areas with your chosen color."
+        text="Select a generated page, fill regions with color, then export or save your painted version."
       />
 
       <ColoringStudio pages={pages} initialPageId={initialPageId} />

@@ -77,12 +77,15 @@ export async function isUserOnPaidPlan(userId: string): Promise<boolean> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: {
+      role: true,
       stripePriceId: true,
       stripeCurrentPeriodEnd: true,
     },
   });
 
   if (!user) return false;
+
+  if (user.role === "ADMIN") return true;
 
   return isPaidSubscriptionActive(user);
 }

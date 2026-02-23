@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 // Custom lightweight flip viewer
 import { Rnd } from "react-rnd";
 import { toast } from "sonner";
@@ -9,8 +10,8 @@ import { toast } from "sonner";
 import useLocalStorage from "@/hooks/use-local-storage";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useMounted } from "@/hooks/use-mounted";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   ContextMenu,
@@ -19,6 +20,13 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,13 +41,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import {
   Sheet,
@@ -48,7 +49,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Slider } from "@/components/ui/slider";
-import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Tooltip,
   TooltipContent,
@@ -83,6 +84,7 @@ interface EditorImage {
   rotation?: number; // degrees, multiples of 90
   objectPosX?: number; // 0-100 percentage for cover positioning (X)
   objectPosY?: number; // 0-100 percentage for cover positioning (Y)
+  coverRole?: "front" | "back";
 }
 
 type PageElement =
@@ -104,6 +106,7 @@ interface BookEditorProps {
   assets: AssetItem[];
   initialBookId?: string | null;
   initialBook?: BookState | null;
+  isPaidUser?: boolean;
 }
 
 function generateId(prefix: string) {
@@ -118,6 +121,7 @@ export default function BookEditorV2({
   assets,
   initialBookId = null,
   initialBook = null,
+  isPaidUser = false,
 }: BookEditorProps) {
   const mounted = useMounted();
   const [book, setBook] = useLocalStorage<BookState>("book-editor:v2", {
@@ -176,8 +180,7 @@ export default function BookEditorV2({
   const [pageOrientation, setPageOrientation] = useLocalStorage<
     "portrait" | "landscape"
   >("book-editor:v2:orientation", "landscape");
-  const [workAreaPaddingEnabled, setWorkAreaPaddingEnabled] =
-    useLocalStorage<boolean>("book-editor:v2:work-padding", true);
+  const workAreaPaddingEnabled = false;
   const bookRef = useRef<SimpleFlipBookHandle | null>(null);
   const isExportingRef = useRef(false);
   const stageRef = useRef<HTMLDivElement | null>(null);
@@ -191,6 +194,68 @@ export default function BookEditorV2({
     false,
   );
   const [assetQuery, setAssetQuery] = useState<string>("");
+  const [editorAssets, setEditorAssets] = useState<AssetItem[]>(assets);
+  const [coverDialogOpen, setCoverDialogOpen] = useState<boolean>(false);
+  const [coverTarget, setCoverTarget] = useState<"front" | "back">("front");
+  const [coverPrompt, setCoverPrompt] = useState<string>("");
+  const [coverTitleText, setCoverTitleText] = useState<string>("");
+  const [coverMainCharacter, setCoverMainCharacter] = useState<string>("");
+  const [coverSetting, setCoverSetting] = useState<string>("");
+  const [coverMood, setCoverMood] = useState<string>("");
+  const [coverExtraDetails, setCoverExtraDetails] = useState<string>("");
+  const [coverWizardView, setCoverWizardView] = useState<
+    "form" | "loading" | "results"
+  >("form");
+  const [coverOptions, setCoverOptions] = useState<AssetItem[]>([]);
+  const [coverError, setCoverError] = useState<string | null>(null);
+  const [isGeneratingCovers, setIsGeneratingCovers] = useState<boolean>(false);
+  const [savingCoverOptionId, setSavingCoverOptionId] = useState<string | null>(
+    null,
+  );
+  const coverPromptExamples = useMemo(
+    () => [
+      {
+        title: "Cozy Halloween",
+        prompt:
+          "cute friendly ghosts by a warm fireplace, sleeping cat, candles and pumpkins, cozy autumn mood, children’s book style",
+      },
+      {
+        title: "Forest Adventure",
+        prompt:
+          "happy kids and woodland animals on a forest path, big mushrooms and trees, sunny magical atmosphere, wholesome and playful",
+      },
+      {
+        title: "Space Friends",
+        prompt:
+          "cute astronauts and smiling planets in space, stars and nebula clouds, colorful dreamy scene, not scary, rounded shapes",
+      },
+      {
+        title: "Princess Garden",
+        prompt:
+          "kind princess and animal friends in a flower garden with a castle in background, spring colors, gentle fairy-tale mood",
+      },
+    ],
+    [],
+  );
+  const guidedCoverPrompt = useMemo(() => {
+    const mainCharacter = coverMainCharacter.trim();
+    const setting = coverSetting.trim();
+    const mood = coverMood.trim();
+    const details = coverExtraDetails.trim();
+    const promptParts = [
+      mainCharacter ? `Main characters: ${mainCharacter}.` : "",
+      setting ? `Scene: ${setting}.` : "",
+      mood ? `Mood/style: ${mood}.` : "",
+      details ? `Extra details: ${details}.` : "",
+      "Children's coloring-book cover composition, cute and wholesome, rounded shapes, clean outlines, centered layout, no logos, no watermarks.",
+    ].filter(Boolean);
+    return promptParts.join(" ");
+  }, [coverExtraDetails, coverMainCharacter, coverMood, coverSetting]);
+  const effectiveCoverPrompt = useMemo(() => {
+    const typedPrompt = coverPrompt.trim();
+    return typedPrompt.length >= 12 ? typedPrompt : guidedCoverPrompt.trim();
+  }, [coverPrompt, guidedCoverPrompt]);
+  const canGenerateCoverOptions = effectiveCoverPrompt.length >= 12;
   const clipboardRef = useRef<PageElement | null>(null);
   const [lastContextPos, setLastContextPos] = useState<{
     x: number;
@@ -234,6 +299,10 @@ export default function BookEditorV2({
     () => book.pages.find((p) => p.id === selectedPageId) ?? book.pages[0],
     [book.pages, selectedPageId],
   );
+  const selectedPageIndex = useMemo(
+    () => book.pages.findIndex((p) => p.id === selectedPageId),
+    [book.pages, selectedPageId],
+  );
 
   const selectedElement: PageElement | undefined = useMemo(() => {
     if (!selectedPage || !selectedElementId) return undefined;
@@ -266,8 +335,7 @@ export default function BookEditorV2({
     const mm =
       pageOrientation === "landscape" ? { w: base.h, h: base.w } : base;
     // Scale width relative to A3 for the active orientation
-    const BASE_W =
-      pageOrientation === "landscape" ? MM.A3.h : MM.A3.w;
+    const BASE_W = pageOrientation === "landscape" ? MM.A3.h : MM.A3.w;
     const pageSlots = isSingleMode ? 1 : 2;
     const spreadGutter = isSingleMode ? 0 : 24;
     const availableWidth = Math.max(0, containerWidth - spreadGutter);
@@ -294,8 +362,7 @@ export default function BookEditorV2({
   const fitZoom = useMemo(() => {
     const pageSlots = isSingleMode ? 1 : 2;
     if (pageWidth <= 0 || containerWidth <= 0) return 1;
-    const fit =
-      (containerWidth - 32) / Math.max(1, pageWidth * pageSlots);
+    const fit = (containerWidth - 32) / Math.max(1, pageWidth * pageSlots);
     return Math.max(0.1, fit);
   }, [containerWidth, pageWidth, isSingleMode]);
 
@@ -325,9 +392,25 @@ export default function BookEditorV2({
     [pageHeight, renderZoom],
   );
 
+  const getPagePaddingByIndex = useCallback(
+    (pageIndex: number) => {
+      if (!workAreaPaddingEnabled) return 0;
+      const isEdgePage = pageIndex === 0 || pageIndex === book.pages.length - 1;
+      return isEdgePage ? 0 : 24;
+    },
+    [book.pages.length, workAreaPaddingEnabled],
+  );
   const workAreaPadding = useMemo(
-    () => (workAreaPaddingEnabled ? 24 : 0),
-    [workAreaPaddingEnabled],
+    () => getPagePaddingByIndex(selectedPageIndex >= 0 ? selectedPageIndex : 0),
+    [getPagePaddingByIndex, selectedPageIndex],
+  );
+  const getPagePaddingById = useCallback(
+    (pageId: string) => {
+      const pageIndex = book.pages.findIndex((page) => page.id === pageId);
+      if (pageIndex < 0) return 0;
+      return getPagePaddingByIndex(pageIndex);
+    },
+    [book.pages, getPagePaddingByIndex],
   );
 
   // Work area sizes in logical page units (independent of zoom)
@@ -344,6 +427,24 @@ export default function BookEditorV2({
     () => Math.max(0, pageHeight - 2 * padUnits),
     [pageHeight, padUnits],
   );
+  const coverAspectRatio = useMemo<"3:4" | "4:3">(
+    () => (pageOrientation === "portrait" ? "3:4" : "4:3"),
+    [pageOrientation],
+  );
+
+  useEffect(() => {
+    setEditorAssets((prev) => {
+      const map = new Map(prev.map((asset) => [asset.id, asset]));
+      assets.forEach((asset) => map.set(asset.id, asset));
+      return Array.from(map.values());
+    });
+  }, [assets]);
+
+  useEffect(() => {
+    setCoverOptions([]);
+    setCoverError(null);
+    setCoverWizardView("form");
+  }, [coverTarget, coverAspectRatio]);
 
   const getCenteredPosition = useCallback(
     (width: number, height: number) => {
@@ -393,7 +494,7 @@ export default function BookEditorV2({
         throw new Error("No pages available for export");
       }
 
-      exportImagesAsPdf({
+      await exportImagesAsPdf({
         images,
         pageFormat,
         orientation: pageOrientation,
@@ -537,26 +638,21 @@ export default function BookEditorV2({
   ]);
 
   const addImage = useCallback(
-    (assetId: string, pos?: { x: number; y: number }) => {
+    (assetId: string) => {
       if (!selectedPage) return;
       pushHistory();
       const safeWidth = contentPageWidth || 360;
       const safeHeight = contentPageHeight || 240;
-      const base = Math.min(safeWidth, safeHeight);
-      const size = Math.min(Math.max(180, Math.round(base * 0.6)), base);
-      const centered = getCenteredPosition(size, size);
-      const maxX = Math.max(0, safeWidth - size);
-      const maxY = Math.max(0, safeHeight - size);
-      const x = Math.min(Math.max(pos?.x ?? centered.x, 0), maxX);
-      const y = Math.min(Math.max(pos?.y ?? centered.y, 0), maxY);
+      const isCoverPage =
+        selectedPageIndex === 0 || selectedPageIndex === book.pages.length - 1;
       const newImg: EditorImage = {
         id: generateId("img"),
         assetId,
-        x,
-        y,
-        width: size,
-        height: size,
-        fit: "contain",
+        x: 0,
+        y: 0,
+        width: safeWidth,
+        height: safeHeight,
+        fit: isCoverPage ? "cover" : "contain",
         rotation: 0,
         objectPosX: 50,
         objectPosY: 50,
@@ -582,7 +678,7 @@ export default function BookEditorV2({
       pushHistory,
       contentPageWidth,
       contentPageHeight,
-      getCenteredPosition,
+      selectedPageIndex,
     ],
   );
 
@@ -727,16 +823,17 @@ export default function BookEditorV2({
     (pageId: string, e: any) => {
       const el = pageRefs.current[pageId];
       if (!el) return null as { x: number; y: number } | null;
+      const pagePadding = getPagePaddingById(pageId);
       const rect = el.getBoundingClientRect();
       const clientX = (e?.clientX ?? e?.nativeEvent?.clientX ?? 0) as number;
       const clientY = (e?.clientY ?? e?.nativeEvent?.clientY ?? 0) as number;
       const localX = clientX - rect.left;
       const localY = clientY - rect.top;
-      const xPage = (localX - workAreaPadding) / Math.max(renderZoom, 0.0001);
-      const yPage = (localY - workAreaPadding) / Math.max(renderZoom, 0.0001);
+      const xPage = (localX - pagePadding) / Math.max(renderZoom, 0.0001);
+      const yPage = (localY - pagePadding) / Math.max(renderZoom, 0.0001);
       return { x: xPage, y: yPage };
     },
-    [pageRefs, workAreaPadding, renderZoom],
+    [getPagePaddingById, pageRefs, renderZoom],
   );
 
   const getElementIdFromEventTarget = useCallback((e: any) => {
@@ -829,16 +926,20 @@ export default function BookEditorV2({
     if (!hasMeasured) return;
     const prev = book;
     let changed = false;
-    const pages = prev.pages.map((p) => {
+    const pages = prev.pages.map((p, pageIndex) => {
+      const pagePadding = getPagePaddingByIndex(pageIndex);
+      const pagePadUnits = pagePadding / Math.max(renderZoom, 0.0001);
+      const pageContentWidth = Math.max(0, pageWidth - 2 * pagePadUnits);
+      const pageContentHeight = Math.max(0, pageHeight - 2 * pagePadUnits);
       const elements = p.elements.map((el) => {
         if (el.type === "text") {
-          const width = Math.min(Math.max(el.data.width, 20), contentPageWidth);
+          const width = Math.min(Math.max(el.data.width, 20), pageContentWidth);
           const height = Math.min(
             Math.max(el.data.height, 20),
-            contentPageHeight,
+            pageContentHeight,
           );
-          const maxX = Math.max(0, contentPageWidth - width);
-          const maxY = Math.max(0, contentPageHeight - height);
+          const maxX = Math.max(0, pageContentWidth - width);
+          const maxY = Math.max(0, pageContentHeight - height);
           const x = Math.min(Math.max(el.data.x, 0), maxX);
           const y = Math.min(Math.max(el.data.y, 0), maxY);
           if (
@@ -858,14 +959,14 @@ export default function BookEditorV2({
         if (el.type === "image") {
           const rotation = (el.data.rotation || 0) % 360;
           const isQuarter = Math.abs(rotation) % 180 !== 0;
-          const maxWidth = isQuarter ? contentPageHeight : contentPageWidth;
-          const maxHeight = isQuarter ? contentPageWidth : contentPageHeight;
+          const maxWidth = isQuarter ? pageContentHeight : pageContentWidth;
+          const maxHeight = isQuarter ? pageContentWidth : pageContentHeight;
           const width = Math.min(Math.max(el.data.width, 20), maxWidth);
           const height = Math.min(Math.max(el.data.height, 20), maxHeight);
           const rotatedWidth = isQuarter ? height : width;
           const rotatedHeight = isQuarter ? width : height;
-          const maxX = Math.max(0, contentPageWidth - rotatedWidth);
-          const maxY = Math.max(0, contentPageHeight - rotatedHeight);
+          const maxX = Math.max(0, pageContentWidth - rotatedWidth);
+          const maxY = Math.max(0, pageContentHeight - rotatedHeight);
           const x = Math.min(Math.max(el.data.x, 0), maxX);
           const y = Math.min(Math.max(el.data.y, 0), maxY);
           if (
@@ -889,7 +990,15 @@ export default function BookEditorV2({
     if (changed) {
       setBook({ ...prev, pages });
     }
-  }, [book, contentPageWidth, contentPageHeight, setBook, hasMeasured]);
+  }, [
+    book,
+    getPagePaddingByIndex,
+    hasMeasured,
+    pageHeight,
+    pageWidth,
+    renderZoom,
+    setBook,
+  ]);
 
   const removeElement = useCallback(
     (elementId: string) => {
@@ -1045,10 +1154,7 @@ export default function BookEditorV2({
 
   // Using react-rnd for drag/resize interactions
 
-  const currentPageIndex = useMemo(
-    () => book.pages.findIndex((p) => p.id === selectedPage?.id) ?? 0,
-    [book.pages, selectedPage],
-  );
+  const currentPageIndex = selectedPageIndex >= 0 ? selectedPageIndex : 0;
 
   const flipToSelected = useCallback(() => {
     bookRef.current?.turnToPage(currentPageIndex);
@@ -1063,13 +1169,324 @@ export default function BookEditorV2({
     [book.pages],
   );
 
+  const openCoverWizard = useCallback(() => {
+    setCoverError(null);
+    setCoverWizardView(coverOptions.length > 0 ? "results" : "form");
+    setCoverDialogOpen(true);
+  }, [coverOptions.length]);
+
+  const onCoverDialogChange = useCallback(
+    (open: boolean) => {
+      setCoverDialogOpen(open);
+      if (open) {
+        setCoverWizardView(coverOptions.length > 0 ? "results" : "form");
+      }
+    },
+    [coverOptions.length],
+  );
+
+  const generateCoverOptions = useCallback(async () => {
+    if (!isPaidUser) {
+      setCoverError("Cover generation is available on paid plans only.");
+      setCoverWizardView("form");
+      toast.error("Upgrade required for cover generation");
+      return;
+    }
+
+    if (!canGenerateCoverOptions) {
+      setCoverError(
+        "Add a prompt, or fill the guided fields so we can build your cover prompt.",
+      );
+      setCoverWizardView("form");
+      return;
+    }
+
+    setIsGeneratingCovers(true);
+    setCoverError(null);
+    setCoverWizardView("loading");
+
+    try {
+      const response = await fetch("/api/books/cover-assets", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          target: coverTarget,
+          prompt: effectiveCoverPrompt,
+          titleText: coverTitleText.trim(),
+          aspectRatio: coverAspectRatio,
+        }),
+      });
+
+      const payload = (await response.json().catch(() => null)) as {
+        error?: string;
+        options?: Array<{ id: string; url: string; name?: string }>;
+      } | null;
+
+      if (!response.ok) {
+        throw new Error(
+          payload?.error ||
+            "Failed to generate cover options. Please try again.",
+        );
+      }
+
+      const normalized = (payload?.options || [])
+        .filter(
+          (option) =>
+            typeof option?.id === "string" && typeof option?.url === "string",
+        )
+        .map((option, index) => ({
+          id: option.id,
+          url: option.url,
+          name:
+            option.name ||
+            `${coverTarget === "front" ? "Front" : "Back"} cover option ${index + 1}`,
+        }));
+
+      if (normalized.length === 0) {
+        throw new Error("No cover options were returned.");
+      }
+
+      setCoverOptions(normalized);
+      setCoverWizardView("results");
+
+      toast.success("Cover options generated");
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to generate cover options.";
+      setCoverError(message);
+      setCoverWizardView("form");
+      toast.error(message);
+    } finally {
+      setIsGeneratingCovers(false);
+    }
+  }, [
+    coverAspectRatio,
+    coverPrompt,
+    coverTarget,
+    coverTitleText,
+    canGenerateCoverOptions,
+    effectiveCoverPrompt,
+    isPaidUser,
+  ]);
+
+  const applyCoverOption = useCallback(
+    async (asset: AssetItem) => {
+      setCoverError(null);
+      setSavingCoverOptionId(asset.id);
+
+      let persistedAsset: AssetItem = asset;
+      try {
+        if (asset.id.startsWith("temp-cover-option-")) {
+          const response = await fetch("/api/books/cover-assets/select", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              imageUrl: asset.url,
+              target: coverTarget,
+            }),
+          });
+
+          const payload = (await response.json().catch(() => null)) as {
+            error?: string;
+            asset?: { id: string; url: string; name?: string };
+          } | null;
+
+          if (!response.ok || !payload?.asset?.id || !payload.asset.url) {
+            throw new Error(
+              payload?.error || "Failed to save selected cover option.",
+            );
+          }
+
+          persistedAsset = {
+            id: payload.asset.id,
+            url: payload.asset.url,
+            name: payload.asset.name || asset.name,
+          };
+
+          setEditorAssets((prev) => {
+            const map = new Map(prev.map((item) => [item.id, item]));
+            map.set(persistedAsset.id, persistedAsset);
+            return Array.from(map.values());
+          });
+          setCoverOptions((prev) =>
+            prev.map((option) =>
+              option.id === asset.id ? persistedAsset : option,
+            ),
+          );
+        }
+
+        const targetIsBack = coverTarget === "back";
+        const nextPages = book.pages.map((page) => ({
+          ...page,
+          elements: [...page.elements],
+        }));
+
+        if (nextPages.length === 0) {
+          nextPages.push({ id: generateId("page"), elements: [] });
+        }
+        let pageIndex = 0;
+        if (targetIsBack) {
+          if (nextPages.length === 1) {
+            nextPages.push({ id: generateId("page"), elements: [] });
+          }
+          pageIndex = nextPages.length - 1;
+        } else {
+          const firstPage = nextPages[0];
+          const hasFrontCoverOnFirstPage = firstPage?.elements.some(
+            (el) => el.type === "image" && el.data.coverRole === "front",
+          );
+          if (!hasFrontCoverOnFirstPage) {
+            nextPages.unshift({ id: generateId("page"), elements: [] });
+          }
+          pageIndex = 0;
+        }
+
+        const targetPage = nextPages[pageIndex];
+        if (!targetPage) return;
+        const targetPagePadding = getPagePaddingByIndex(pageIndex);
+        const targetPadUnits = targetPagePadding / Math.max(renderZoom, 0.0001);
+        const targetContentPageWidth = Math.max(
+          0,
+          pageWidth - 2 * targetPadUnits,
+        );
+        const targetContentPageHeight = Math.max(
+          0,
+          pageHeight - 2 * targetPadUnits,
+        );
+
+        const coverTitlePrefix = `cover_title_${coverTarget}_`;
+        const nextElements = targetPage.elements.filter(
+          (el) =>
+            !(
+              (el.type === "image" && el.data.coverRole === coverTarget) ||
+              (el.type === "text" && el.data.id.startsWith(coverTitlePrefix))
+            ),
+        );
+
+        const imageId = generateId("img");
+        const coverImage: EditorImage = {
+          id: imageId,
+          assetId: persistedAsset.id,
+          x: 0,
+          y: 0,
+          width: Math.max(20, Math.round(targetContentPageWidth)),
+          height: Math.max(20, Math.round(targetContentPageHeight)),
+          fit: "cover",
+          rotation: 0,
+          objectPosX: 50,
+          objectPosY: 50,
+          coverRole: coverTarget,
+        };
+
+        const titleText = coverTitleText.trim();
+        if (titleText) {
+          const titleWidth = Math.max(
+            200,
+            Math.round(targetContentPageWidth * 0.9),
+          );
+          const titleHeight = Math.max(
+            54,
+            Math.round(targetContentPageHeight * 0.16),
+          );
+          const titleX = Math.max(
+            0,
+            Math.round((targetContentPageWidth - titleWidth) / 2),
+          );
+          const titleY = Math.max(
+            0,
+            Math.round(targetContentPageHeight * 0.04),
+          );
+          const titleBox: EditorTextBox = {
+            id: `${coverTitlePrefix}${generateId("txt")}`,
+            x: titleX,
+            y: titleY,
+            width: titleWidth,
+            height: titleHeight,
+            text: titleText,
+            richText: plainTextToRichText(titleText),
+            fontSize: Math.max(24, Math.round(targetContentPageWidth * 0.06)),
+            bold: true,
+            italic: false,
+            underline: false,
+            fontFamily: "Geist",
+            textAlign: "center",
+            verticalAlign: "middle",
+            fontColor: "#111827",
+            backgroundColor: "rgba(255,255,255,0.7)",
+            borderColor: "transparent",
+            borderWidth: 0,
+            borderRadius: 10,
+            holderShape: "none",
+            boxShadow: "none",
+            padding: 8,
+            chatBubble: undefined,
+          };
+          nextElements.push({ type: "text", data: titleBox });
+        }
+
+        nextPages[pageIndex] = {
+          ...targetPage,
+          elements: [{ type: "image", data: coverImage }, ...nextElements],
+        };
+
+        pushHistory();
+        setBook({
+          ...book,
+          pages: nextPages,
+        });
+
+        setSelectedPageId(targetPage.id);
+        setSelectedElementId(imageId);
+        setEditingElementId(null);
+        setCoverDialogOpen(false);
+
+        requestAnimationFrame(() => {
+          bookRef.current?.turnToPage(pageIndex);
+        });
+
+        toast.success(
+          `${targetIsBack ? "Back cover" : "Front cover"} applied to the book.`,
+        );
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Failed to apply selected cover option.";
+        setCoverError(message);
+        toast.error(message);
+      } finally {
+        setSavingCoverOptionId(null);
+      }
+    },
+    [
+      book,
+      coverTarget,
+      getPagePaddingByIndex,
+      pageHeight,
+      pageWidth,
+      pushHistory,
+      renderZoom,
+      setBook,
+      coverTitleText,
+      setCoverOptions,
+      setCoverDialogOpen,
+      setEditorAssets,
+    ],
+  );
+
   const filteredAssets = useMemo(() => {
     const query = assetQuery.trim().toLowerCase();
-    if (!query) return assets;
-    return assets.filter((a) =>
+    if (!query) return editorAssets;
+    return editorAssets.filter((a) =>
       (a.name || a.id).toLowerCase().includes(query),
     );
-  }, [assets, assetQuery]);
+  }, [editorAssets, assetQuery]);
 
   // Asset thumbnail with big preview tooltip and loading spinner
   function AssetTile({
@@ -1086,7 +1503,7 @@ export default function BookEditorV2({
       <Tooltip>
         <TooltipTrigger asChild>
           <button
-            className="group relative aspect-square overflow-hidden rounded-xl border bg-white shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 dark:bg-slate-900/80"
+            className="focus-visible:ring-primary/40 group relative aspect-square overflow-hidden rounded-xl border bg-white shadow-sm transition duration-200 hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 dark:bg-slate-900/80"
             onClick={onClick}
             title={asset.name || "Add image to page"}
           >
@@ -1153,7 +1570,9 @@ export default function BookEditorV2({
           <Label className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
             Selection
           </Label>
-          <span className="text-xs text-muted-foreground">Delete / Backspace</span>
+          <span className="text-xs text-muted-foreground">
+            Delete / Backspace
+          </span>
         </div>
         <Button
           variant="destructive"
@@ -1300,7 +1719,7 @@ export default function BookEditorV2({
 
   const documentInspectorContent = (
     <div className="space-y-4 text-sm">
-      <div className="rounded-2xl border bg-muted/20 p-4">
+      <div className="bg-muted/20 rounded-2xl border p-4">
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
           Summary
         </p>
@@ -1378,21 +1797,6 @@ export default function BookEditorV2({
           </Button>
         </div>
       </div>
-
-      <div className="rounded-2xl border bg-white/70 p-4 dark:bg-slate-900/70">
-        <div className="flex items-center justify-between">
-          <Label className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
-            Work Area
-          </Label>
-          <Switch
-            checked={workAreaPaddingEnabled}
-            onCheckedChange={setWorkAreaPaddingEnabled}
-          />
-        </div>
-        <p className="mt-2 text-xs text-muted-foreground">
-          {workAreaPaddingEnabled ? "Padding 24px enabled." : "Padding disabled."}
-        </p>
-      </div>
     </div>
   );
 
@@ -1415,7 +1819,7 @@ export default function BookEditorV2({
             </div>
             <div className="flex flex-wrap items-center gap-3">
               <Input
-                className="h-11 w-full max-w-md rounded-2xl border border-transparent bg-white/80 px-4 text-base font-semibold shadow-sm focus-visible:border-primary/40 focus-visible:ring-0 dark:border-slate-800/80 dark:bg-slate-900/70 dark:text-foreground dark:placeholder:text-muted-foreground sm:text-lg"
+                className="focus-visible:border-primary/40 h-11 w-full max-w-md rounded-2xl border border-transparent bg-white/80 px-4 text-base font-semibold shadow-sm focus-visible:ring-0 dark:border-slate-800/80 dark:bg-slate-900/70 dark:text-foreground dark:placeholder:text-muted-foreground sm:text-lg"
                 value={book.title}
                 onChange={(e) => setBook({ ...book, title: e.target.value })}
                 placeholder="Book title"
@@ -1434,6 +1838,15 @@ export default function BookEditorV2({
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant={isPaidUser ? "secondary" : "outline"}
+              className="h-10 rounded-xl px-3 text-xs sm:text-sm"
+              onClick={openCoverWizard}
+              disabled={Boolean(savingCoverOptionId)}
+            >
+              <Icons.bookOpen className="mr-1 h-3.5 w-3.5" />
+              Cover Wizard
+            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -1572,7 +1985,7 @@ export default function BookEditorV2({
                 <Icons.chevronLeft className="mr-1 h-3 w-3 sm:mr-2 sm:h-4 sm:w-4" />
                 <span className="hidden sm:inline">Prev</span>
               </Button>
-              <div className="rounded-full bg-muted/60 px-3 py-1 text-xs font-medium text-muted-foreground">
+              <div className="bg-muted/60 rounded-full px-3 py-1 text-xs font-medium text-muted-foreground">
                 Page {currentPageIndex + 1} of {book.pages.length}
               </div>
               <Button
@@ -1651,7 +2064,7 @@ export default function BookEditorV2({
                   variant="outline"
                   className="rounded-full px-2 py-0.5 text-[10px] uppercase tracking-[0.2em]"
                 >
-                  {assets.length} items
+                  {editorAssets.length} items
                 </Badge>
               </div>
               <Input
@@ -1665,7 +2078,7 @@ export default function BookEditorV2({
                   <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-2">
                     {filteredAssets.length === 0 ? (
                       <p className="col-span-2 text-xs text-muted-foreground sm:col-span-3 lg:col-span-2">
-                        {assets.length === 0
+                        {editorAssets.length === 0
                           ? "No creations yet. Generate images first."
                           : "No matching assets."}
                       </p>
@@ -1693,7 +2106,9 @@ export default function BookEditorV2({
               <CardContent className="space-y-3 p-3">
                 <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-foreground">Canvas</span>
+                    <span className="font-semibold text-foreground">
+                      Canvas
+                    </span>
                     <Badge
                       variant="outline"
                       className="rounded-full px-2 py-0.5 text-[10px] uppercase tracking-[0.2em]"
@@ -1709,7 +2124,7 @@ export default function BookEditorV2({
                   ref={viewportRef}
                   className="flex min-w-0 justify-center overflow-hidden rounded-2xl bg-gradient-to-b from-slate-50 to-white p-3 dark:from-slate-900 dark:to-slate-950"
                 >
-                  <div className="min-w-0 w-full max-w-full">
+                  <div className="w-full min-w-0 max-w-full">
                     <SimpleFlipBook
                       ref={bookRef as any}
                       width={displayWidth}
@@ -1731,299 +2146,329 @@ export default function BookEditorV2({
                       }}
                       className="mx-auto shadow-2xl ring-1 ring-black/10"
                     >
-                      {book.pages.map((page, pageIndex) => (
-                        <div key={page.id} className="bg-white">
-                          <ContextMenu>
-                            <ContextMenuTrigger asChild>
-                              <div
-                                ref={(el) => {
-                                  pageRefs.current[page.id] = el;
-                                }}
-                                data-export-page-root="true"
-                                className="relative overflow-hidden rounded-md border bg-white shadow-sm"
-                                style={{
-                                  height: displayHeight,
-                                  width: displayWidth,
-                                  padding: 0,
-                                }}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedPageId(page.id);
-                                }}
-                                onContextMenu={(e) => {
-                                  const id = getElementIdFromEventTarget(
-                                    e as any,
-                                  );
-                                  if (id) setSelectedElementId(id);
-                                  setSelectedPageId(page.id);
-                                  setLastContextPageId(page.id);
-                                  const pos = getPagePosFromEvent(
-                                    page.id,
-                                    e as any,
-                                  );
-                                  if (pos) setLastContextPos(pos);
-                                }}
-                              >
-                                {page.id === selectedPageId ? (
-                                  <div
-                                    className="pointer-events-none absolute inset-0 rounded-md border-2 border-dashed border-amber-400"
-                                    style={{
-                                      top: workAreaPadding,
-                                      left: workAreaPadding,
-                                      right: workAreaPadding,
-                                      bottom: workAreaPadding,
-                                    }}
-                                    data-ignore-export="true"
-                                  />
-                                ) : null}
+                      {book.pages.map((page, pageIndex) => {
+                        const pagePadding = getPagePaddingByIndex(pageIndex);
+                        const pagePadUnits =
+                          pagePadding / Math.max(renderZoom, 0.0001);
+                        const pageContentWidth = Math.max(
+                          0,
+                          pageWidth - 2 * pagePadUnits,
+                        );
+                        const pageContentHeight = Math.max(
+                          0,
+                          pageHeight - 2 * pagePadUnits,
+                        );
+
+                        return (
+                          <div key={page.id} className="bg-white">
+                            <ContextMenu>
+                              <ContextMenuTrigger asChild>
                                 <div
-                                  className={`pointer-events-none absolute bottom-1 ${
-                                    (pageIndex + 1) % 2 === 0
-                                      ? "left-2"
-                                      : "right-2"
-                                  } rounded bg-white/80 px-1.5 py-0.5 text-[10px] font-medium text-neutral-700 shadow-sm`}
-                                  style={{
-                                    bottom: workAreaPadding + 2,
-                                    left:
-                                      (pageIndex + 1) % 2 === 0
-                                        ? workAreaPadding + 8
-                                        : undefined,
-                                    right:
-                                      (pageIndex + 1) % 2 !== 0
-                                        ? workAreaPadding + 8
-                                        : undefined,
+                                  ref={(el) => {
+                                    pageRefs.current[page.id] = el;
                                   }}
-                                  data-ignore-export="true"
+                                  data-export-page-root="true"
+                                  className="relative overflow-hidden bg-white"
+                                  style={{
+                                    height: displayHeight,
+                                    width: displayWidth,
+                                    padding: 0,
+                                  }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedPageId(page.id);
+                                  }}
+                                  onContextMenu={(e) => {
+                                    const id = getElementIdFromEventTarget(
+                                      e as any,
+                                    );
+                                    if (id) setSelectedElementId(id);
+                                    setSelectedPageId(page.id);
+                                    setLastContextPageId(page.id);
+                                    const pos = getPagePosFromEvent(
+                                      page.id,
+                                      e as any,
+                                    );
+                                    if (pos) setLastContextPos(pos);
+                                  }}
                                 >
-                                  Page {pageIndex + 1}
-                                </div>
+                                  <div className="relative h-full w-full">
+                                    <div
+                                      ref={stageRef}
+                                      className="absolute"
+                                      style={{
+                                        top: pagePadding,
+                                        left: pagePadding,
+                                        width: Math.max(
+                                          0,
+                                          Math.round(
+                                            pageContentWidth * renderZoom,
+                                          ),
+                                        ),
+                                        height: Math.max(
+                                          0,
+                                          Math.round(
+                                            pageContentHeight * renderZoom,
+                                          ),
+                                        ),
+                                      }}
+                                    >
+                                      {page.elements.map((el) => {
+                                        if (el.type === "image") {
+                                          const imgEl = el.data as EditorImage;
+                                          const asset = editorAssets.find(
+                                            (a) => a.id === imgEl.assetId,
+                                          );
+                                          if (!asset?.url) return null;
+                                          const rot =
+                                            (imgEl.rotation || 0) % 360;
+                                          const w = imgEl.width;
+                                          const h = imgEl.height;
+                                          const x = imgEl.x;
+                                          const y = imgEl.y;
+                                          const selected =
+                                            selectedElementId === imgEl.id &&
+                                            selectedPageId === page.id;
 
-                                <div className="relative h-full w-full">
-                                  <div
-                                    ref={stageRef}
-                                    className="absolute"
-                                    style={{
-                                      top: workAreaPadding,
-                                      left: workAreaPadding,
-                                      width: Math.max(
-                                        0,
-                                        Math.round(contentPageWidth * renderZoom),
-                                      ),
-                                      height: Math.max(
-                                        0,
-                                        Math.round(contentPageHeight * renderZoom),
-                                      ),
-                                    }}
-                                  >
-                                    {page.elements.map((el) => {
-                                      if (el.type === "image") {
-                                        const imgEl = el.data as EditorImage;
-                                        const asset = assets.find(
-                                          (a) => a.id === imgEl.assetId,
-                                        );
-                                        if (!asset?.url) return null;
-                                        const rot = (imgEl.rotation || 0) % 360;
-                                        const w = imgEl.width;
-                                        const h = imgEl.height;
-                                        const x = imgEl.x;
-                                        const y = imgEl.y;
-                                        const selected =
-                                          selectedElementId === imgEl.id &&
-                                          selectedPageId === page.id;
-
-                                        return (
-                                          <Rnd
-                                            key={imgEl.id}
-                                            position={{
-                                              x: Math.round(x * renderZoom),
-                                              y: Math.round(y * renderZoom),
-                                            }}
-                                            size={{
-                                              width: Math.round(w * renderZoom),
-                                              height: Math.round(h * renderZoom),
-                                            }}
-                                            bounds="parent"
-                                            enableResizing={selected}
-                                            minWidth={20 * renderZoom}
-                                            minHeight={20 * renderZoom}
-                                            onDragStart={() => {
-                                              pushHistory();
-                                              setSelectedPageId(page.id);
-                                              setSelectedElementId(imgEl.id);
-                                            }}
-                                            onDrag={(e, data) => {
-                                              updateElementPosition(
-                                                imgEl.id,
-                                                data.x / renderZoom,
-                                                data.y / renderZoom,
-                                              );
-                                            }}
-                                            onResizeStart={() => {
-                                              pushHistory();
-                                              setSelectedPageId(page.id);
-                                              setSelectedElementId(imgEl.id);
-                                            }}
-                                            onResize={(e, direction, ref, delta, pos) => {
-                                              updateElementData(imgEl.id, {
-                                                x: pos.x / renderZoom,
-                                                y: pos.y / renderZoom,
-                                                width: ref.offsetWidth / renderZoom,
-                                                height: ref.offsetHeight / renderZoom,
-                                              });
-                                            }}
-                                            onMouseDown={(e) => e.stopPropagation()}
-                                            onTouchStart={(e) => e.stopPropagation()}
-                                            onClick={() => {
-                                              setSelectedPageId(page.id);
-                                              setSelectedElementId(imgEl.id);
-                                            }}
-                                            onDoubleClick={() => {
-                                              setSelectedPageId(page.id);
-                                              setSelectedElementId(imgEl.id);
-                                            }}
-                                            data-element-id={imgEl.id}
-                                          >
-                                            <div
-                                              className={`group h-full w-full border ${
-                                                selected
-                                                  ? "border-amber-500"
-                                                  : "border-transparent"
-                                              }`}
-                                              style={{
-                                                transform: `rotate(${rot}deg)`,
-                                                transformOrigin: "center",
+                                          return (
+                                            <Rnd
+                                              key={imgEl.id}
+                                              position={{
+                                                x: Math.round(x * renderZoom),
+                                                y: Math.round(y * renderZoom),
                                               }}
-                                              title="Drag to position image"
+                                              size={{
+                                                width: Math.round(
+                                                  w * renderZoom,
+                                                ),
+                                                height: Math.round(
+                                                  h * renderZoom,
+                                                ),
+                                              }}
+                                              bounds="parent"
+                                              enableResizing={selected}
+                                              minWidth={20 * renderZoom}
+                                              minHeight={20 * renderZoom}
+                                              onDragStart={() => {
+                                                pushHistory();
+                                                setSelectedPageId(page.id);
+                                                setSelectedElementId(imgEl.id);
+                                              }}
+                                              onDrag={(e, data) => {
+                                                updateElementPosition(
+                                                  imgEl.id,
+                                                  data.x / renderZoom,
+                                                  data.y / renderZoom,
+                                                );
+                                              }}
+                                              onResizeStart={() => {
+                                                pushHistory();
+                                                setSelectedPageId(page.id);
+                                                setSelectedElementId(imgEl.id);
+                                              }}
+                                              onResize={(
+                                                e,
+                                                direction,
+                                                ref,
+                                                delta,
+                                                pos,
+                                              ) => {
+                                                updateElementData(imgEl.id, {
+                                                  x: pos.x / renderZoom,
+                                                  y: pos.y / renderZoom,
+                                                  width:
+                                                    ref.offsetWidth /
+                                                    renderZoom,
+                                                  height:
+                                                    ref.offsetHeight /
+                                                    renderZoom,
+                                                });
+                                              }}
+                                              onMouseDown={(e) =>
+                                                e.stopPropagation()
+                                              }
+                                              onTouchStart={(e) =>
+                                                e.stopPropagation()
+                                              }
+                                              onClick={() => {
+                                                setSelectedPageId(page.id);
+                                                setSelectedElementId(imgEl.id);
+                                              }}
+                                              onDoubleClick={() => {
+                                                setSelectedPageId(page.id);
+                                                setSelectedElementId(imgEl.id);
+                                              }}
+                                              data-element-id={imgEl.id}
                                             >
                                               <div
-                                                data-export-clean-frame="true"
-                                                className="relative h-full w-full overflow-hidden rounded border bg-white shadow-sm"
+                                                className={`group h-full w-full border ${
+                                                  selected
+                                                    ? "border-amber-500"
+                                                    : "border-transparent"
+                                                }`}
+                                                style={{
+                                                  transform: `rotate(${rot}deg)`,
+                                                  transformOrigin: "center",
+                                                }}
+                                                title="Drag to position image"
                                               >
-                                                <Image
-                                                  src={asset.url}
-                                                  alt={asset.name || "image"}
-                                                  fill
-                                                  sizes="256px"
-                                                  className={`pointer-events-none object-${
-                                                    imgEl.fit || "contain"
-                                                  }`}
-                                                  style={{
-                                                    objectPosition: `${imgEl.objectPosX ?? 50}% ${imgEl.objectPosY ?? 50}%`,
-                                                  }}
-                                                />
+                                                <div
+                                                  data-export-clean-frame="true"
+                                                  className="relative h-full w-full overflow-hidden bg-white"
+                                                >
+                                                  <Image
+                                                    src={asset.url}
+                                                    alt={asset.name || "image"}
+                                                    fill
+                                                    sizes="256px"
+                                                    className="pointer-events-none"
+                                                    style={{
+                                                      objectFit:
+                                                        imgEl.fit === "cover"
+                                                          ? "cover"
+                                                          : "contain",
+                                                      objectPosition: `${imgEl.objectPosX ?? 50}% ${imgEl.objectPosY ?? 50}%`,
+                                                    }}
+                                                  />
+                                                </div>
+                                                {selected ? (
+                                                  <div className="pointer-events-none absolute inset-0 border-2 border-amber-500" />
+                                                ) : null}
                                               </div>
-                                              {selected ? (
-                                                <div className="pointer-events-none absolute inset-0 rounded border-2 border-amber-500" />
-                                              ) : null}
-                                            </div>
-                                          </Rnd>
-                                        );
-                                      }
-                                      if (el.type === "text") {
-                                        return (
-                                          <TextBoxRnd
-                                            key={el.data.id}
-                                            element={el.data as EditorTextBox}
-                                            zoom={renderZoom}
-                                            bounds="parent"
-                                            isSelected={
-                                              selectedElementId === el.data.id &&
-                                              selectedPageId === page.id
-                                            }
-                                            isEditing={
-                                              editingElementId === el.data.id
-                                            }
-                                            onFocusEdit={() =>
-                                              setEditingElementId(el.data.id)
-                                            }
-                                            onBlurEdit={() =>
-                                              setEditingElementId(null)
-                                            }
-                                            onSelect={() => {
-                                              setSelectedPageId(page.id);
-                                              setSelectedElementId(el.data.id);
-                                            }}
-                                            onDoubleClickToEdit={() => {
-                                              setSelectedPageId(page.id);
-                                              setSelectedElementId(el.data.id);
-                                              setEditingElementId(el.data.id);
-                                            }}
-                                            onDragStart={() => {
-                                              pushHistory();
-                                              setSelectedPageId(page.id);
-                                              setSelectedElementId(el.data.id);
-                                            }}
-                                            onDragTo={(x, y) =>
-                                              updateElementPosition(el.data.id, x, y)
-                                            }
-                                            onResizeTo={(x, y, width, height) =>
-                                              updateElementData(el.data.id, {
+                                            </Rnd>
+                                          );
+                                        }
+                                        if (el.type === "text") {
+                                          return (
+                                            <TextBoxRnd
+                                              key={el.data.id}
+                                              element={el.data as EditorTextBox}
+                                              zoom={renderZoom}
+                                              bounds="parent"
+                                              isSelected={
+                                                selectedElementId ===
+                                                  el.data.id &&
+                                                selectedPageId === page.id
+                                              }
+                                              isEditing={
+                                                editingElementId === el.data.id
+                                              }
+                                              onFocusEdit={() =>
+                                                setEditingElementId(el.data.id)
+                                              }
+                                              onBlurEdit={() =>
+                                                setEditingElementId(null)
+                                              }
+                                              onSelect={() => {
+                                                setSelectedPageId(page.id);
+                                                setSelectedElementId(
+                                                  el.data.id,
+                                                );
+                                              }}
+                                              onDoubleClickToEdit={() => {
+                                                setSelectedPageId(page.id);
+                                                setSelectedElementId(
+                                                  el.data.id,
+                                                );
+                                                setEditingElementId(el.data.id);
+                                              }}
+                                              onDragStart={() => {
+                                                pushHistory();
+                                                setSelectedPageId(page.id);
+                                                setSelectedElementId(
+                                                  el.data.id,
+                                                );
+                                              }}
+                                              onDragTo={(x, y) =>
+                                                updateElementPosition(
+                                                  el.data.id,
+                                                  x,
+                                                  y,
+                                                )
+                                              }
+                                              onResizeTo={(
                                                 x,
                                                 y,
                                                 width,
                                                 height,
-                                              })
-                                            }
-                                            onChangeText={(text, richText) =>
-                                              updateText(el.data.id, text, richText)
-                                            }
-                                            onRemove={() =>
-                                              removeElement(el.data.id)
-                                            }
-                                          />
-                                        );
-                                      }
-                                      return null;
-                                    })}
+                                              ) =>
+                                                updateElementData(el.data.id, {
+                                                  x,
+                                                  y,
+                                                  width,
+                                                  height,
+                                                })
+                                              }
+                                              onChangeText={(text, richText) =>
+                                                updateText(
+                                                  el.data.id,
+                                                  text,
+                                                  richText,
+                                                )
+                                              }
+                                              onRemove={() =>
+                                                removeElement(el.data.id)
+                                              }
+                                            />
+                                          );
+                                        }
+                                        return null;
+                                      })}
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            </ContextMenuTrigger>
-                            <ContextMenuContent>
-                              {selectedElement && selectedPageId === page.id ? (
+                              </ContextMenuTrigger>
+                              <ContextMenuContent>
+                                {selectedElement &&
+                                selectedPageId === page.id ? (
+                                  <ContextMenuItem
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      copyElement(selectedElement);
+                                    }}
+                                  >
+                                    Copy
+                                  </ContextMenuItem>
+                                ) : null}
                                 <ContextMenuItem
+                                  disabled={!clipboardRef.current}
                                   onClick={(e) => {
                                     e.preventDefault();
-                                    copyElement(selectedElement);
+                                    pasteClipboard(
+                                      lastContextPos ?? undefined,
+                                      page.id,
+                                    );
                                   }}
                                 >
-                                  Copy
+                                  Paste
                                 </ContextMenuItem>
-                              ) : null}
-                              <ContextMenuItem
-                                disabled={!clipboardRef.current}
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  pasteClipboard(lastContextPos ?? undefined, page.id);
-                                }}
-                              >
-                                Paste
-                              </ContextMenuItem>
-                              {selectedElement && selectedPageId === page.id ? (
-                                <>
-                                  <ContextMenuSeparator />
-                                  <ContextMenuItem
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      duplicateSelected();
-                                    }}
-                                  >
-                                    Duplicate
-                                  </ContextMenuItem>
-                                  <ContextMenuItem
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      removeElement(selectedElement.data.id);
-                                    }}
-                                  >
-                                    Delete
-                                  </ContextMenuItem>
-                                </>
-                              ) : null}
-                            </ContextMenuContent>
-                          </ContextMenu>
-                        </div>
-                      ))}
+                                {selectedElement &&
+                                selectedPageId === page.id ? (
+                                  <>
+                                    <ContextMenuSeparator />
+                                    <ContextMenuItem
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        duplicateSelected();
+                                      }}
+                                    >
+                                      Duplicate
+                                    </ContextMenuItem>
+                                    <ContextMenuItem
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        removeElement(selectedElement.data.id);
+                                      }}
+                                    >
+                                      Delete
+                                    </ContextMenuItem>
+                                  </>
+                                ) : null}
+                              </ContextMenuContent>
+                            </ContextMenu>
+                          </div>
+                        );
+                      })}
                     </SimpleFlipBook>
                   </div>
                 </div>
@@ -2103,11 +2548,460 @@ export default function BookEditorV2({
                   {selectedElement ? "Selected" : "No selection"}
                 </Badge>
               </div>
-              {renderInspectorContent("h-[50vh] sm:h-[420px] xl:h-[calc(100vh-420px)]")}
+              {renderInspectorContent(
+                "h-[50vh] sm:h-[420px] xl:h-[calc(100vh-420px)]",
+              )}
             </CardContent>
           </Card>
         </div>
       </div>
+
+      <Dialog open={coverDialogOpen} onOpenChange={onCoverDialogChange}>
+        <DialogContent className="dashboard-theme max-h-[76vh] w-[92vw] max-w-[92vw] overflow-hidden p-0 md:w-[66vw] md:max-w-[66vw]">
+          <div className="flex max-h-[76vh] flex-col">
+            <div className="from-secondary/70 via-muted/50 to-accent/40 border-b bg-gradient-to-r px-4 py-3">
+              <DialogHeader>
+                <DialogTitle>Cover Wizard</DialogTitle>
+                <DialogDescription>
+                  3 steps: choose side, describe the scene, pick one generated
+                  cover.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="mt-3 flex flex-wrap items-center gap-2 text-[11px]">
+                <span
+                  className={`rounded-full border px-2 py-1 font-medium ${
+                    coverWizardView === "form"
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "bg-background/90 text-muted-foreground"
+                  }`}
+                >
+                  1. Setup
+                </span>
+                <span
+                  className={`rounded-full border px-2 py-1 font-medium ${
+                    coverWizardView === "form"
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "bg-background/90 text-muted-foreground"
+                  }`}
+                >
+                  2. Describe
+                </span>
+                <span
+                  className={`rounded-full border px-2 py-1 font-medium ${
+                    coverWizardView === "loading" ||
+                    coverWizardView === "results"
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "bg-background/90 text-muted-foreground"
+                  }`}
+                >
+                  3. Pick
+                </span>
+              </div>
+            </div>
+
+            {coverWizardView === "loading" ? (
+              <div className="flex h-[46vh] flex-col items-center justify-center gap-4 px-6 text-center sm:h-[48vh]">
+                <div className="border-primary/30 bg-primary/10 rounded-full border p-4">
+                  <Icons.spinner className="h-8 w-8 animate-spin text-primary" />
+                </div>
+                <div className="space-y-1">
+                  <p className="text-base font-semibold text-foreground">
+                    Generating cover options
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    This can take a few seconds. We will show results in this
+                    popup.
+                  </p>
+                </div>
+              </div>
+            ) : null}
+
+            {coverWizardView === "form" ? (
+              <>
+                <ScrollArea className="h-[46vh] px-4 py-4 sm:h-[48vh]">
+                  <div className="space-y-4 pb-2">
+                    <section className="space-y-3 rounded-2xl border bg-card p-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                        Step 1: Setup
+                      </p>
+                      <div className="space-y-2">
+                        <p className="text-xs text-muted-foreground">
+                          Cover side
+                        </p>
+                        <div className="bg-muted/40 grid grid-cols-2 gap-2 rounded-xl border p-1">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => setCoverTarget("front")}
+                            disabled={
+                              isGeneratingCovers || Boolean(savingCoverOptionId)
+                            }
+                            aria-pressed={coverTarget === "front"}
+                            className={
+                              coverTarget === "front"
+                                ? "ring-primary/30 h-9 border border-primary bg-primary font-semibold text-primary-foreground shadow-sm ring-2 hover:bg-primary"
+                                : "h-9 border border-transparent bg-transparent text-muted-foreground hover:bg-background"
+                            }
+                          >
+                            {coverTarget === "front" ? (
+                              <Icons.check className="mr-1 h-3.5 w-3.5" />
+                            ) : null}
+                            Front cover
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => setCoverTarget("back")}
+                            disabled={
+                              isGeneratingCovers || Boolean(savingCoverOptionId)
+                            }
+                            aria-pressed={coverTarget === "back"}
+                            className={
+                              coverTarget === "back"
+                                ? "ring-primary/30 h-9 border border-primary bg-primary font-semibold text-primary-foreground shadow-sm ring-2 hover:bg-primary"
+                                : "h-9 border border-transparent bg-transparent text-muted-foreground hover:bg-background"
+                            }
+                          >
+                            {coverTarget === "back" ? (
+                              <Icons.check className="mr-1 h-3.5 w-3.5" />
+                            ) : null}
+                            Back cover
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor="cover-title-text">
+                          Title text (optional)
+                        </Label>
+                        <Input
+                          id="cover-title-text"
+                          value={coverTitleText}
+                          onChange={(event) =>
+                            setCoverTitleText(event.target.value)
+                          }
+                          placeholder="My Magical Coloring Book"
+                          disabled={
+                            isGeneratingCovers ||
+                            Boolean(savingCoverOptionId) ||
+                            !isPaidUser
+                          }
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          We place this as editable text after you select a
+                          cover.
+                        </p>
+                      </div>
+                    </section>
+
+                    <section className="space-y-3 rounded-2xl border bg-card p-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                        Step 2: Describe
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Quick builder for non-designers. Fill what you know.
+                      </p>
+
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <div className="space-y-1 sm:col-span-2">
+                          <Label htmlFor="cover-main-character">
+                            Main characters
+                          </Label>
+                          <Input
+                            id="cover-main-character"
+                            value={coverMainCharacter}
+                            onChange={(event) =>
+                              setCoverMainCharacter(event.target.value)
+                            }
+                            placeholder="ex: two friendly ghosts and a sleeping cat"
+                            disabled={
+                              isGeneratingCovers ||
+                              Boolean(savingCoverOptionId) ||
+                              !isPaidUser
+                            }
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label htmlFor="cover-setting">Setting</Label>
+                          <Input
+                            id="cover-setting"
+                            value={coverSetting}
+                            onChange={(event) =>
+                              setCoverSetting(event.target.value)
+                            }
+                            placeholder="ex: cozy room with fireplace"
+                            disabled={
+                              isGeneratingCovers ||
+                              Boolean(savingCoverOptionId) ||
+                              !isPaidUser
+                            }
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label htmlFor="cover-mood">Mood and style</Label>
+                          <Input
+                            id="cover-mood"
+                            value={coverMood}
+                            onChange={(event) =>
+                              setCoverMood(event.target.value)
+                            }
+                            placeholder="ex: warm, cute, wholesome"
+                            disabled={
+                              isGeneratingCovers ||
+                              Boolean(savingCoverOptionId) ||
+                              !isPaidUser
+                            }
+                          />
+                        </div>
+                        <div className="space-y-1 sm:col-span-2">
+                          <Label htmlFor="cover-extra-details">
+                            Extra details (optional)
+                          </Label>
+                          <Textarea
+                            id="cover-extra-details"
+                            value={coverExtraDetails}
+                            onChange={(event) =>
+                              setCoverExtraDetails(event.target.value)
+                            }
+                            placeholder="props, decorations, composition hints..."
+                            className="min-h-[70px] resize-none"
+                            disabled={
+                              isGeneratingCovers ||
+                              Boolean(savingCoverOptionId) ||
+                              !isPaidUser
+                            }
+                          />
+                        </div>
+                      </div>
+
+                      {guidedCoverPrompt.trim().length > 0 ? (
+                        <div className="bg-muted/30 space-y-2 rounded-xl border p-3 text-xs">
+                          <p className="font-semibold text-foreground">
+                            Auto-generated prompt draft
+                          </p>
+                          <p className="text-muted-foreground">
+                            {guidedCoverPrompt}
+                          </p>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="w-full sm:w-auto"
+                            onClick={() => setCoverPrompt(guidedCoverPrompt)}
+                            disabled={
+                              isGeneratingCovers ||
+                              Boolean(savingCoverOptionId) ||
+                              !isPaidUser
+                            }
+                          >
+                            Copy draft to custom prompt
+                          </Button>
+                        </div>
+                      ) : null}
+
+                      <div className="space-y-1">
+                        <Label htmlFor="cover-prompt">
+                          Custom prompt (optional)
+                        </Label>
+                        <Textarea
+                          id="cover-prompt"
+                          value={coverPrompt}
+                          onChange={(event) =>
+                            setCoverPrompt(event.target.value)
+                          }
+                          placeholder="Optional: paste your own full prompt."
+                          className="min-h-[86px] resize-none"
+                          disabled={
+                            isGeneratingCovers ||
+                            Boolean(savingCoverOptionId) ||
+                            !isPaidUser
+                          }
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <p className="text-xs font-medium text-muted-foreground">
+                          Prompt examples
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          {coverPromptExamples.map((example) => (
+                            <button
+                              key={example.title}
+                              type="button"
+                              className="hover:border-primary/40 hover:bg-accent/50 rounded-full border bg-background px-3 py-1.5 text-xs font-medium text-foreground transition"
+                              onClick={() => setCoverPrompt(example.prompt)}
+                              disabled={
+                                isGeneratingCovers ||
+                                Boolean(savingCoverOptionId)
+                              }
+                            >
+                              {example.title}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </section>
+
+                    {coverError ? (
+                      <p className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-200">
+                        {coverError}
+                      </p>
+                    ) : null}
+
+                    {!canGenerateCoverOptions && isPaidUser ? (
+                      <p className="text-xs text-muted-foreground">
+                        Add a custom prompt or fill the quick-builder fields.
+                      </p>
+                    ) : null}
+                  </div>
+                </ScrollArea>
+
+                <div className="bg-background/95 supports-[backdrop-filter]:bg-background/75 border-t p-4 backdrop-blur">
+                  {isPaidUser ? (
+                    <Button
+                      onClick={generateCoverOptions}
+                      disabled={
+                        isGeneratingCovers ||
+                        Boolean(savingCoverOptionId) ||
+                        !canGenerateCoverOptions
+                      }
+                      className="w-full"
+                    >
+                      Generate cover options
+                    </Button>
+                  ) : (
+                    <Link
+                      href="/dashboard/billing"
+                      className={`${buttonVariants({ variant: "outline" })} w-full`}
+                    >
+                      Upgrade to unlock cover wizard
+                    </Link>
+                  )}
+                </div>
+              </>
+            ) : null}
+
+            {coverWizardView === "results" ? (
+              <>
+                <ScrollArea className="h-[46vh] px-4 py-4 sm:h-[48vh]">
+                  <div className="space-y-4 pb-2">
+                    <section className="space-y-3 rounded-2xl border bg-card p-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                        Step 3: Pick a cover
+                      </p>
+                      <div className="bg-muted/30 rounded-lg border px-3 py-2 text-xs text-muted-foreground">
+                        Destination:{" "}
+                        <span className="font-semibold text-foreground">
+                          {coverTarget === "front"
+                            ? "First page (front cover)"
+                            : "Last page (back cover)"}
+                        </span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Only the selected option is saved to your library.
+                      </p>
+                      {coverOptions.length === 0 ? (
+                        <div className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">
+                          No options available yet. Go back and generate again.
+                        </div>
+                      ) : (
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          {coverOptions.map((option) => (
+                            <div
+                              key={option.id}
+                              className="rounded-xl border bg-background p-2"
+                            >
+                              <div
+                                className="bg-muted/30 relative w-full overflow-hidden rounded-lg border"
+                                style={{
+                                  aspectRatio: coverAspectRatio.replace(
+                                    ":",
+                                    " / ",
+                                  ),
+                                }}
+                              >
+                                <Image
+                                  src={option.url}
+                                  alt={option.name || "Generated cover option"}
+                                  fill
+                                  sizes="340px"
+                                  className="object-cover"
+                                />
+                              </div>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="mt-2 w-full"
+                                disabled={Boolean(savingCoverOptionId)}
+                                onClick={() => void applyCoverOption(option)}
+                              >
+                                {savingCoverOptionId === option.id ? (
+                                  <>
+                                    <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+                                    Saving selected option...
+                                  </>
+                                ) : coverTarget === "front" ? (
+                                  "Add to first page"
+                                ) : (
+                                  "Add to last page"
+                                )}
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </section>
+
+                    {coverError ? (
+                      <p className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-200">
+                        {coverError}
+                      </p>
+                    ) : null}
+                  </div>
+                </ScrollArea>
+
+                <div className="bg-background/95 supports-[backdrop-filter]:bg-background/75 border-t p-4 backdrop-blur">
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    <Button
+                      variant="outline"
+                      className="w-full sm:flex-1"
+                      onClick={() => setCoverWizardView("form")}
+                      disabled={
+                        Boolean(savingCoverOptionId) || isGeneratingCovers
+                      }
+                    >
+                      Back to prompt
+                    </Button>
+                    {isPaidUser ? (
+                      <Button
+                        onClick={generateCoverOptions}
+                        disabled={
+                          isGeneratingCovers || Boolean(savingCoverOptionId)
+                        }
+                        className="w-full sm:flex-1"
+                      >
+                        {isGeneratingCovers ? (
+                          <>
+                            <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+                            Regenerating...
+                          </>
+                        ) : (
+                          "Generate new options"
+                        )}
+                      </Button>
+                    ) : (
+                      <Link
+                        href="/dashboard/billing"
+                        className={`${buttonVariants({ variant: "outline" })} w-full sm:flex-1`}
+                      >
+                        Upgrade to unlock cover wizard
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              </>
+            ) : null}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Sheet open={propertiesOpen} onOpenChange={setPropertiesOpen}>
         <SheetContent

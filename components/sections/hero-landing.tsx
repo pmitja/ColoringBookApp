@@ -7,36 +7,37 @@ import { Icons } from "@/components/shared/icons";
 
 export default function HeroLanding() {
   return (
-    <section className="relative overflow-hidden pb-10 pt-14 sm:pb-20 sm:pt-24">
+    <section className="relative overflow-hidden py-12 sm:pb-20 sm:pt-16">
       <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="animate-floaty absolute left-[-90px] top-[20px] size-[240px] rounded-full bg-[#ffd4a7]/70 blur-3xl" />
-        <div className="animate-floaty-slow absolute right-[-110px] top-[100px] size-[300px] rounded-full bg-[#d4f3ff]/80 blur-3xl" />
-        <div className="absolute left-[10%] top-[80%] size-5 rounded-full bg-[#ff9f7c]/70" />
-        <div className="absolute right-[22%] top-[13%] size-4 rounded-full bg-[#6ac4f0]/70" />
+        <div className="animate-floaty dark:bg-cyan-400/18 absolute left-[-90px] top-[10px] size-[260px] rounded-full bg-sky-300/30 blur-3xl" />
+        <div className="animate-floaty-slow dark:bg-orange-400/16 absolute right-[-110px] top-[90px] size-[320px] rounded-full bg-amber-300/30 blur-3xl" />
+        <div className="absolute left-[10%] top-[82%] size-5 rounded-full bg-emerald-300/70" />
+        <div className="absolute right-[18%] top-[15%] size-4 rounded-full bg-sky-400/70" />
       </div>
 
-      <div className="container max-w-6xl">
-        <div className="grid items-center gap-10 lg:grid-cols-[1.08fr_0.92fr]">
-          <div className="space-y-7 text-center lg:text-left">
+      <div className="container max-w-7xl">
+        <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr]">
+          <div className="animate-rise space-y-7 text-center lg:text-left">
             <div
               className={cn(
-                "playful-pill inline-flex items-center gap-2 text-xs uppercase tracking-[0.22em]",
+                "playful-pill inline-flex items-center gap-2 text-xs uppercase tracking-[0.24em]",
               )}
             >
-              Storybook Mode On
+              Family-Safe Creative Flow
             </div>
 
             <h1 className="font-heading text-balance text-4xl leading-tight sm:text-5xl md:text-6xl">
               Turn your favorite moments into{" "}
               <span className="text-gradient_indigo-purple font-extrabold">
-                playful coloring adventures
+                printable coloring adventures
               </span>
               .
             </h1>
 
-            <p className="max-w-xl text-balance text-base leading-relaxed text-muted-foreground sm:text-xl">
-              Upload a photo, choose a style, and get clean printable pages in
-              minutes. Built for curious kids, classrooms, and rainy-day fun.
+            <p className="mx-auto max-w-xl text-balance text-base leading-relaxed text-muted-foreground sm:text-xl lg:mx-0">
+              Upload a photo, choose your detail level, and export clean pages
+              in minutes. Perfect for families, classrooms, and after-school
+              programs.
             </p>
 
             <div className="flex flex-wrap justify-center gap-3 lg:justify-start">
@@ -45,10 +46,10 @@ export default function HeroLanding() {
                 prefetch={true}
                 className={cn(
                   buttonVariants({ size: "lg", rounded: "full" }),
-                  "shadow-primary/30 gap-2 px-6 shadow-md",
+                  "shadow-primary/20 gap-2 px-6 shadow-md",
                 )}
               >
-                Start a Coloring Story
+                Start Free
                 <Icons.arrowRight className="size-4" />
               </Link>
               <Link
@@ -59,45 +60,46 @@ export default function HeroLanding() {
                     size: "lg",
                     rounded: "full",
                   }),
-                  "border-border/90 bg-white/70 px-5 dark:bg-white/10",
+                  "border-border/90 bg-white/75 px-5 dark:bg-white/10",
                 )}
               >
-                Explore Examples
+                See Examples
               </Link>
             </div>
 
-            <div className="mt-2 flex flex-wrap justify-center gap-3 text-sm text-muted-foreground lg:justify-start">
+            <div className="mt-1 flex flex-wrap justify-center gap-3 text-sm text-muted-foreground lg:justify-start">
               <div className="playful-pill flex items-center gap-2 text-sm">
                 <Icons.media className="size-4 text-primary" />3 free pages to
                 start
               </div>
               <div className="playful-pill flex items-center gap-2 text-sm">
-                <Icons.check className="size-4 text-[#42b883]" />
-                Originals are not stored
+                <Icons.check className="size-4 text-emerald-600" />
+                Private processing
               </div>
               <div className="playful-pill flex items-center gap-2 text-sm">
-                <Icons.package className="size-4 text-[#5aa9e6]" />
-                Print-ready PDF export
+                <Icons.package className="size-4 text-sky-600" />
+                PDF and PNG export
               </div>
             </div>
           </div>
 
-          <div className="relative mx-auto w-full max-w-xl">
-            <div className="playful-card relative -rotate-2 overflow-hidden p-3 sm:p-4">
+          <div className="animate-rise relative mx-auto w-full max-w-xl">
+            <div className="playful-card relative overflow-hidden p-3 sm:p-4">
+              <div className="absolute inset-0 bg-gradient-to-br from-sky-200/20 via-transparent to-amber-200/25 dark:from-cyan-300/10 dark:to-orange-300/10" />
               <Image
                 src="/illustrations/hero-coloring.svg"
                 alt="Preview of coloring book conversion"
                 width={1200}
                 height={900}
-                className="h-auto w-full rounded-[20px] object-cover"
+                className="relative z-10 h-auto w-full rounded-[22px] object-cover"
                 priority
               />
             </div>
-            <div className="playful-pill animate-floaty absolute -left-4 top-6 hidden bg-white/90 text-xs font-bold dark:bg-white/15 sm:block">
-              No design skills needed
+            <div className="playful-pill animate-floaty absolute -left-3 top-7 hidden bg-white/90 text-xs font-bold dark:bg-white/15 sm:block">
+              No design tools required
             </div>
-            <div className="playful-pill animate-floaty-slow absolute -bottom-3 right-2 hidden bg-white/90 text-xs font-bold dark:bg-white/15 sm:block">
-              Create in under 2 minutes
+            <div className="playful-pill animate-floaty-slow absolute -bottom-3 right-3 hidden bg-white/90 text-xs font-bold dark:bg-white/15 sm:block">
+              Create pages in under 2 minutes
             </div>
           </div>
         </div>

@@ -8,7 +8,7 @@ import { UserNameForm } from "@/components/forms/user-name-form";
 import { UserRoleForm } from "@/components/forms/user-role-form";
 
 export const metadata = constructMetadata({
-  title: "Settings – Colorline AI",
+  title: "Settings – Colorline AI",
   description: "Configure your account and website settings.",
 });
 
@@ -21,7 +21,7 @@ export default async function SettingsPage() {
     <>
       <DashboardHeader
         heading="Settings"
-        text="Manage account and website settings."
+        text="Manage profile details and account-level preferences."
       />
       <div className="grid gap-6 pb-10">
         <UserNameForm user={{ id: user.id, name: user.name || "" }} />

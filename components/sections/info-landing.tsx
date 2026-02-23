@@ -15,23 +15,21 @@ export default function InfoLanding({
   reverse = false,
 }: InfoLandingProps) {
   return (
-    <div className="py-10 sm:py-16">
+    <section className="py-10 sm:py-16">
       <MaxWidthWrapper className="grid gap-10 px-2.5 lg:grid-cols-2 lg:items-center lg:px-7">
         <div className={cn(reverse ? "lg:order-2" : "lg:order-1")}>
-          <h2 className="font-heading text-3xl text-foreground md:text-4xl lg:text-[42px]">
+          <h2 className="font-heading text-balance text-3xl text-foreground md:text-4xl lg:text-[42px]">
             {data.title}
           </h2>
-          <p className="mt-4 text-lg text-muted-foreground">
+          <p className="mt-4 text-lg leading-relaxed text-muted-foreground">
             {data.description}
           </p>
           <dl className="mt-6 space-y-3 leading-7">
             {data.list.map((item, index) => {
               const Icon = Icons[item.icon || "arrowRight"];
+
               return (
-                <div
-                  className="border-border/70 bg-card/85 rounded-2xl border p-4"
-                  key={index}
-                >
+                <div className="surface-glass rounded-2xl p-4" key={index}>
                   <dt className="relative pl-8 font-semibold">
                     <Icon className="absolute left-0 top-1 size-5 stroke-primary" />
                     <span>{item.title}</span>
@@ -44,6 +42,7 @@ export default function InfoLanding({
             })}
           </dl>
         </div>
+
         <div
           className={cn(
             "playful-card overflow-hidden p-3 lg:-m-4",
@@ -62,6 +61,6 @@ export default function InfoLanding({
           </div>
         </div>
       </MaxWidthWrapper>
-    </div>
+    </section>
   );
 }

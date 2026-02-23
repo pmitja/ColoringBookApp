@@ -43,12 +43,12 @@ export function UserAccountNav() {
         </Drawer.Trigger>
         <Drawer.Portal>
           <Drawer.Overlay
-            className="fixed inset-0 z-40 h-full bg-background/80 backdrop-blur-sm"
+            className="bg-background/80 fixed inset-0 z-40 h-full backdrop-blur-sm"
             onClick={closeDrawer}
           />
           <Drawer.Content className="fixed inset-x-0 bottom-0 z-50 mt-24 overflow-hidden rounded-t-[10px] border bg-background px-3 text-sm">
             <div className="sticky top-0 z-20 flex w-full items-center justify-center bg-inherit">
-              <div className="my-3 h-1.5 w-16 rounded-full bg-muted-foreground/20" />
+              <div className="bg-muted-foreground/20 my-3 h-1.5 w-16 rounded-full" />
             </div>
 
             <div className="flex items-center justify-start gap-2 p-2">
@@ -98,19 +98,19 @@ export function UserAccountNav() {
                 </Link>
               </li>
 
-              <li
-                className="rounded-lg text-foreground hover:bg-muted"
-                onClick={(event) => {
-                  event.preventDefault();
-                  signOut({
-                    callbackUrl: `${window.location.origin}/`,
-                  });
-                }}
-              >
-                <div className="flex w-full items-center gap-3 px-2.5 py-2">
+              <li className="rounded-lg text-foreground hover:bg-muted">
+                <button
+                  type="button"
+                  onClick={() => {
+                    signOut({
+                      callbackUrl: `${window.location.origin}/`,
+                    });
+                  }}
+                  className="flex w-full items-center gap-3 px-2.5 py-2 text-left"
+                >
                   <LogOut className="size-4" />
                   <p className="text-sm">Log out </p>
-                </div>
+                </button>
               </li>
             </ul>
           </Drawer.Content>

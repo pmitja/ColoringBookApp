@@ -4,20 +4,22 @@ import MaxWidthWrapper from "@/components/shared/max-width-wrapper";
 
 export default function PreviewLanding() {
   return (
-    <div id="examples" className="pb-8 pt-2 sm:pb-16">
+    <section id="examples" className="pb-10 pt-2 sm:pb-16">
       <MaxWidthWrapper>
-        <div className="playful-card p-4 sm:p-5">
-          <div className="mb-3 flex flex-wrap gap-2">
+        <div className="playful-card p-4 sm:p-6">
+          <div className="mb-4 flex flex-wrap items-center gap-2">
             <span className="playful-pill bg-white/90 text-xs font-bold dark:bg-white/10">
               Before and After
             </span>
             <span className="playful-pill bg-white/90 text-xs font-bold dark:bg-white/10">
-              Crayon-Ready Detail
+              Print-Ready Line Quality
             </span>
           </div>
-          <div className="border-border/70 relative aspect-video overflow-hidden rounded-[22px] border bg-white/70 dark:bg-slate-950/30">
+
+          <div className="border-border/70 bg-card/80 relative overflow-hidden rounded-[24px] border">
+            <div className="dark:from-cyan-300/8 absolute inset-0 bg-gradient-to-br from-sky-100/40 via-transparent to-amber-100/40 dark:to-orange-300/10" />
             <Image
-              className="size-full object-cover object-center"
+              className="relative z-10 size-full object-cover object-center"
               src="/illustrations/preview-coloring.svg"
               alt="Coloring book preview"
               width={2000}
@@ -27,6 +29,6 @@ export default function PreviewLanding() {
           </div>
         </div>
       </MaxWidthWrapper>
-    </div>
+    </section>
   );
 }

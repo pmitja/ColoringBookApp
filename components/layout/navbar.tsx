@@ -14,13 +14,15 @@ import { ModalContext } from "@/components/modals/providers";
 import { Icons } from "@/components/shared/icons";
 import MaxWidthWrapper from "@/components/shared/max-width-wrapper";
 
+import { ModeToggle } from "./mode-toggle";
+
 interface NavBarProps {
   scroll?: boolean;
   large?: boolean;
 }
 
 export function NavBar({ scroll = false }: NavBarProps) {
-  const scrolled = useScroll(50);
+  const scrolled = useScroll(40);
   const { data: session, status } = useSession();
   const { setShowSignInModal } = useContext(ModalContext);
 
@@ -29,77 +31,91 @@ export function NavBar({ scroll = false }: NavBarProps) {
 
   return (
     <header
-      className={`sticky top-0 z-40 flex w-full justify-center backdrop-blur-xl transition-all ${
-        scroll
-          ? scrolled
-            ? "border-border/70 bg-background/85 border-b"
-            : "bg-transparent"
-          : "border-border/70 bg-background/85 border-b"
-      }`}
+      className={cn(
+        "sticky top-0 z-40 flex w-full justify-center px-3 pt-3 transition-[transform,background-color,border-color,box-shadow] duration-300",
+        scroll && !scrolled && "md:pt-4",
+      )}
     >
-      <MaxWidthWrapper
-        className="flex h-16 items-center justify-between py-4"
-        large={false}
-      >
-        <div className="flex gap-6 md:gap-10">
-          <Link
-            href="/"
-            className="flex items-center rounded-full bg-white/70 px-3.5 py-2 dark:bg-white/10"
-          >
-            <Icons.logo className="h-9 w-auto" />
-          </Link>
-
-          {links && links.length > 0 ? (
-            <nav className="hidden gap-2 md:flex">
-              {links.map((item, index) => (
-                <Link
-                  key={index}
-                  href={item.disabled ? "#" : item.href}
-                  prefetch={true}
-                  className={cn(
-                    "flex items-center rounded-full px-4 text-sm font-semibold transition-colors",
-                    item.href.startsWith(`/${selectedLayout}`)
-                      ? "bg-secondary/80 text-foreground"
-                      : "text-foreground/70 hover:bg-white/70 hover:text-foreground dark:hover:bg-white/10",
-                    item.disabled && "cursor-not-allowed opacity-80",
-                  )}
-                >
-                  {item.title}
-                </Link>
-              ))}
-            </nav>
-          ) : null}
-        </div>
-
-        <div className="flex items-center space-x-3">
-          {session ? (
+      <MaxWidthWrapper className="max-w-7xl px-0">
+        <div
+          className={cn(
+            "surface-glass flex h-16 items-center justify-between rounded-2xl px-3 sm:px-4",
+            scroll
+              ? scrolled
+                ? "border-border/90 bg-background/88"
+                : "border-border/70 bg-background/72"
+              : "border-border/90 bg-background/88",
+          )}
+        >
+          <div className="flex items-center gap-2 md:gap-3">
             <Link
-              href={session.user.role === "ADMIN" ? "/admin" : "/dashboard"}
-              className="hidden md:block"
+              href="/"
+              className="border-border/70 flex items-center rounded-xl border bg-white/70 px-3 py-2 shadow-sm transition-colors hover:bg-white/95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background dark:bg-white/10 dark:hover:bg-white/15"
             >
+              <Icons.logo className="h-8 w-auto sm:h-9" />
+            </Link>
+
+            {links && links.length > 0 ? (
+              <nav
+                className="hidden items-center gap-1 md:flex"
+                aria-label="Main"
+              >
+                {links.map((item, index) => {
+                  const isActive = item.href.startsWith(`/${selectedLayout}`);
+
+                  return (
+                    <Link
+                      key={index}
+                      href={item.disabled ? "#" : item.href}
+                      prefetch={true}
+                      className={cn(
+                        "rounded-xl px-3 py-2 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                        isActive
+                          ? "bg-secondary text-secondary-foreground"
+                          : "text-foreground/75 hover:bg-secondary/70 hover:text-foreground",
+                        item.disabled && "cursor-not-allowed opacity-70",
+                      )}
+                    >
+                      {item.title}
+                    </Link>
+                  );
+                })}
+              </nav>
+            ) : null}
+          </div>
+
+          <div className="flex items-center gap-2">
+            <div className="hidden md:block">
+              <ModeToggle />
+            </div>
+
+            {session ? (
+              <Link
+                href={session.user.role === "ADMIN" ? "/admin" : "/dashboard"}
+                className="hidden md:block"
+              >
+                <Button
+                  className="gap-2 px-4 shadow-sm"
+                  size="sm"
+                  rounded="full"
+                >
+                  <span>Dashboard</span>
+                </Button>
+              </Link>
+            ) : status === "unauthenticated" ? (
               <Button
-                className="shadow-primary/30 gap-2 px-5 shadow-sm"
-                variant="default"
+                className="hidden gap-2 px-4 shadow-sm md:flex"
                 size="sm"
                 rounded="full"
+                onClick={() => setShowSignInModal(true)}
               >
-                <span>Dashboard</span>
+                <span>Sign In</span>
+                <Icons.arrowRight className="size-4" />
               </Button>
-            </Link>
-          ) : status === "unauthenticated" ? (
-            <Button
-              className="shadow-primary/30 hidden gap-2 px-5 shadow-sm md:flex"
-              variant="default"
-              size="sm"
-              rounded="full"
-              onClick={() => setShowSignInModal(true)}
-            >
-              <span>Sign In</span>
-              <Icons.arrowRight className="size-4" />
-            </Button>
-          ) : (
-            <Skeleton className="hidden h-9 w-28 rounded-full lg:flex" />
-          )}
+            ) : (
+              <Skeleton className="hidden h-9 w-28 rounded-full lg:flex" />
+            )}
+          </div>
         </div>
       </MaxWidthWrapper>
     </header>

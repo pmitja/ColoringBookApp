@@ -1,6 +1,10 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 
+type CreationStatus = "QUEUED" | "PROCESSING" | "DONE" | "FAILED";
+type FilterStatus = "all" | CreationStatus;
+type SortMode = "newest" | "oldest" | "name";
+
 const extractUploadThingKey = (url?: string | null) => {
   if (!url) return null;
   if (!url.includes("://")) return url;
@@ -12,6 +16,64 @@ const extractUploadThingKey = (url?: string | null) => {
     return null;
   }
 };
+
+export const GET = auth(async (req) => {
+  if (!req.auth?.user?.id) return new Response("Unauthorized", { status: 401 });
+  const userId = req.auth.user.id;
+
+  const q = (req.nextUrl.searchParams.get("q") ?? "").trim();
+  const statusRaw = (req.nextUrl.searchParams.get("status") ?? "all").trim();
+  const sortRaw = (req.nextUrl.searchParams.get("sort") ?? "newest").trim();
+
+  const status: FilterStatus =
+    statusRaw === "DONE" ||
+    statusRaw === "PROCESSING" ||
+    statusRaw === "FAILED" ||
+    statusRaw === "QUEUED"
+      ? statusRaw
+      : "all";
+  const sort: SortMode =
+    sortRaw === "oldest" || sortRaw === "name" ? sortRaw : "newest";
+
+  const creations = await prisma.imageJob.findMany({
+    where: {
+      userId,
+      AND: [
+        q
+          ? {
+              inputFileName: {
+                contains: q,
+                mode: "insensitive",
+              },
+            }
+          : {},
+        status !== "all" ? { status } : {},
+      ],
+    },
+    orderBy:
+      sort === "name"
+        ? { inputFileName: "asc" }
+        : { createdAt: sort === "oldest" ? "asc" : "desc" },
+    take: 50,
+    select: {
+      id: true,
+      inputFileName: true,
+      lineartUrl: true,
+      status: true,
+      createdAt: true,
+    },
+  });
+
+  return Response.json({
+    creations: creations.map((creation) => ({
+      id: creation.id,
+      inputFileName: creation.inputFileName,
+      lineartUrl: creation.lineartUrl,
+      status: creation.status,
+      createdAt: creation.createdAt.toISOString(),
+    })),
+  });
+});
 
 export const DELETE = auth(async (req) => {
   if (!req.auth?.user?.id) return new Response("Unauthorized", { status: 401 });

@@ -1,10 +1,10 @@
 "use client";
 
 import { siteConfig } from "@/config/site";
-import { Button } from "@/components/ui/button";
 import { SectionColumns } from "@/components/dashboard/section-columns";
 import { useDeleteAccountModal } from "@/components/modals/delete-account-modal";
 import { Icons } from "@/components/shared/icons";
+import { Button } from "@/components/ui/button";
 
 export function DeleteAccountSection() {
   const { setShowDeleteAccountModal, DeleteAccountModal } =
@@ -17,39 +17,35 @@ export function DeleteAccountSection() {
       <DeleteAccountModal />
       <SectionColumns
         title="Delete Account"
-        description="This is a danger zone - Be careful !"
+        description="This action is permanent and cannot be undone."
       >
-        <div className="flex flex-col gap-4 rounded-2xl border border-rose-500/30 bg-rose-500/10 p-5 shadow-[0_0_0_1px_rgba(255,255,255,0.03)]">
-          <div className="flex flex-col gap-2">
+        <div className="border-destructive/30 bg-destructive/5 rounded-2xl border p-5">
+          <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <span className="text-[15px] font-semibold">Are you sure?</span>
-
+              <span className="text-[15px] font-semibold text-foreground">
+                Confirm account deletion
+              </span>
               {userPaidPlan ? (
-                <div className="flex items-center gap-1 rounded-full border border-rose-400/40 bg-rose-500/15 px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-rose-100">
-                  <div className="rounded-full bg-rose-500 p-1">
-                    <Icons.close size={10} className="text-rose-50" />
-                  </div>
-                  Active Subscription
-                </div>
+                <span className="border-destructive/40 bg-destructive/10 text-destructive inline-flex items-center gap-1 rounded-full border px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.2em]">
+                  <Icons.warning className="size-3" />
+                  Subscription active
+                </span>
               ) : null}
             </div>
-            <div className="text-balance text-sm text-muted-foreground">
-              Permanently delete your {siteConfig.name} account
-              {userPaidPlan ? " and your subscription" : ""}. This action cannot
-              be undone - please proceed with caution.
-            </div>
+            <p className="text-sm text-muted-foreground">
+              This permanently deletes your {siteConfig.name} account
+              {userPaidPlan ? " and subscription" : ""}.
+            </p>
           </div>
-          <div className="flex items-center gap-2">
-            <Button
-              type="submit"
-              variant="destructive"
-              onClick={() => setShowDeleteAccountModal(true)}
-              className="h-11 px-5 text-sm"
-            >
-              <Icons.trash className="mr-2 size-4" />
-              <span>Delete Account</span>
-            </Button>
-          </div>
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={() => setShowDeleteAccountModal(true)}
+            className="mt-4 h-11 px-5 text-sm"
+          >
+            <Icons.trash className="mr-2 size-4" />
+            Delete Account
+          </Button>
         </div>
       </SectionColumns>
     </>

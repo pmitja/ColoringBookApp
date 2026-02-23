@@ -11,7 +11,9 @@ export default function MarketingLayout({ children }: MarketingLayoutProps) {
     <div className="playful-theme relative flex min-h-screen flex-col overflow-x-clip">
       <NavMobile />
       <NavBar scroll={true} />
-      <main className="relative flex-1">{children}</main>
+      <main id="main-content" className="relative flex-1">
+        {children}
+      </main>
       <SiteFooter />
     </div>
   );

@@ -7,6 +7,9 @@ import {
   getUserSubscriptionPlan,
 } from "@/lib/subscription";
 import { constructMetadata } from "@/lib/utils";
+import { BillingPlansCard } from "@/components/dashboard/billing-plans-card";
+import { DashboardHeader } from "@/components/dashboard/header";
+import { Icons } from "@/components/shared/icons";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -17,9 +20,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { BillingPlansCard } from "@/components/dashboard/billing-plans-card";
-import { DashboardHeader } from "@/components/dashboard/header";
-import { Icons } from "@/components/shared/icons";
 
 export const metadata = constructMetadata({
   title: "Billing – Colorline AI",
@@ -65,21 +65,17 @@ export default async function BillingPage() {
     <>
       <DashboardHeader
         heading="Plan & Billing"
-        text="Track monthly generations, view your current plan, and upgrade when needed."
+        text="Track usage, review your current plan, and upgrade only when you need more capacity."
       />
 
       <div className="space-y-8 pb-10">
-        <Card className="border-border/80 bg-card/95">
+        <Card className="border-border/80 bg-card/95 rounded-3xl">
           <CardHeader>
-            <CardTitle className="flex items-center justify-between gap-3">
+            <CardTitle className="flex flex-wrap items-center justify-between gap-3">
               <span>Monthly Generation Usage</span>
               <Badge
-                variant="outline"
-                className={
-                  generationsRemaining > 0
-                    ? "bg-secondary/70 border-border text-secondary-foreground"
-                    : "border-rose-300/40 bg-rose-100/75 text-rose-700 dark:border-rose-400/30 dark:bg-rose-900/30 dark:text-rose-300"
-                }
+                variant={generationsRemaining > 0 ? "secondary" : "destructive"}
+                className="rounded-full"
               >
                 {generationsRemaining} left this month
               </Badge>
@@ -96,37 +92,34 @@ export default async function BillingPage() {
                   {displayGenerationsUsed} of {monthlyGenerationLimit}
                 </span>
               </div>
-              <Progress
-                value={progressPercentage}
-                className="bg-muted/70 h-3"
-              />
+              <Progress value={progressPercentage} className="h-2.5" />
             </div>
 
             <div className="grid grid-cols-2 gap-4 text-center">
-              <div className="border-border/70 bg-background/80 space-y-1 rounded-xl border p-4">
+              <div className="border-border/70 bg-background/70 space-y-1 rounded-2xl border p-4">
                 <p className="text-2xl font-semibold text-primary">
                   {displayGenerationsUsed}
                 </p>
                 <p className="text-sm text-muted-foreground">Used This Month</p>
               </div>
-              <div className="border-border/70 bg-background/80 space-y-1 rounded-xl border p-4">
-                <p className="text-2xl font-semibold text-accent-foreground">
+              <div className="border-border/70 bg-background/70 space-y-1 rounded-2xl border p-4">
+                <p className="text-2xl font-semibold text-foreground">
                   {generationsRemaining}
                 </p>
                 <p className="text-sm text-muted-foreground">Remaining</p>
               </div>
             </div>
 
-            <p className="text-center text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               {generationsRemaining > 0
                 ? `You can generate ${generationsRemaining} more page${generationsRemaining === 1 ? "" : "s"} this month.`
-                : "You have no generations left this month. Upgrade to a higher plan to keep generating."}
+                : "You have no generations left this month. Upgrade to keep generating."}
             </p>
             {overLimitCount > 0 ? (
-              <p className="text-center text-xs text-muted-foreground">
-                {overLimitCount} extra generation
+              <p className="text-xs text-muted-foreground">
+                {overLimitCount} additional generation
                 {overLimitCount === 1 ? "" : "s"} were created earlier this
-                month before the current limits were applied.
+                month.
               </p>
             ) : null}
           </CardContent>
@@ -134,21 +127,20 @@ export default async function BillingPage() {
 
         <BillingPlansCard subscriptionPlan={subscriptionPlan} />
 
-        <Alert className="border-border/90 bg-secondary/55 !pl-14 text-foreground">
-          <Icons.warning />
+        <Alert className="border-border/90 bg-secondary/40 text-foreground">
+          <Icons.warning className="size-4" />
           <AlertTitle>Demo Mode</AlertTitle>
-          <AlertDescription className="text-balance">
-            This is a demo app using Stripe test mode. You can use test card
-            numbers from the{" "}
+          <AlertDescription>
+            Stripe runs in test mode here. Use test card numbers from{" "}
             <a
               href="https://stripe.com/docs/testing#cards"
               target="_blank"
               rel="noreferrer"
-              className="font-medium text-primary underline underline-offset-8"
+              className="font-medium text-primary underline underline-offset-4"
             >
-              Stripe documentation
-            </a>{" "}
-            to test the payment flow.
+              Stripe testing docs
+            </a>
+            .
           </AlertDescription>
         </Alert>
       </div>

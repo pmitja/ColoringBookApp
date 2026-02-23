@@ -17,9 +17,10 @@ export default function Features() {
           <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {features.map((feature) => {
               const Icon = Icons[feature.icon || "nextjs"];
+
               return (
-                <div
-                  className="border-border/80 bg-card/95 group relative overflow-hidden rounded-3xl border p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg md:p-7"
+                <article
+                  className="surface-glass group relative overflow-hidden rounded-3xl p-5 transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-1 hover:shadow-md md:p-7"
                   key={feature.title}
                 >
                   <div
@@ -27,18 +28,17 @@ export default function Features() {
                     className="bg-secondary/70 absolute right-0 top-0 size-28 -translate-y-8 translate-x-8 rounded-full blur-2xl duration-300 group-hover:scale-110"
                   />
                   <div className="relative">
-                    <div className="bg-accent/70 relative flex size-12 rounded-2xl text-primary *:relative *:m-auto *:size-6">
+                    <div className="bg-accent/70 flex size-12 rounded-2xl text-primary *:m-auto *:size-6">
                       <Icon />
                     </div>
                     <h3 className="font-heading mt-5 text-xl">
                       {feature.title}
                     </h3>
-
-                    <p className="mt-2 text-muted-foreground">
+                    <p className="mt-2 leading-relaxed text-muted-foreground">
                       {feature.description}
                     </p>
                   </div>
-                </div>
+                </article>
               );
             })}
           </div>

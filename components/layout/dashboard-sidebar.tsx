@@ -62,11 +62,11 @@ export function DashboardSidebar({ links }: DashboardSidebarProps) {
   return (
     <TooltipProvider delayDuration={0}>
       <div className="sticky top-0 hidden h-screen md:block">
-        <ScrollArea className="border-border/70 h-full overflow-y-auto border-r">
+        <ScrollArea className="border-border/80 h-full overflow-y-auto border-r">
           <aside
             className={cn(
               isSidebarExpanded ? "w-[220px] xl:w-[260px]" : "w-[68px]",
-              "bg-background/80 h-full backdrop-blur-xl",
+              "bg-background/74 h-full backdrop-blur-xl",
             )}
           >
             <div className="flex h-full max-h-screen flex-1 flex-col gap-2">
@@ -74,7 +74,7 @@ export function DashboardSidebar({ links }: DashboardSidebarProps) {
                 {isSidebarExpanded ? (
                   <Link
                     href="/"
-                    className="bg-card/90 flex items-center rounded-full px-3 py-1.5 text-lg font-semibold"
+                    className="bg-card/90 border-border/70 flex items-center rounded-full border px-3 py-1.5 text-lg font-semibold"
                   >
                     <Icons.logo className="h-8 w-auto" />
                   </Link>
@@ -88,7 +88,7 @@ export function DashboardSidebar({ links }: DashboardSidebarProps) {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="ml-auto size-9 rounded-full lg:size-8"
+                  className="hover:border-border/60 ml-auto size-9 rounded-full border border-transparent lg:size-8"
                   onClick={toggleSidebar}
                 >
                   {isSidebarExpanded ? (
@@ -130,18 +130,13 @@ export function DashboardSidebar({ links }: DashboardSidebarProps) {
                                 key={`link-${item.title}`}
                                 href={item.disabled ? "#" : item.href}
                                 className={cn(
-                                  buttonVariants({
-                                    variant:
-                                      path === item.href
-                                        ? "secondary"
-                                        : "ghost",
-                                  }),
-                                  "w-full justify-start gap-3 rounded-2xl px-3 py-2 text-sm",
+                                  buttonVariants({ variant: "ghost" }),
+                                  "w-full justify-start gap-3 rounded-2xl border px-3 py-2 text-sm transition-[background-color,color,border-color,box-shadow] duration-200",
                                   path === item.href
-                                    ? "bg-secondary text-secondary-foreground"
-                                    : "hover:bg-card/90",
+                                    ? "border-primary/40 bg-primary/10 text-primary shadow-[0_0_0_1px_hsl(var(--primary)/0.16)]"
+                                    : "hover:bg-card/90 border-transparent text-muted-foreground hover:text-foreground",
                                   item.disabled &&
-                                    "cursor-not-allowed opacity-80 hover:bg-transparent",
+                                    "cursor-not-allowed opacity-80 hover:bg-transparent hover:text-muted-foreground",
                                 )}
                               >
                                 <Icon className="size-5" />
@@ -160,18 +155,15 @@ export function DashboardSidebar({ links }: DashboardSidebarProps) {
                                     href={item.disabled ? "#" : item.href}
                                     className={cn(
                                       buttonVariants({
-                                        variant:
-                                          path === item.href
-                                            ? "secondary"
-                                            : "ghost",
+                                        variant: "ghost",
                                         size: "icon",
                                       }),
-                                      "w-full justify-center rounded-2xl",
+                                      "w-full justify-center rounded-2xl border transition-[background-color,color,border-color,box-shadow] duration-200",
                                       path === item.href
-                                        ? "bg-secondary text-secondary-foreground"
-                                        : "hover:bg-card/90",
+                                        ? "border-primary/40 bg-primary/10 text-primary shadow-[0_0_0_1px_hsl(var(--primary)/0.16)]"
+                                        : "hover:bg-card/90 border-transparent text-muted-foreground hover:text-foreground",
                                       item.disabled &&
-                                        "cursor-not-allowed opacity-80 hover:bg-transparent",
+                                        "cursor-not-allowed opacity-80 hover:bg-transparent hover:text-muted-foreground",
                                     )}
                                   >
                                     <span className="flex size-full items-center justify-center">
@@ -223,7 +215,7 @@ export function MobileSheetSidebar({ links }: DashboardSidebarProps) {
         </SheetTrigger>
         <SheetContent
           side="left"
-          className="border-border/70 bg-background flex flex-col p-0"
+          className="border-border/80 bg-background/96 flex flex-col p-0 backdrop-blur-xl"
         >
           <ScrollArea className="h-full overflow-y-auto">
             <div className="flex h-screen flex-col">
@@ -257,10 +249,10 @@ export function MobileSheetSidebar({ links }: DashboardSidebarProps) {
                               }}
                               href={item.disabled ? "#" : item.href}
                               className={cn(
-                                "flex items-center gap-3 rounded-2xl p-2 text-sm font-medium",
+                                "flex items-center gap-3 rounded-2xl border p-2 text-sm font-medium transition-[background-color,color,border-color,box-shadow]",
                                 path === item.href
-                                  ? "bg-secondary text-foreground"
-                                  : "text-muted-foreground hover:bg-card hover:text-foreground",
+                                  ? "border-primary/40 bg-primary/10 text-primary shadow-[0_0_0_1px_hsl(var(--primary)/0.16)]"
+                                  : "border-transparent text-muted-foreground hover:bg-card hover:text-foreground",
                                 item.disabled &&
                                   "cursor-not-allowed opacity-80 hover:bg-transparent hover:text-muted-foreground",
                               )}

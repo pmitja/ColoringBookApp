@@ -33,7 +33,7 @@ export function NavBar({ scroll = false }: NavBarProps) {
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 flex w-full justify-center px-4 pt-4 transition-all duration-500",
+        "sticky top-0 z-50 -mb-20 flex w-full justify-center px-4 pt-4 transition-all duration-500 md:-mb-24",
         scroll && scrolled ? "pt-2" : "md:pt-6",
       )}
     >
@@ -130,4 +130,3 @@ export function NavBar({ scroll = false }: NavBarProps) {
     </header>
   );
 }
-

@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { getMobileUserFromBearerHeaders } from "@/lib/mobile-auth";
 
 function stripFileExtension(fileName: string) {
   return fileName.replace(/\.[^/.]+$/, "");
@@ -14,11 +15,11 @@ function sanitizeFileBaseName(value: string) {
 }
 
 export const POST = auth(async (request) => {
-  if (!request.auth?.user?.id) {
+  const mobileUser = await getMobileUserFromBearerHeaders(request.headers);
+  const userId = request.auth?.user?.id ?? mobileUser?.id;
+  if (!userId) {
     return new Response("Unauthorized", { status: 401 });
   }
-
-  const userId = request.auth.user.id;
 
   let formData: FormData;
   try {

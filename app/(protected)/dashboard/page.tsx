@@ -137,7 +137,7 @@ export default async function DashboardPage() {
 
   return (
     <>
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <div className="space-y-1.5">
           <h1 className="font-heading text-4xl font-black text-slate-900 dark:text-slate-50">Dashboard</h1>
           <p className="text-lg font-bold text-slate-500 dark:text-slate-400">
@@ -146,13 +146,13 @@ export default async function DashboardPage() {
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <Link href="/upload">
-            <Button className="gap-2 rounded-full px-6 py-5 bg-emerald-400 text-slate-900 border-2 border-slate-900 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] transition-all font-bold">
+            <Button className="gap-2 rounded-full border-2 border-slate-900 bg-emerald-400 px-6 py-5 font-bold text-slate-900 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] transition-all hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)]">
               <Icons.media className="size-5" />
               New from Photo
             </Button>
           </Link>
           <Link href="/ai-generator">
-            <Button className="rounded-full px-6 py-5 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-50 border-2 border-slate-900 dark:border-slate-600 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] dark:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] transition-all font-bold hover:bg-slate-50 dark:hover:bg-slate-700">
+            <Button className="rounded-full border-2 border-slate-900 bg-white px-6 py-5 font-bold text-slate-900 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] transition-all hover:translate-y-[2px] hover:bg-slate-50 hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] dark:hover:bg-slate-700">
               New from Prompt
             </Button>
           </Link>
@@ -160,8 +160,8 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[1.4fr_0.6fr]">
-        <Card className="rounded-[2rem] border-4 border-slate-900 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)] overflow-hidden">
-          <CardHeader className="bg-yellow-50 dark:bg-yellow-900/20 border-b-4 border-slate-900 dark:border-slate-700 p-6">
+        <Card className="overflow-hidden rounded-[2rem] border-4 border-slate-900 bg-white shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)]">
+          <CardHeader className="border-b-4 border-slate-900 bg-yellow-50 p-6 dark:border-slate-700 dark:bg-yellow-900/20">
             <CardTitle className="font-heading text-2xl font-extrabold text-slate-900 dark:text-slate-50">
               Monthly Generations
             </CardTitle>
@@ -175,16 +175,16 @@ export default async function DashboardPage() {
                 {displayGenerationsUsed} of {generationsAllocated} used
               </p>
               <div className={cn(
-                "rounded-full px-4 py-1 text-sm font-black border-2 border-slate-900 shadow-sm",
-                generationsRemaining > 0 ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-slate-900 dark:border-slate-600" : "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 border-slate-900 dark:border-slate-600"
+                "rounded-full border-2 border-slate-900 px-4 py-1 text-sm font-black shadow-sm",
+                generationsRemaining > 0 ? "border-slate-900 bg-emerald-100 text-emerald-700 dark:border-slate-600 dark:bg-emerald-900/30 dark:text-emerald-300" : "border-slate-900 bg-red-100 text-red-700 dark:border-slate-600 dark:bg-red-900/30 dark:text-red-300"
               )}>
                 {generationsRemaining} left
               </div>
             </div>
 
-            <div className="relative h-6 w-full overflow-hidden rounded-full border-2 border-slate-900 dark:border-slate-700 bg-slate-100 dark:bg-slate-800">
+            <div className="relative h-6 w-full overflow-hidden rounded-full border-2 border-slate-900 bg-slate-100 dark:border-slate-700 dark:bg-slate-800">
                <div 
-                  className="h-full bg-amber-500 transition-all duration-500 ease-out border-r-2 border-slate-900 dark:border-slate-950"
+                  className="h-full border-r-2 border-slate-900 bg-amber-500 transition-all duration-500 ease-out dark:border-slate-950"
                   style={{ width: `${progressPercentage}%` }}
                />
             </div>
@@ -196,7 +196,7 @@ export default async function DashboardPage() {
             </p>
 
             {overLimitCount > 0 ? (
-              <p className="text-xs font-bold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-900/30 p-2 rounded-lg border border-orange-200 dark:border-orange-800">
+              <p className="rounded-lg border border-orange-200 bg-orange-50 p-2 text-xs font-bold text-orange-600 dark:border-orange-800 dark:bg-orange-900/30 dark:text-orange-400">
                 {overLimitCount} additional generation
                 {overLimitCount === 1 ? "" : "s"} were created earlier this
                 month.
@@ -205,7 +205,7 @@ export default async function DashboardPage() {
 
             {generationsRemaining <= 1 ? (
               <Link href="/dashboard/billing" className="inline-flex">
-                <Button className="rounded-full border-2 border-slate-900 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-bold shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] dark:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.5)] hover:translate-y-[1px] hover:shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700">
+                <Button className="rounded-full border-2 border-slate-900 bg-white font-bold text-slate-900 shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] hover:translate-y-px hover:bg-slate-50 hover:shadow-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.5)] dark:hover:bg-slate-700">
                   Manage Plan
                 </Button>
               </Link>
@@ -213,8 +213,8 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-[2rem] border-4 border-slate-900 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)] overflow-hidden">
-          <CardHeader className="bg-blue-50 dark:bg-blue-900/20 border-b-4 border-slate-900 dark:border-slate-700 p-6">
+        <Card className="overflow-hidden rounded-[2rem] border-4 border-slate-900 bg-white shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)]">
+          <CardHeader className="border-b-4 border-slate-900 bg-blue-50 p-6 dark:border-slate-700 dark:bg-blue-900/20">
             <CardTitle className="font-heading text-2xl font-extrabold text-slate-900 dark:text-slate-50">
               Quick Actions
             </CardTitle>
@@ -265,7 +265,7 @@ export default async function DashboardPage() {
           label="In Progress"
           value={processingCount}
           color="bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-slate-700"
-          icon={<Icons.spinner className="size-6 text-sky-700 dark:text-sky-400 animate-spin" />}
+          icon={<Icons.spinner className="size-6 animate-spin text-sky-700 dark:text-sky-400" />}
         />
         <MetricCard
           label="Failed"
@@ -285,7 +285,7 @@ export default async function DashboardPage() {
           </div>
           {recentCreations.length > 0 ? (
             <Link href="/creations">
-              <Button className="rounded-full font-bold text-slate-700 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800" variant="ghost">
+              <Button className="rounded-full font-bold text-slate-700 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800" variant="ghost">
                 View all
                 <Icons.arrowRight className="ml-2 size-4" />
               </Button>
@@ -294,26 +294,26 @@ export default async function DashboardPage() {
         </div>
 
         {recentCreations.length === 0 ? (
-          <div className="rounded-[2rem] border-4 border-dashed border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 p-12 text-center">
-            <div className="mx-auto flex size-20 items-center justify-center rounded-full bg-white dark:bg-slate-800 border-4 border-slate-200 dark:border-slate-600 mb-6">
+          <div className="rounded-[2rem] border-4 border-dashed border-slate-300 bg-slate-50 p-12 text-center dark:border-slate-700 dark:bg-slate-900">
+            <div className="mx-auto mb-6 flex size-20 items-center justify-center rounded-full border-4 border-slate-200 bg-white dark:border-slate-600 dark:bg-slate-800">
                <Icons.media className="size-10 text-slate-400 dark:text-slate-500" />
             </div>
-            <h3 className="text-xl font-bold text-slate-900 dark:text-slate-50 mb-2">No pages yet</h3>
-            <p className="text-slate-500 dark:text-slate-400 font-medium mb-8 max-w-sm mx-auto">
+            <h3 className="mb-2 text-xl font-bold text-slate-900 dark:text-slate-50">No pages yet</h3>
+            <p className="mx-auto mb-8 max-w-sm font-medium text-slate-500 dark:text-slate-400">
               Upload your first photo to generate a clean printable page.
             </p>
             <Link href="/upload">
-              <Button className="rounded-full px-8 py-6 bg-yellow-400 text-slate-900 border-2 border-slate-900 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] transition-all font-bold text-lg">
+              <Button className="rounded-full border-2 border-slate-900 bg-yellow-400 px-8 py-6 text-lg font-bold text-slate-900 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] transition-all hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)]">
                  Upload first photo
               </Button>
             </Link>
           </div>
         ) : (
-          <Card className="rounded-[2rem] border-4 border-slate-900 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)] overflow-hidden">
+          <Card className="overflow-hidden rounded-[2rem] border-4 border-slate-900 bg-white shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)]">
             <CardContent className="p-0">
               <ul className="divide-y-2 divide-slate-100 dark:divide-slate-700">
                 {recentCreations.map((creation) => (
-                  <li key={creation.id} className="p-4 sm:px-6 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                  <li key={creation.id} className="p-4 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800 sm:px-6">
                     <CreationRow creation={creation} />
                   </li>
                 ))}
@@ -338,12 +338,12 @@ function MetricCard({
   color: string;
 }) {
   return (
-    <div className="relative overflow-hidden rounded-[2rem] border-4 border-slate-900 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] dark:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] transition-transform hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(15,23,42,1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.5)]">
-      <div className={cn("absolute top-0 right-0 p-4 rounded-bl-[2rem] border-b-4 border-l-4 border-slate-900 dark:border-slate-700", color)}>
+    <div className="relative overflow-hidden rounded-[2rem] border-4 border-slate-900 bg-white p-6 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] transition-transform hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(15,23,42,1)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] dark:hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.5)]">
+      <div className={cn("absolute right-0 top-0 rounded-bl-[2rem] border-b-4 border-l-4 border-slate-900 p-4 dark:border-slate-700", color)}>
          {icon}
       </div>
       <div className="relative z-10">
-        <p className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">
+        <p className="mb-2 text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
           {label}
         </p>
         <p className="font-heading text-5xl font-extrabold text-slate-900 dark:text-slate-50">{value}</p>
@@ -368,20 +368,20 @@ function QuickActionLink({
   return (
     <Link
       href={href}
-      className="group flex items-center gap-4 rounded-2xl border-2 border-slate-900 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 transition-all hover:bg-slate-50 dark:hover:bg-slate-700 hover:shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] dark:hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)]"
+      className="group flex items-center gap-4 rounded-2xl border-2 border-slate-900 bg-white p-4 transition-all hover:bg-slate-50 hover:shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)]"
     >
-      <span className={cn("flex size-12 shrink-0 items-center justify-center rounded-xl border-2 border-slate-900 dark:border-slate-600 shadow-sm transition-transform group-hover:scale-110 group-hover:rotate-3", color)}>
+      <span className={cn("flex size-12 shrink-0 items-center justify-center rounded-xl border-2 border-slate-900 shadow-sm transition-transform group-hover:rotate-3 group-hover:scale-110 dark:border-slate-600", color)}>
         {icon}
       </span>
       <span className="min-w-0">
-        <span className="block text-base font-extrabold text-slate-900 dark:text-slate-50 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+        <span className="block text-base font-extrabold text-slate-900 transition-colors group-hover:text-blue-600 dark:text-slate-50 dark:group-hover:text-blue-400">
           {title}
         </span>
         <span className="block text-xs font-bold text-slate-500 dark:text-slate-400">
           {description}
         </span>
       </span>
-      <Icons.arrowRight className="ml-auto size-5 text-slate-300 dark:text-slate-500 transition-transform group-hover:translate-x-1 group-hover:text-slate-900 dark:group-hover:text-slate-50" />
+      <Icons.arrowRight className="ml-auto size-5 text-slate-300 transition-transform group-hover:translate-x-1 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-slate-50" />
     </Link>
   );
 }
@@ -405,7 +405,7 @@ function CreationRow({ creation }: { creation: ImageJob }) {
 
   return (
     <div className="flex flex-wrap items-center gap-4 sm:flex-nowrap">
-      <div className="relative size-16 shrink-0 overflow-hidden rounded-xl border-2 border-slate-900 dark:border-slate-700 shadow-sm bg-slate-100 dark:bg-slate-800">
+      <div className="relative size-16 shrink-0 overflow-hidden rounded-xl border-2 border-slate-900 bg-slate-100 shadow-sm dark:border-slate-700 dark:bg-slate-800">
         {creation.status === "DONE" && creation.lineartUrl ? (
           <Image
             src={creation.lineartUrl}
@@ -432,21 +432,21 @@ function CreationRow({ creation }: { creation: ImageJob }) {
         <p className="truncate text-base font-bold text-slate-900 dark:text-slate-50">
           {previewLabel}
         </p>
-        <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+        <p className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
           {creationDateFormatter.format(creation.createdAt)}
         </p>
       </div>
 
       <div className={cn(
           "rounded-full border-2 px-3 py-1 text-xs font-black uppercase tracking-wider",
-          statusColors[creation.status] || "bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-300 border-slate-200 dark:border-slate-700"
+          statusColors[creation.status] || "border-slate-200 bg-slate-100 text-slate-800 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
         )}
       >
         {statusLabels[creation.status]}
       </div>
 
       <Link href={creationHref} className="sm:ml-2">
-        <Button className="rounded-full border-2 border-slate-900 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-50 font-bold hover:bg-slate-100 dark:hover:bg-slate-700 shadow-sm hover:shadow-md transition-all h-10 px-5">
+        <Button className="h-10 rounded-full border-2 border-slate-900 bg-white px-5 font-bold text-slate-900 shadow-sm transition-all hover:bg-slate-100 hover:shadow-md dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:hover:bg-slate-700">
           {creation.status === "DONE" ? "Open" : "Track"}
         </Button>
       </Link>

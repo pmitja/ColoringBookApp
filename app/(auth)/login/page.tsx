@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { Metadata } from "next";
 import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
@@ -23,33 +24,35 @@ export default function LoginPage() {
       <Link
         href="/"
         className={cn(
-          buttonVariants({ variant: "outline", size: "sm" }),
-          "absolute left-4 top-4 md:left-8 md:top-8",
+          buttonVariants({ variant: "outline" }),
+          "absolute left-4 top-4 md:left-8 md:top-8 gap-2 rounded-2xl font-bold shadow-sm",
         )}
       >
-        <Icons.chevronLeft className="mr-2 size-4" />
+        <ChevronLeft className="size-4" />
         Back
       </Link>
 
-      <div className="surface-glass mx-auto w-full max-w-md rounded-3xl p-6 sm:p-8">
+      <div className="playful-card mx-auto w-full max-w-md rounded-[2.5rem] border-2 shadow-xl shadow-primary/5 p-6 sm:p-10">
         <div className="flex flex-col space-y-3 text-center">
-          <Icons.logo className="mx-auto h-10 w-auto" />
-          <h1 className="font-heading text-3xl tracking-tight">Welcome Back</h1>
-          <p className="text-sm text-muted-foreground">
+          <div className="mx-auto flex size-16 items-center justify-center rounded-[1.5rem] bg-primary/10 shadow-sm border-2 border-primary/20 rotate-3 mb-2 overflow-hidden">
+            <Icons.logo className="h-8 w-auto max-w-[120px] object-contain -rotate-3" />
+          </div>
+          <h1 className="font-heading text-4xl tracking-tight">Welcome Back</h1>
+          <p className="text-base font-medium text-muted-foreground">
             Enter your email to sign in to your account.
           </p>
         </div>
 
-        <div className="mt-6">
+        <div className="mt-8">
           <Suspense>
             <UserAuthForm />
           </Suspense>
         </div>
 
-        <p className="mt-4 text-center text-sm text-muted-foreground">
+        <p className="mt-8 text-center text-sm font-medium text-muted-foreground">
           <Link
             href="/register"
-            className="underline underline-offset-4 transition-colors hover:text-primary"
+            className="underline underline-offset-4 transition-colors hover:text-primary font-bold"
           >
             Don&apos;t have an account? Sign Up
           </Link>

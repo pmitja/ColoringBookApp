@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Loader2, Wand2, Image as ImageIcon, Sparkles, AlertTriangle, ArrowRight, ArrowLeft } from "lucide-react";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +18,7 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { DashboardHeader } from "@/components/dashboard/header";
 import { Icons } from "@/components/shared/icons";
+import { cn } from "@/lib/utils";
 
 type JobStatus = "QUEUED" | "PROCESSING" | "DONE" | "FAILED";
 
@@ -38,7 +40,7 @@ interface ProcessingPageProps {
 const statusText: Record<JobStatus, string> = {
   QUEUED: "Queued",
   PROCESSING: "Processing",
-  DONE: "Done",
+  DONE: "Ready!",
   FAILED: "Failed",
 };
 
@@ -140,148 +142,195 @@ export default function ProcessingPage({ params }: ProcessingPageProps) {
 
   if (isLoading) {
     return (
-      <>
-        <DashboardHeader
-          heading="Processing"
-          text="Preparing your coloring page."
-        />
-        <div className="flex justify-center">
-          <Icons.spinner className="size-8 animate-spin" />
+      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-6">
+        <div className="relative flex size-24 items-center justify-center rounded-[2rem] bg-primary/10 shadow-sm border-2 border-primary/20">
+          <div className="absolute inset-0 rounded-[2rem] border-4 border-primary/30 border-t-primary animate-spin" />
+          <Wand2 className="size-10 text-primary animate-pulse" />
         </div>
-      </>
+        <div className="text-center space-y-2">
+          <h2 className="font-heading text-2xl">Locating Job...</h2>
+          <p className="text-muted-foreground font-medium">Checking the status of your generation.</p>
+        </div>
+      </div>
     );
   }
 
   if (error || !jobData) {
     return (
-      <>
-        <DashboardHeader
-          heading="Processing Error"
-          text="Could not load generation status."
-        />
-        <div className="mx-auto max-w-2xl space-y-4">
-          <Alert className="border-destructive/40 bg-destructive/10 text-destructive">
-            <Icons.warning className="size-4" />
-            <AlertDescription>{error || "Job not found."}</AlertDescription>
-          </Alert>
-          <Link href="/dashboard">
-            <Button>Back to Dashboard</Button>
-          </Link>
+      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-6 max-w-md mx-auto text-center">
+        <div className="flex size-24 items-center justify-center rounded-[2rem] bg-destructive/10 shadow-sm border-2 border-destructive/20">
+          <AlertTriangle className="size-10 text-destructive" />
         </div>
-      </>
+        <div className="space-y-2">
+          <h2 className="font-heading text-2xl">Processing Error</h2>
+          <p className="text-muted-foreground font-medium">{error || "Job not found or no longer exists."}</p>
+        </div>
+        <Link href="/dashboard" className="w-full sm:w-auto">
+          <Button className="w-full gap-2 rounded-xl py-6 px-8 text-base font-bold shadow-md">
+            <ArrowLeft className="size-5" />
+            Back to Dashboard
+          </Button>
+        </Link>
+      </div>
     );
   }
 
   return (
-    <>
-      <DashboardHeader
-        heading="Processing"
-        text={`Generating from ${jobData.inputFileName}`}
-      />
+    <div className="mx-auto w-full max-w-3xl space-y-8 pb-10">
+      <div className="text-center space-y-3 pt-4 sm:pt-8">
+        <h1 className="font-heading text-3xl sm:text-4xl">Creating Magic</h1>
+        <p className="text-base font-medium text-muted-foreground max-w-lg mx-auto">
+          Generating from <span className="font-bold text-foreground">{jobData.inputFileName}</span>
+        </p>
+      </div>
 
-      <div className="mx-auto max-w-2xl space-y-6 pb-10">
-        <Card className="border-border/80 bg-card/95 rounded-3xl">
-          <CardHeader>
-            <div className="flex items-center justify-between gap-2">
-              <CardTitle className="font-heading text-xl">Job Status</CardTitle>
-              <Badge
-                variant={
-                  jobData.status === "FAILED" ? "destructive" : "secondary"
-                }
-                className="rounded-full"
-              >
-                {statusText[jobData.status]}
-              </Badge>
-            </div>
-            <CardDescription>{stageText}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            <div className="grid gap-3 sm:grid-cols-[170px_minmax(0,1fr)]">
-              <div className="border-border/70 bg-background/60 rounded-2xl border p-4 text-center">
-                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                  Progress
-                </p>
-                <p className="font-heading mt-2 text-4xl leading-none">
-                  {Math.round(progressValue)}%
-                </p>
-                <p className="mt-2 text-xs text-muted-foreground">
-                  {statusText[jobData.status]}
-                </p>
+      <Card className={cn(
+        "playful-card overflow-hidden transition-all duration-500",
+        jobData.status === "DONE" ? "border-emerald-500/50 shadow-emerald-500/10 ring-4 ring-emerald-500/10" : 
+        jobData.status === "FAILED" ? "border-destructive/50 shadow-destructive/10 ring-4 ring-destructive/10" :
+        "border-primary/50 shadow-primary/10 ring-4 ring-primary/10"
+      )}>
+        <CardHeader className={cn(
+          "relative z-10 space-y-4 border-b border-border/50 pb-6 transition-colors duration-500",
+          jobData.status === "DONE" ? "bg-emerald-500/5" : 
+          jobData.status === "FAILED" ? "bg-destructive/5" :
+          "bg-primary/5"
+        )}>
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className={cn(
+                "rounded-xl p-2.5 ring-1",
+                jobData.status === "DONE" ? "bg-emerald-500/10 text-emerald-600 ring-emerald-500/20" : 
+                jobData.status === "FAILED" ? "bg-destructive/10 text-destructive ring-destructive/20" :
+                "bg-primary/10 text-primary ring-primary/20"
+              )}>
+                {jobData.status === "DONE" ? <Sparkles className="size-6" /> :
+                 jobData.status === "FAILED" ? <AlertTriangle className="size-6" /> :
+                 <Loader2 className="size-6 animate-spin" />}
               </div>
-
-              <div className="border-border/70 bg-background/60 space-y-3 rounded-2xl border p-4">
-                <div className="flex items-center justify-between gap-3 text-sm text-muted-foreground">
-                  <span>Overall progress</span>
-                  <span>{Math.round(progressValue)}%</span>
-                </div>
-                <Progress value={progressValue} className="h-2.5" />
-                <p className="text-xs text-muted-foreground">
-                  Estimated: {estimatedTimeLabel}
-                </p>
-                {jobData.status !== "DONE" && jobData.status !== "FAILED" ? (
-                  <p className="text-xs text-muted-foreground">
-                    Keep this page open. You&apos;ll be redirected when output
-                    is ready.
-                  </p>
-                ) : null}
+              <div>
+                <CardTitle className="font-heading text-2xl">Job Status</CardTitle>
+                <CardDescription className="text-sm font-medium mt-1">
+                  {stageText}
+                </CardDescription>
               </div>
             </div>
-
-            <div className="space-y-3">
-              <StageRow
-                label="Queue job"
-                description="Waiting for an available processing slot."
-                active={jobData.status === "QUEUED"}
-                done={queueDone}
-              />
-              <StageRow
-                label="Generate base image"
-                description="Creates the base illustration from your prompt or reference."
-                active={stylingActive}
-                done={stylingDone}
-              />
-              <StageRow
-                label="Generate line art"
-                description="Creates printable black-and-white outlines."
-                active={lineartActive}
-                done={lineartDone}
+            <Badge
+              variant={jobData.status === "FAILED" ? "destructive" : "default"}
+              className={cn(
+                "rounded-full px-4 py-1.5 text-sm font-bold shadow-sm",
+                jobData.status === "PROCESSING" && "bg-primary/10 text-primary hover:bg-primary/20 ring-1 ring-primary/20 border-0",
+                jobData.status === "DONE" && "bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 ring-1 ring-emerald-500/20 border-0"
+              )}
+            >
+              {jobData.status === "PROCESSING" && <span className="relative flex h-2 w-2 mr-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+              </span>}
+              {statusText[jobData.status]}
+            </Badge>
+          </div>
+        </CardHeader>
+        
+        <CardContent className="relative z-10 p-6 sm:p-8 space-y-8">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between text-sm font-bold">
+              <span className="text-foreground">Overall Progress</span>
+              <span className={cn(
+                "text-lg",
+                jobData.status === "DONE" ? "text-emerald-600" : "text-primary"
+              )}>{Math.round(progressValue)}%</span>
+            </div>
+            
+            <div className="relative pt-2">
+              <Progress 
+                value={progressValue} 
+                className={cn(
+                  "h-4 rounded-full shadow-inner bg-muted/60",
+                  jobData.status === "PROCESSING" && "animate-pulse",
+                  jobData.status === "DONE" && "[&>div]:bg-emerald-500",
+                  jobData.status === "FAILED" && "[&>div]:bg-destructive"
+                )} 
               />
             </div>
-
-            {jobData.status === "FAILED" && jobData.errorMessage ? (
-              <Alert className="border-destructive/40 bg-destructive/10 text-destructive">
-                <Icons.warning className="size-4" />
-                <AlertDescription>{jobData.errorMessage}</AlertDescription>
-              </Alert>
-            ) : null}
-
-            <div className="flex flex-wrap gap-2">
-              {jobData.status === "FAILED" ? (
-                <>
-                  <Link href="/upload">
-                    <Button>Try Again</Button>
-                  </Link>
-                  <Link href="/dashboard">
-                    <Button variant="outline">Back to Dashboard</Button>
-                  </Link>
-                </>
-              ) : jobData.status === "DONE" ? (
-                <Link href={`/results/${params.jobId}`}>
-                  <Button className="gap-2">
-                    <Icons.arrowRight className="size-4" />
-                    View Results
-                  </Button>
-                </Link>
-              ) : (
-                <Link href="/dashboard">
-                  <Button variant="outline">Back to Dashboard</Button>
-                </Link>
+            
+            <div className="flex items-center justify-between text-xs font-medium text-muted-foreground bg-muted/30 p-3 rounded-xl border border-border/50">
+              <span className="flex items-center gap-1.5">
+                <Icons.clock className="size-3.5" />
+                Estimated: {estimatedTimeLabel}
+              </span>
+              {jobData.status !== "DONE" && jobData.status !== "FAILED" && (
+                <span className="animate-pulse text-primary">Do not close this page</span>
               )}
             </div>
-          </CardContent>
-        </Card>
-      </div>
-    </>
+          </div>
+
+          <div className="space-y-3 pt-4 border-t-2 border-border/50 border-dashed">
+            <StageRow
+              label="Queue Job"
+              description="Waiting for an available processing slot."
+              active={jobData.status === "QUEUED"}
+              done={queueDone}
+              failed={jobData.status === "FAILED" && !queueDone}
+            />
+            <StageRow
+              label="Generate Base Image"
+              description="Creates the base illustration from your prompt or reference."
+              active={stylingActive}
+              done={stylingDone}
+              failed={jobData.status === "FAILED" && queueDone && !stylingDone}
+            />
+            <StageRow
+              label="Generate Line Art"
+              description="Creates printable black-and-white outlines."
+              active={lineartActive}
+              done={lineartDone}
+              failed={jobData.status === "FAILED" && stylingDone && !lineartDone}
+            />
+          </div>
+
+          {jobData.status === "FAILED" && jobData.errorMessage ? (
+            <Alert className="border-destructive/20 bg-destructive/10 text-destructive rounded-2xl p-4 flex items-start gap-3">
+              <AlertTriangle className="size-5 mt-0.5 shrink-0" />
+              <AlertDescription className="font-bold leading-tight">{jobData.errorMessage}</AlertDescription>
+            </Alert>
+          ) : null}
+
+          <div className="flex flex-wrap gap-3 pt-4">
+            {jobData.status === "FAILED" ? (
+              <>
+                <Link href="/upload" className="flex-1 sm:flex-none">
+                  <Button className="w-full gap-2 rounded-xl py-6 px-6 text-base font-bold shadow-md">
+                    <Icons.refresh className="size-5" />
+                    Try Again
+                  </Button>
+                </Link>
+                <Link href="/dashboard" className="flex-1 sm:flex-none">
+                  <Button variant="outline" className="w-full gap-2 rounded-xl py-6 px-6 text-base font-bold border-2">
+                    Back to Dashboard
+                  </Button>
+                </Link>
+              </>
+            ) : jobData.status === "DONE" ? (
+              <Link href={`/results/${params.jobId}`} className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <Button className="w-full gap-2 rounded-2xl py-7 text-xl font-bold shadow-xl shadow-emerald-500/20 bg-emerald-600 hover:bg-emerald-700 hover:scale-[1.01] active:scale-[0.99] transition-all">
+                  <Sparkles className="size-6" />
+                  View Results
+                  <ArrowRight className="size-6 ml-1" />
+                </Button>
+              </Link>
+            ) : (
+              <Link href="/dashboard" className="w-full">
+                <Button variant="ghost" className="w-full gap-2 rounded-xl py-6 text-base font-bold text-muted-foreground hover:text-foreground">
+                  <ArrowLeft className="size-4" />
+                  Return to Dashboard (Runs in background)
+                </Button>
+              </Link>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 
@@ -290,26 +339,48 @@ function StageRow({
   description,
   active,
   done,
+  failed,
 }: {
   label: string;
   description: string;
   active: boolean;
   done: boolean;
+  failed?: boolean;
 }) {
   return (
-    <div className="border-border/70 bg-background/60 flex items-center gap-3 rounded-2xl border p-3">
-      <span className="border-border/80 flex size-8 items-center justify-center rounded-full border">
+    <div className={cn(
+      "flex items-center gap-4 rounded-2xl border-2 p-4 transition-all duration-300",
+      active ? "border-primary/30 bg-primary/5 shadow-sm scale-[1.01]" : 
+      done ? "border-emerald-500/20 bg-emerald-500/5" :
+      failed ? "border-destructive/20 bg-destructive/5" :
+      "border-border/50 bg-background/50 opacity-60"
+    )}>
+      <div className={cn(
+        "flex size-10 items-center justify-center rounded-xl shrink-0 shadow-sm border",
+        active ? "bg-background border-primary/20 text-primary" :
+        done ? "bg-emerald-500 text-white border-emerald-600" :
+        failed ? "bg-destructive text-white border-destructive" :
+        "bg-muted border-border/50 text-muted-foreground"
+      )}>
         {done ? (
-          <Icons.check className="size-4 text-emerald-600" />
+          <Icons.check className="size-5" />
+        ) : failed ? (
+          <Icons.close className="size-5" />
         ) : active ? (
-          <Icons.spinner className="size-4 animate-spin text-primary" />
+          <Loader2 className="size-5 animate-spin" />
         ) : (
-          <span className="bg-muted-foreground/50 size-2 rounded-full" />
+          <div className="size-2.5 rounded-full bg-current opacity-40" />
         )}
-      </span>
-      <div className="space-y-0.5">
-        <p className="text-sm font-medium text-foreground">{label}</p>
-        <p className="text-xs text-muted-foreground">{description}</p>
+      </div>
+      <div className="space-y-1">
+        <p className={cn(
+          "text-base font-bold leading-none",
+          active ? "text-primary" :
+          done ? "text-emerald-700 dark:text-emerald-400" :
+          failed ? "text-destructive" :
+          "text-foreground"
+        )}>{label}</p>
+        <p className="text-sm font-medium text-muted-foreground leading-snug">{description}</p>
       </div>
     </div>
   );

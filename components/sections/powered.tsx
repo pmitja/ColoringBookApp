@@ -36,7 +36,7 @@ export default function Powered() {
             <p className="playful-pill mx-auto w-fit text-xs font-semibold uppercase tracking-[0.2em]">
               Built for Families
             </p>
-            <h2 className="font-heading mt-3 text-balance text-3xl sm:text-4xl">
+            <h2 className="mt-3 text-balance font-heading text-3xl sm:text-4xl">
               Everything you need for happy coloring time
             </h2>
           </div>
@@ -53,7 +53,7 @@ export default function Powered() {
                   <div className="flex size-11 items-center justify-center rounded-2xl bg-secondary text-primary">
                     <Icon className="size-5" />
                   </div>
-                  <h3 className="font-heading mt-4 text-xl leading-tight">
+                  <h3 className="mt-4 font-heading text-xl leading-tight">
                     {item.title}
                   </h3>
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">

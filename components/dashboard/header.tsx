@@ -18,7 +18,7 @@ export function DashboardHeader({
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="border-border/50 dark:border-slate-700 mb-8 flex flex-wrap items-end justify-between gap-4 border-b pb-6"
+      className="border-border/50 mb-8 flex flex-wrap items-end justify-between gap-4 border-b pb-6 dark:border-slate-700"
     >
       <div className="space-y-2">
         <h1 className="font-heading text-3xl font-bold tracking-tight text-foreground dark:text-slate-50 sm:text-4xl">

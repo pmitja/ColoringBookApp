@@ -18,7 +18,7 @@ export default function InfoLanding({
     <section className="py-10 sm:py-16">
       <MaxWidthWrapper className="grid gap-10 px-2.5 lg:grid-cols-2 lg:items-center lg:px-7">
         <div className={cn(reverse ? "lg:order-2" : "lg:order-1")}>
-          <h2 className="font-heading text-balance text-3xl text-foreground md:text-4xl lg:text-[42px]">
+          <h2 className="text-balance font-heading text-3xl text-foreground md:text-4xl lg:text-[42px]">
             {data.title}
           </h2>
           <p className="mt-4 text-lg leading-relaxed text-muted-foreground">

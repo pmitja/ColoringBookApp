@@ -629,26 +629,26 @@ export default function GeneratorStudio({
   const renderStylePicker = (
     subtitle = "Pick the artistic pass before line-art conversion.",
   ) => (
-    <div className="bg-white dark:bg-slate-900 rounded-[2rem] border-4 border-slate-900 dark:border-slate-700 p-6 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)] relative overflow-hidden">
-      <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-2 relative z-10">
+    <div className="relative overflow-hidden rounded-[2rem] border-4 border-slate-900 bg-white p-6 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)]">
+      <div className="relative z-10 mb-6 flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
         <div>
-          <Label className="text-xl font-heading font-extrabold flex items-center gap-2 text-slate-900 dark:text-slate-50">
-            <div className="bg-purple-100 dark:bg-purple-900/30 p-1.5 rounded-full border-2 border-slate-900 dark:border-slate-600">
+          <Label className="flex items-center gap-2 font-heading text-xl font-extrabold text-slate-900 dark:text-slate-50">
+            <div className="rounded-full border-2 border-slate-900 bg-purple-100 p-1.5 dark:border-slate-600 dark:bg-purple-900/30">
                <Icons.palette className="size-5 text-purple-600 dark:text-purple-400" />
             </div>
             Style Selection
           </Label>
-          <p className="text-sm font-bold text-slate-500 dark:text-slate-400 mt-1">{subtitle}</p>
+          <p className="mt-1 text-sm font-bold text-slate-500 dark:text-slate-400">{subtitle}</p>
         </div>
-        <div className="bg-yellow-100 dark:bg-yellow-900/30 border-2 border-slate-900 dark:border-slate-600 rounded-full px-4 py-1.5 text-xs font-black shadow-sm inline-flex items-center gap-2 self-start sm:self-auto text-slate-900 dark:text-slate-100">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-500 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-yellow-500 border border-slate-900"></span>
+        <div className="inline-flex items-center gap-2 self-start rounded-full border-2 border-slate-900 bg-yellow-100 px-4 py-1.5 text-xs font-black text-slate-900 shadow-sm dark:border-slate-600 dark:bg-yellow-900/30 dark:text-slate-100 sm:self-auto">
+          <span className="relative flex size-2">
+            <span className="absolute inline-flex size-full animate-ping rounded-full bg-yellow-500 opacity-75"></span>
+            <span className="relative inline-flex size-2 rounded-full border border-slate-900 bg-yellow-500"></span>
           </span>
           {STYLE_PRESETS[selectedStyle].label} Selected
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 relative z-10">
+      <div className="relative z-10 grid grid-cols-2 gap-4 sm:grid-cols-3">
         {styleKeys.map((styleId, index) => {
           const preset = STYLE_PRESETS[styleId];
           const isSelected = selectedStyle === styleId;
@@ -665,12 +665,12 @@ export default function GeneratorStudio({
               className={cn(
                 "group relative overflow-hidden rounded-2xl border-2 p-2 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-70",
                 isSelected
-                  ? "bg-slate-900 dark:bg-slate-100 border-slate-900 dark:border-slate-100 shadow-md transform scale-[1.02]"
-                  : "hover:bg-slate-50 dark:hover:bg-slate-800 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-slate-400 dark:hover:border-slate-600 hover:shadow-sm",
+                  ? "scale-[1.02] border-slate-900 bg-slate-900 shadow-md dark:border-slate-100 dark:bg-slate-100"
+                  : "border-slate-200 bg-white hover:border-slate-400 hover:bg-slate-50 hover:shadow-sm dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-600 dark:hover:bg-slate-800",
               )}
             >
               <div
-                className="relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-slate-100 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700"
+                className="relative aspect-[4/3] w-full overflow-hidden rounded-xl border-2 border-slate-200 bg-slate-100 dark:border-slate-700 dark:bg-slate-800"
               >
                 <Image
                   src={preset.previewImage}
@@ -684,7 +684,7 @@ export default function GeneratorStudio({
                 />
                 
                 {isSelected && (
-                   <div className="absolute top-2 right-2 bg-emerald-500 text-white rounded-full p-1 shadow-sm border-2 border-white">
+                   <div className="absolute right-2 top-2 rounded-full border-2 border-white bg-emerald-500 p-1 text-white shadow-sm">
                      <Icons.check className="size-3" />
                    </div>
                 )}
@@ -693,12 +693,12 @@ export default function GeneratorStudio({
                  <p
                    className={cn(
                      "text-sm font-extrabold transition-colors",
-                     isSelected ? "text-white dark:text-slate-900" : "text-slate-900 dark:text-slate-50 group-hover:text-purple-600 dark:group-hover:text-purple-400",
+                     isSelected ? "text-white dark:text-slate-900" : "text-slate-900 group-hover:text-purple-600 dark:text-slate-50 dark:group-hover:text-purple-400",
                    )}
                  >
                    {preset.label}
                  </p>
-                 <p className={cn("line-clamp-1 text-xs font-bold mt-0.5", isSelected ? "text-slate-300 dark:text-slate-600" : "text-slate-400 dark:text-slate-500")}>
+                 <p className={cn("mt-0.5 line-clamp-1 text-xs font-bold", isSelected ? "text-slate-300 dark:text-slate-600" : "text-slate-400 dark:text-slate-500")}>
                    {preset.subtitle}
                  </p>
               </div>
@@ -711,7 +711,7 @@ export default function GeneratorStudio({
 
   return (
     <>
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <div className="space-y-1.5">
           <h1 className="font-heading text-4xl font-black text-slate-900 dark:text-slate-50">{heading}</h1>
           <p className="text-lg font-bold text-slate-500 dark:text-slate-400">
@@ -726,12 +726,12 @@ export default function GeneratorStudio({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <Card className="rounded-[2rem] border-4 border-slate-900 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)] overflow-hidden">
-            <CardHeader className="bg-pink-50 dark:bg-pink-900/20 border-b-4 border-slate-900 dark:border-slate-700 p-6 relative z-10 space-y-4">
+          <Card className="overflow-hidden rounded-[2rem] border-4 border-slate-900 bg-white shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)]">
+            <CardHeader className="relative z-10 space-y-4 border-b-4 border-slate-900 bg-pink-50 p-6 dark:border-slate-700 dark:bg-pink-900/20">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="space-y-1.5">
-                  <CardTitle className="font-heading flex items-center gap-2 text-3xl font-extrabold text-slate-900 dark:text-slate-50">
-                    <div className="bg-white dark:bg-slate-800 border-2 border-slate-900 dark:border-slate-600 rounded-full p-2 text-pink-500 dark:text-pink-400 shadow-sm">
+                  <CardTitle className="flex items-center gap-2 font-heading text-3xl font-extrabold text-slate-900 dark:text-slate-50">
+                    <div className="rounded-full border-2 border-slate-900 bg-white p-2 text-pink-500 shadow-sm dark:border-slate-600 dark:bg-slate-800 dark:text-pink-400">
                       <Icons.wandSparkles className="size-6" />
                     </div>
                     Generator Studio
@@ -741,8 +741,8 @@ export default function GeneratorStudio({
                     line art.
                   </CardDescription>
                 </div>
-                <div className="inline-flex items-center gap-2 rounded-full border-2 border-slate-900 dark:border-slate-600 bg-emerald-100 dark:bg-emerald-900/30 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300 shadow-sm">
-                  <div className="bg-emerald-500 rounded-full p-0.5 text-white border border-emerald-700">
+                <div className="inline-flex items-center gap-2 rounded-full border-2 border-slate-900 bg-emerald-100 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-emerald-800 shadow-sm dark:border-slate-600 dark:bg-emerald-900/30 dark:text-emerald-300">
+                  <div className="rounded-full border border-emerald-700 bg-emerald-500 p-0.5 text-white">
                     <Icons.check className="size-3" />
                   </div>
                   Original files not stored
@@ -781,11 +781,11 @@ export default function GeneratorStudio({
                     className="overflow-hidden"
                   >
                     <div
-                      className="border-primary/20 bg-primary/5 space-y-4 rounded-2xl border p-5 relative overflow-hidden"
+                      className="border-primary/20 bg-primary/5 relative space-y-4 overflow-hidden rounded-2xl border p-5"
                       aria-live="polite"
                     >
-                      <div className="absolute inset-0 bg-primary/5 -translate-x-[100%] animate-[shimmer_2s_infinite]" />
-                      <div className="flex items-center justify-between gap-3 relative z-10">
+                      <div className="bg-primary/5 absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite]" />
+                      <div className="relative z-10 flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3">
                           <div className="bg-primary/20 rounded-full p-2">
                             <Icons.spinner className="size-5 animate-spin text-primary" />
@@ -799,11 +799,11 @@ export default function GeneratorStudio({
                             </p>
                           </div>
                         </div>
-                        <div className="bg-background rounded-full px-3 py-1 text-sm font-bold text-primary shadow-sm border">
+                        <div className="rounded-full border bg-background px-3 py-1 text-sm font-bold text-primary shadow-sm">
                           {uploadProgress}%
                         </div>
                       </div>
-                      <Progress value={uploadProgress} className="h-3 relative z-10" />
+                      <Progress value={uploadProgress} className="relative z-10 h-3" />
                     </div>
                   </motion.div>
                 )}
@@ -824,7 +824,7 @@ export default function GeneratorStudio({
                     {showModeTabs ? (
                       <TabsList
                         className={cn(
-                          "bg-slate-100 dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 grid h-auto w-full rounded-[2rem] p-2",
+                          "grid h-auto w-full rounded-[2rem] border-2 border-slate-200 bg-slate-100 p-2 dark:border-slate-700 dark:bg-slate-800",
                           availableModes.length === 2
                             ? "grid-cols-2"
                             : availableModes.length === 3
@@ -835,7 +835,7 @@ export default function GeneratorStudio({
                         {availableModes.includes("photo") && (
                           <TabsTrigger
                             value="photo"
-                            className="rounded-3xl py-4 font-extrabold transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-slate-900 dark:data-[state=active]:text-slate-50 data-[state=active]:shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] dark:data-[state=active]:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.4)] data-[state=active]:border-2 data-[state=active]:border-slate-900 dark:data-[state=active]:border-slate-600 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-50"
+                            className="rounded-3xl py-4 font-extrabold text-slate-500 transition-all hover:text-slate-700 data-[state=active]:border-2 data-[state=active]:border-slate-900 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] dark:text-slate-400 dark:hover:text-slate-50 dark:data-[state=active]:border-slate-600 dark:data-[state=active]:bg-slate-800 dark:data-[state=active]:text-slate-50 dark:data-[state=active]:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.4)]"
                           >
                             <div className="flex items-center gap-2">
                               <Icons.media className="size-5" />
@@ -846,7 +846,7 @@ export default function GeneratorStudio({
                         {availableModes.includes("ai") && (
                           <TabsTrigger
                             value="ai"
-                            className="rounded-3xl py-4 font-extrabold transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-slate-900 dark:data-[state=active]:text-slate-50 data-[state=active]:shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] dark:data-[state=active]:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.4)] data-[state=active]:border-2 data-[state=active]:border-slate-900 dark:data-[state=active]:border-slate-600 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-50"
+                            className="rounded-3xl py-4 font-extrabold text-slate-500 transition-all hover:text-slate-700 data-[state=active]:border-2 data-[state=active]:border-slate-900 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] dark:text-slate-400 dark:hover:text-slate-50 dark:data-[state=active]:border-slate-600 dark:data-[state=active]:bg-slate-800 dark:data-[state=active]:text-slate-50 dark:data-[state=active]:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.4)]"
                           >
                             <div className="flex items-center gap-2">
                               <Icons.wandSparkles className="size-5" />
@@ -857,7 +857,7 @@ export default function GeneratorStudio({
                         {availableModes.includes("name") && (
                           <TabsTrigger
                             value="name"
-                            className="rounded-3xl py-4 font-extrabold transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-slate-900 dark:data-[state=active]:text-slate-50 data-[state=active]:shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] dark:data-[state=active]:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.4)] data-[state=active]:border-2 data-[state=active]:border-slate-900 dark:data-[state=active]:border-slate-600 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-50"
+                            className="rounded-3xl py-4 font-extrabold text-slate-500 transition-all hover:text-slate-700 data-[state=active]:border-2 data-[state=active]:border-slate-900 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] dark:text-slate-400 dark:hover:text-slate-50 dark:data-[state=active]:border-slate-600 dark:data-[state=active]:bg-slate-800 dark:data-[state=active]:text-slate-50 dark:data-[state=active]:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.4)]"
                           >
                             <div className="flex items-center gap-2">
                               <Icons.page className="size-5" />
@@ -868,7 +868,7 @@ export default function GeneratorStudio({
                         {availableModes.includes("consistent") && (
                           <TabsTrigger
                             value="consistent"
-                            className="rounded-3xl py-4 font-extrabold transition-all data-[state=active]:bg-white dark:data-[state=active]:bg-slate-800 data-[state=active]:text-slate-900 dark:data-[state=active]:text-slate-50 data-[state=active]:shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] dark:data-[state=active]:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.4)] data-[state=active]:border-2 data-[state=active]:border-slate-900 dark:data-[state=active]:border-slate-600 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-50"
+                            className="rounded-3xl py-4 font-extrabold text-slate-500 transition-all hover:text-slate-700 data-[state=active]:border-2 data-[state=active]:border-slate-900 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] dark:text-slate-400 dark:hover:text-slate-50 dark:data-[state=active]:border-slate-600 dark:data-[state=active]:bg-slate-800 dark:data-[state=active]:text-slate-50 dark:data-[state=active]:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.4)]"
                           >
                             <div className="flex items-center gap-2">
                               <Icons.userCircle className="size-5" />
@@ -882,22 +882,22 @@ export default function GeneratorStudio({
                   {availableModes.includes("photo") && (
                     <TabsContent value="photo" className="space-y-6">
                       {!selectedFile ? (
-                        <div className="rounded-[2rem] border-4 border-slate-900 dark:border-slate-700 bg-white dark:bg-slate-900 p-4 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)] relative overflow-hidden">
-                          <div className="absolute inset-0 bg-blue-50/50 dark:bg-blue-900/10 pointer-events-none" />
+                        <div className="relative overflow-hidden rounded-[2rem] border-4 border-slate-900 bg-white p-4 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)]">
+                          <div className="pointer-events-none absolute inset-0 bg-blue-50/50 dark:bg-blue-900/10" />
                           <div
                             {...getPhotoRootProps()}
                             className={cn(
-                              "relative z-10 flex cursor-pointer flex-col items-center justify-center rounded-[1.5rem] border-4 border-dashed p-10 text-center transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2",
+                              "relative z-10 flex cursor-pointer flex-col items-center justify-center rounded-3xl border-4 border-dashed p-10 text-center transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2",
                               isPhotoDragActive
-                                ? "border-blue-500 bg-blue-50 dark:bg-blue-900/30 scale-[0.98]"
-                                : "border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 hover:border-blue-400 dark:hover:border-slate-600 hover:bg-blue-50/50 dark:hover:bg-slate-800",
+                                ? "scale-[0.98] border-blue-500 bg-blue-50 dark:bg-blue-900/30"
+                                : "border-slate-300 bg-slate-50 hover:border-blue-400 hover:bg-blue-50/50 dark:border-slate-600 dark:bg-slate-800 dark:hover:border-slate-600 dark:hover:bg-slate-800",
                             )}
                           >
                             <input {...getPhotoInputProps()} />
                             <motion.div 
                               animate={isPhotoDragActive ? { scale: 1.1, rotate: [0, -10, 10, -10, 0] } : { scale: 1, rotate: 0 }}
                               transition={{ duration: 0.5 }}
-                              className="bg-blue-100 dark:bg-blue-900/30 mb-6 flex size-20 items-center justify-center rounded-full shadow-sm border-2 border-slate-900 dark:border-slate-600"
+                              className="mb-6 flex size-20 items-center justify-center rounded-full border-2 border-slate-900 bg-blue-100 shadow-sm dark:border-slate-600 dark:bg-blue-900/30"
                             >
                               <Icons.media className="size-10 text-blue-600" />
                             </motion.div>
@@ -910,14 +910,14 @@ export default function GeneratorStudio({
                                 <p className="text-xl font-extrabold text-slate-900">
                                   Drag & drop a photo here
                                 </p>
-                                <p className="text-base text-slate-500 font-bold">
-                                  or <span className="text-blue-600 hover:underline underline-offset-4 decoration-blue-300">click to browse</span> your device
+                                <p className="text-base font-bold text-slate-500">
+                                  or <span className="text-blue-600 decoration-blue-300 underline-offset-4 hover:underline">click to browse</span> your device
                                 </p>
-                                <div className="flex items-center justify-center gap-2 mt-4 pt-4 border-t-2 border-slate-200">
-                                  <span className="text-xs font-black text-slate-500 bg-slate-200 px-2 py-1 rounded-md">JPG</span>
-                                  <span className="text-xs font-black text-slate-500 bg-slate-200 px-2 py-1 rounded-md">PNG</span>
-                                  <span className="text-xs font-black text-slate-500 bg-slate-200 px-2 py-1 rounded-md">HEIC</span>
-                                  <span className="text-xs text-slate-400 ml-1 font-bold">Up to 10MB</span>
+                                <div className="mt-4 flex items-center justify-center gap-2 border-t-2 border-slate-200 pt-4">
+                                  <span className="rounded-md bg-slate-200 px-2 py-1 text-xs font-black text-slate-500">JPG</span>
+                                  <span className="rounded-md bg-slate-200 px-2 py-1 text-xs font-black text-slate-500">PNG</span>
+                                  <span className="rounded-md bg-slate-200 px-2 py-1 text-xs font-black text-slate-500">HEIC</span>
+                                  <span className="ml-1 text-xs font-bold text-slate-400">Up to 10MB</span>
                                 </div>
                               </div>
                             )}
@@ -927,9 +927,9 @@ export default function GeneratorStudio({
                           <motion.div 
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            className="bg-white dark:bg-slate-900 rounded-[2rem] border-4 border-slate-900 dark:border-slate-700 p-6 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)] space-y-4"
+                            className="space-y-4 rounded-[2rem] border-4 border-slate-900 bg-white p-6 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)]"
                           >
-                            <div className="relative aspect-square w-full max-w-md mx-auto overflow-hidden rounded-[1.5rem] border-4 border-slate-900 dark:border-slate-700 shadow-sm group bg-slate-100 dark:bg-slate-800">
+                            <div className="group relative mx-auto aspect-square w-full max-w-md overflow-hidden rounded-3xl border-4 border-slate-900 bg-slate-100 shadow-sm dark:border-slate-700 dark:bg-slate-800">
                               {previewUrl && (
                                 <>
                                   <Image
@@ -938,16 +938,16 @@ export default function GeneratorStudio({
                                     fill
                                     className="object-cover transition-transform duration-700 group-hover:scale-105"
                                   />
-                                  <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                  <div className="absolute inset-0 bg-black/20 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                                 </>
                               )}
                             </div>
-                            <div className="flex flex-wrap justify-center gap-3 text-sm text-slate-500 mt-4">
-                              <span className="bg-slate-100 rounded-full border-2 border-slate-200 px-4 py-1.5 font-bold shadow-sm flex items-center gap-2">
+                            <div className="mt-4 flex flex-wrap justify-center gap-3 text-sm text-slate-500">
+                              <span className="flex items-center gap-2 rounded-full border-2 border-slate-200 bg-slate-100 px-4 py-1.5 font-bold shadow-sm">
                                 <Icons.file className="size-4 text-blue-500" />
                                 <span className="max-w-[200px] truncate text-slate-700">{selectedFile.name}</span>
                               </span>
-                              <span className="bg-slate-100 rounded-full border-2 border-slate-200 px-4 py-1.5 font-bold shadow-sm text-slate-700">
+                              <span className="rounded-full border-2 border-slate-200 bg-slate-100 px-4 py-1.5 font-bold text-slate-700 shadow-sm">
                                 {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
                               </span>
                             </div>
@@ -966,15 +966,15 @@ export default function GeneratorStudio({
                          initial={{ opacity: 0, y: 10 }}
                          animate={{ opacity: 1, y: 0 }}
                          transition={{ delay: 0.2 }}
-                         className="pt-2 flex gap-3"
+                         className="flex gap-3 pt-2"
                       >
                         <Button
                           onClick={handlePhotoUpload}
                           disabled={isUploading || !isReadyToSubmit}
-                          className="flex-1 gap-3 rounded-full py-7 text-lg font-black shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] transition-transform hover:translate-y-[2px] active:translate-y-[4px] group relative overflow-hidden bg-emerald-400 text-slate-900 border-2 border-slate-900 hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)]"
+                          className="group relative flex-1 gap-3 overflow-hidden rounded-full border-2 border-slate-900 bg-emerald-400 py-7 text-lg font-black text-slate-900 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] transition-transform hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] active:translate-y-[4px]"
                           size="lg"
                         >
-                          <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 pointer-events-none" />
+                          <div className="pointer-events-none absolute inset-0 translate-y-full bg-white/20 transition-transform duration-300 group-hover:translate-y-0" />
                           {isUploading ? (
                             <>
                               <Icons.spinner className="size-6 animate-spin text-slate-900" />
@@ -982,7 +982,7 @@ export default function GeneratorStudio({
                             </>
                           ) : (
                             <>
-                              <Icons.wandSparkles className="size-6 relative z-10 group-hover:rotate-12 transition-transform duration-300" />
+                              <Icons.wandSparkles className="relative z-10 size-6 transition-transform duration-300 group-hover:rotate-12" />
                               <span className="relative z-10">
                                 {batchCount > 1
                                   ? `Process ${batchCount} Photos`
@@ -1000,7 +1000,7 @@ export default function GeneratorStudio({
                           variant="outline"
                           disabled={isUploading || !selectedFile}
                           size="lg"
-                          className="bg-white rounded-full size-14 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] hover:translate-y-[2px] hover:bg-red-50 hover:text-red-600 hover:border-slate-900 transition-all shrink-0 border-2 border-slate-900"
+                          className="size-14 shrink-0 rounded-full border-2 border-slate-900 bg-white shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] transition-all hover:translate-y-[2px] hover:border-slate-900 hover:bg-red-50 hover:text-red-600 hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)]"
                           aria-label="Remove selected image"
                           title="Remove selected image"
                         >
@@ -1008,7 +1008,7 @@ export default function GeneratorStudio({
                         </Button>
                       </motion.div>
                       {!isReadyToSubmit && (
-                        <p className="text-center text-sm font-medium text-muted-foreground mt-4 animate-pulse">
+                        <p className="mt-4 animate-pulse text-center text-sm font-medium text-muted-foreground">
                           Upload a photo to enable generation.
                         </p>
                       )}
@@ -1020,12 +1020,12 @@ export default function GeneratorStudio({
                       <motion.div 
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="bg-muted/30 dark:bg-slate-800/50 rounded-[2rem] border p-6 shadow-sm relative overflow-hidden"
+                        className="bg-muted/30 relative overflow-hidden rounded-[2rem] border p-6 shadow-sm dark:bg-slate-800/50"
                       >
-                        <div className="absolute top-0 right-0 -translate-y-1/4 translate-x-1/4 w-32 h-32 bg-primary/20 blur-3xl rounded-full" />
+                        <div className="bg-primary/20 absolute right-0 top-0 size-32 -translate-y-1/4 translate-x-1/4 rounded-full blur-3xl" />
                         <Label
                           htmlFor="generator-prompt"
-                          className="mb-5 flex items-center gap-2 text-xl font-heading font-bold"
+                          className="mb-5 flex items-center gap-2 font-heading text-xl font-bold"
                         >
                           <Icons.sparkles className="size-5 text-primary" />
                           Describe your coloring page
@@ -1037,30 +1037,30 @@ export default function GeneratorStudio({
                               value={generatorPrompt}
                               onChange={(e) => setGeneratorPrompt(e.target.value)}
                               placeholder="Example: a cheerful fox teacher in a cozy forest classroom, kids sitting on mushroom stools reading books, clean simple background..."
-                              className="focus-visible:ring-primary/40 focus-visible:border-primary/50 min-h-[160px] resize-none rounded-[1.5rem] bg-background/80 backdrop-blur-sm p-5 text-base shadow-inner text-foreground/90 placeholder:text-muted-foreground/60 border-2"
+                              className="focus-visible:ring-primary/40 focus-visible:border-primary/50 bg-background/80 text-foreground/90 placeholder:text-muted-foreground/60 min-h-[160px] resize-none rounded-3xl border-2 p-5 text-base shadow-inner backdrop-blur-sm"
                               disabled={isUploading}
                             />
                             {generatorPromptLength > 0 && generatorPromptLength < MINIMUM_PROMPT_LENGTH && (
-                              <div className="absolute bottom-4 right-4 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-3 py-1 rounded-full text-xs font-bold shadow-sm border border-amber-200/50 flex items-center gap-1.5">
+                              <div className="absolute bottom-4 right-4 flex items-center gap-1.5 rounded-full border border-amber-200/50 bg-amber-100 px-3 py-1 text-xs font-bold text-amber-700 shadow-sm dark:bg-amber-900/30 dark:text-amber-400">
                                 <Icons.warning className="size-3" />
                                 Need {MINIMUM_PROMPT_LENGTH - generatorPromptLength} more chars
                               </div>
                             )}
                             {generatorPromptLength >= MINIMUM_PROMPT_LENGTH && (
-                              <div className="absolute bottom-4 right-4 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-3 py-1 rounded-full text-xs font-bold shadow-sm border border-emerald-200/50 flex items-center gap-1.5">
+                              <div className="absolute bottom-4 right-4 flex items-center gap-1.5 rounded-full border border-emerald-200/50 bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700 shadow-sm dark:bg-emerald-900/30 dark:text-emerald-400">
                                 <Icons.check className="size-3" />
                                 Ready
                               </div>
                             )}
                           </div>
-                        <div className="mt-4 flex items-center justify-between gap-3 text-sm font-medium text-muted-foreground px-2">
+                        <div className="mt-4 flex items-center justify-between gap-3 px-2 text-sm font-medium text-muted-foreground">
                           <p className="flex items-center gap-1.5">
                             <Icons.info className="size-4 opacity-70" />
                             Be specific: subject, setting, action, and mood.
                           </p>
                           <p
                             className={cn(
-                              "shrink-0 font-mono text-xs font-bold bg-muted/50 px-2 py-1 rounded-md",
+                              "bg-muted/50 shrink-0 rounded-md px-2 py-1 font-mono text-xs font-bold",
                               generatorPromptLength < MINIMUM_PROMPT_LENGTH
                                 ? "text-amber-600 dark:text-amber-400"
                                 : "text-emerald-600 dark:text-emerald-400"
@@ -1090,10 +1090,10 @@ export default function GeneratorStudio({
                         <Button
                           onClick={handleAIGenerator}
                           disabled={isUploading || !isReadyToSubmit}
-                          className="w-full gap-3 rounded-full py-7 text-lg font-black shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] transition-transform hover:translate-y-[2px] active:translate-y-[4px] group relative overflow-hidden bg-purple-400 text-slate-900 border-2 border-slate-900 hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)]"
+                          className="group relative w-full gap-3 overflow-hidden rounded-full border-2 border-slate-900 bg-purple-400 py-7 text-lg font-black text-slate-900 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] transition-transform hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] active:translate-y-[4px]"
                           size="lg"
                         >
-                          <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 pointer-events-none" />
+                          <div className="pointer-events-none absolute inset-0 translate-y-full bg-white/20 transition-transform duration-300 group-hover:translate-y-0" />
                           {isUploading ? (
                             <>
                               <Icons.spinner className="size-6 animate-spin text-slate-900" />
@@ -1101,14 +1101,14 @@ export default function GeneratorStudio({
                             </>
                           ) : (
                             <>
-                              <Icons.wandSparkles className="size-6 relative z-10 group-hover:rotate-12 transition-transform duration-300" />
+                              <Icons.wandSparkles className="relative z-10 size-6 transition-transform duration-300 group-hover:rotate-12" />
                               <span className="relative z-10">Generate Line Art</span>
-                              <Icons.arrowRight className="size-5 ml-1 opacity-70 group-hover:translate-x-1 transition-transform relative z-10" />
+                              <Icons.arrowRight className="relative z-10 ml-1 size-5 opacity-70 transition-transform group-hover:translate-x-1" />
                             </>
                           )}
                         </Button>
                         {!isReadyToSubmit && (
-                          <p className="text-center text-sm font-medium text-muted-foreground mt-4 animate-pulse">
+                          <p className="mt-4 animate-pulse text-center text-sm font-medium text-muted-foreground">
                             Write a bit more to unlock generation.
                           </p>
                         )}
@@ -1121,13 +1121,13 @@ export default function GeneratorStudio({
                       <motion.div 
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="bg-muted/30 dark:bg-slate-800/50 rounded-[2rem] border p-6 shadow-sm relative overflow-hidden"
+                        className="bg-muted/30 relative overflow-hidden rounded-[2rem] border p-6 shadow-sm dark:bg-slate-800/50"
                       >
-                        <div className="absolute top-0 left-0 -translate-y-1/4 -translate-x-1/4 w-32 h-32 bg-primary/20 blur-3xl rounded-full" />
+                        <div className="bg-primary/20 absolute left-0 top-0 size-32 -translate-x-1/4 -translate-y-1/4 rounded-full blur-3xl" />
                         <div className="relative z-10 space-y-4">
                           <Label
                             htmlFor="name-page-name"
-                            className="flex items-center gap-2 text-xl font-heading font-bold"
+                            className="flex items-center gap-2 font-heading text-xl font-bold"
                           >
                             <Icons.page className="size-5 text-primary" />
                             Name to Generate
@@ -1143,15 +1143,15 @@ export default function GeneratorStudio({
                                 );
                               }}
                               placeholder="Example: Sara"
-                              className="h-16 text-2xl font-bold tracking-widest text-center rounded-[1.5rem] bg-background/80 backdrop-blur-sm border-2 focus-visible:ring-primary/40 focus-visible:border-primary/50 shadow-inner"
+                              className="bg-background/80 focus-visible:ring-primary/40 focus-visible:border-primary/50 h-16 rounded-3xl border-2 text-center text-2xl font-bold tracking-widest shadow-inner backdrop-blur-sm"
                               maxLength={NAME_MAX_LENGTH}
                               disabled={isUploading}
                             />
-                            <div className="absolute right-4 top-1/2 -translate-y-1/2 bg-muted/80 backdrop-blur-md px-2 py-1 rounded-md text-xs font-bold text-muted-foreground shadow-sm border">
+                            <div className="bg-muted/80 absolute right-4 top-1/2 -translate-y-1/2 rounded-md border px-2 py-1 text-xs font-bold text-muted-foreground shadow-sm backdrop-blur-md">
                               {namePageNameLength} / {NAME_MAX_LENGTH}
                             </div>
                           </div>
-                          <div className="flex items-center justify-between text-xs font-medium text-muted-foreground px-2">
+                          <div className="flex items-center justify-between px-2 text-xs font-medium text-muted-foreground">
                             <p className="flex items-center gap-1.5">
                               <Icons.info className="size-4 opacity-70" />
                               Letters, spaces, apostrophes, and hyphens only.
@@ -1164,24 +1164,24 @@ export default function GeneratorStudio({
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1 }}
-                        className="bg-background/80 backdrop-blur-sm space-y-5 rounded-[2rem] border border-border/50 p-6 shadow-sm relative overflow-hidden"
+                        className="bg-background/80 border-border/50 relative space-y-5 overflow-hidden rounded-[2rem] border p-6 shadow-sm backdrop-blur-sm"
                       >
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 relative z-10">
+                        <div className="relative z-10 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
                           <div>
-                            <Label className="text-xl font-heading font-bold flex items-center gap-2">
+                            <Label className="flex items-center gap-2 font-heading text-xl font-bold">
                               <Icons.palette className="size-5 text-primary" />
                               Decoration Theme
                             </Label>
-                            <p className="text-sm font-medium text-muted-foreground mt-1">
+                            <p className="mt-1 text-sm font-medium text-muted-foreground">
                               Controls the doodles around the name.
                             </p>
                           </div>
-                          <div className="bg-muted/80 backdrop-blur-md border rounded-full px-3 py-1.5 text-xs font-bold shadow-sm inline-flex items-center gap-1.5">
+                          <div className="bg-muted/80 inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-bold shadow-sm backdrop-blur-md">
                              {selectedNameTheme?.label ?? (NAME_THEME_OPTIONS[0] ? NAME_THEME_OPTIONS[0].label : "")}
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 relative z-10">
+                        <div className="relative z-10 grid grid-cols-1 gap-3 sm:grid-cols-2">
                           {NAME_THEME_OPTIONS.map((theme, index) => {
                             const isSelected = theme.id === nameThemeId;
 
@@ -1195,7 +1195,7 @@ export default function GeneratorStudio({
                                 disabled={isUploading}
                                 onClick={() => setNameThemeId(theme.id)}
                                 className={cn(
-                                  "group relative overflow-hidden rounded-[1.5rem] border-2 p-4 text-left transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                                  "group relative overflow-hidden rounded-3xl border-2 p-4 text-left transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                                   isSelected
                                     ? "bg-primary/5 border-primary shadow-md"
                                     : "bg-background/60 hover:bg-muted/40 hover:border-primary/30 border-transparent shadow-sm",
@@ -1204,12 +1204,12 @@ export default function GeneratorStudio({
                                 {isSelected && (
                                   <motion.div 
                                     layoutId="theme-active-indicator"
-                                    className="absolute inset-0 bg-primary/5 pointer-events-none"
+                                    className="bg-primary/5 pointer-events-none absolute inset-0"
                                   />
                                 )}
                                 <div className="relative z-10 flex items-start justify-between gap-2">
                                   <div>
-                                    <p className={cn("text-base font-bold transition-colors", isSelected ? "text-primary" : "text-foreground group-hover:text-primary/80")}>
+                                    <p className={cn("text-base font-bold transition-colors", isSelected ? "text-primary" : "group-hover:text-primary/80 text-foreground")}>
                                       {theme.label}
                                     </p>
                                     <p
@@ -1217,7 +1217,7 @@ export default function GeneratorStudio({
                                         "mt-1 text-xs font-medium leading-relaxed transition-colors",
                                         isSelected
                                           ? "text-foreground/80"
-                                          : "text-muted-foreground group-hover:text-muted-foreground/80",
+                                          : "group-hover:text-muted-foreground/80 text-muted-foreground",
                                       )}
                                     >
                                       {theme.subtitle}
@@ -1225,7 +1225,7 @@ export default function GeneratorStudio({
                                   </div>
                                   <div className={cn(
                                     "shrink-0 rounded-full border-2 p-1 transition-colors",
-                                    isSelected ? "border-primary bg-primary text-primary-foreground" : "border-muted-foreground/30 text-transparent bg-background/50"
+                                    isSelected ? "border-primary bg-primary text-primary-foreground" : "border-muted-foreground/30 bg-background/50 text-transparent"
                                   )}>
                                      <Icons.check className="size-3" />
                                   </div>
@@ -1240,11 +1240,11 @@ export default function GeneratorStudio({
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
-                        className="bg-background/80 backdrop-blur-sm space-y-4 rounded-[2rem] border border-border/50 p-6 shadow-sm"
+                        className="bg-background/80 border-border/50 space-y-4 rounded-[2rem] border p-6 shadow-sm backdrop-blur-sm"
                       >
                         <Label
                           htmlFor="name-page-details"
-                          className="flex items-center gap-2 text-xl font-heading font-bold"
+                          className="flex items-center gap-2 font-heading text-xl font-bold"
                         >
                           <Icons.settings className="size-5 text-primary" />
                           Optional Tweaks
@@ -1257,10 +1257,10 @@ export default function GeneratorStudio({
                             setNamePageDetails(event.target.value)
                           }
                           placeholder="Example: add bigger flowers in the top corners and keep open space around each letter"
-                          className="min-h-[100px] resize-none rounded-[1.5rem] bg-background p-4 text-base focus-visible:ring-primary/40 focus-visible:border-primary/50 shadow-inner border-2"
+                          className="focus-visible:ring-primary/40 focus-visible:border-primary/50 min-h-[100px] resize-none rounded-3xl border-2 bg-background p-4 text-base shadow-inner"
                           disabled={isUploading}
                         />
-                        <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground px-2">
+                        <p className="flex items-center gap-1.5 px-2 text-xs font-medium text-muted-foreground">
                           <Icons.info className="size-4 opacity-70" />
                           Keep this short for clean printable outlines.
                         </p>
@@ -1275,10 +1275,10 @@ export default function GeneratorStudio({
                         <Button
                           onClick={handleNamePageGenerator}
                           disabled={isUploading || !isReadyToSubmit}
-                          className="w-full gap-3 rounded-full py-7 text-lg font-black shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] transition-transform hover:translate-y-[2px] active:translate-y-[4px] group relative overflow-hidden bg-pink-400 text-slate-900 border-2 border-slate-900 hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)]"
+                          className="group relative w-full gap-3 overflow-hidden rounded-full border-2 border-slate-900 bg-pink-400 py-7 text-lg font-black text-slate-900 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] transition-transform hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] active:translate-y-[4px]"
                           size="lg"
                         >
-                           <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 pointer-events-none" />
+                           <div className="pointer-events-none absolute inset-0 translate-y-full bg-white/20 transition-transform duration-300 group-hover:translate-y-0" />
                           {isUploading ? (
                             <>
                               <Icons.spinner className="size-6 animate-spin text-slate-900" />
@@ -1286,14 +1286,14 @@ export default function GeneratorStudio({
                             </>
                           ) : (
                             <>
-                              <Icons.wandSparkles className="size-6 relative z-10 group-hover:rotate-12 transition-transform duration-300" />
+                              <Icons.wandSparkles className="relative z-10 size-6 transition-transform duration-300 group-hover:rotate-12" />
                               <span className="relative z-10">Generate Name Page</span>
-                              <Icons.arrowRight className="size-5 ml-1 opacity-70 group-hover:translate-x-1 transition-transform relative z-10" />
+                              <Icons.arrowRight className="relative z-10 ml-1 size-5 opacity-70 transition-transform group-hover:translate-x-1" />
                             </>
                           )}
                         </Button>
                         {!isReadyToSubmit && (
-                          <p className="text-center text-sm font-medium text-muted-foreground mt-4 animate-pulse">
+                          <p className="mt-4 animate-pulse text-center text-sm font-medium text-muted-foreground">
                             Enter a name to start generation.
                           </p>
                         )}
@@ -1319,11 +1319,11 @@ export default function GeneratorStudio({
                       <motion.div 
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="bg-muted/30 dark:bg-slate-800/50 rounded-[2rem] border p-6 shadow-sm relative overflow-hidden"
+                        className="bg-muted/30 relative overflow-hidden rounded-[2rem] border p-6 shadow-sm dark:bg-slate-800/50"
                       >
-                        <div className="absolute top-0 right-0 -translate-y-1/4 translate-x-1/4 w-32 h-32 bg-primary/20 blur-3xl rounded-full" />
+                        <div className="bg-primary/20 absolute right-0 top-0 size-32 -translate-y-1/4 translate-x-1/4 rounded-full blur-3xl" />
                         <div className="relative z-10 space-y-5">
-                          <Label className="flex items-center gap-2 text-xl font-heading font-bold">
+                          <Label className="flex items-center gap-2 font-heading text-xl font-bold">
                             <Icons.userCircle className="size-5 text-primary" />
                             Reference Character
                           </Label>
@@ -1332,9 +1332,9 @@ export default function GeneratorStudio({
                             <div
                               {...getReferenceRootProps()}
                               className={cn(
-                                "border-border/70 bg-background/80 dark:border-border/60 dark:bg-muted/10 flex cursor-pointer flex-col items-center justify-center rounded-[1.5rem] border-2 border-dashed p-8 text-center transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                                "border-border/70 bg-background/80 dark:border-border/60 dark:bg-muted/10 flex cursor-pointer flex-col items-center justify-center rounded-3xl border-2 border-dashed p-8 text-center transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                                 isReferenceDragActive
-                                  ? "border-primary bg-primary/5 scale-[0.98] shadow-inner"
+                                  ? "bg-primary/5 scale-[0.98] border-primary shadow-inner"
                                   : "hover:border-primary/50 hover:bg-muted/60 dark:hover:bg-muted/30 hover:shadow-sm",
                               )}
                             >
@@ -1347,7 +1347,7 @@ export default function GeneratorStudio({
                                 <Icons.imagePlus className="size-8 text-primary" />
                               </motion.div>
                               <p className="text-lg font-bold text-foreground">
-                                Drop character image or <span className="text-primary hover:underline underline-offset-4 decoration-primary/30">browse</span>
+                                Drop character image or <span className="decoration-primary/30 text-primary underline-offset-4 hover:underline">browse</span>
                               </p>
                               <p className="mt-2 text-sm font-medium text-muted-foreground">
                                 Use the same character you want to keep consistent across scenes.
@@ -1357,9 +1357,9 @@ export default function GeneratorStudio({
                             <motion.div 
                               initial={{ opacity: 0, scale: 0.95 }}
                               animate={{ opacity: 1, scale: 1 }}
-                              className="border-border/70 bg-background/80 dark:border-border/60 dark:bg-muted/10 space-y-4 rounded-[1.5rem] border p-5 shadow-sm"
+                              className="border-border/70 bg-background/80 dark:border-border/60 dark:bg-muted/10 space-y-4 rounded-3xl border p-5 shadow-sm"
                             >
-                              <div className="relative aspect-square w-full max-w-sm mx-auto overflow-hidden rounded-2xl border-4 border-background shadow-lg group">
+                              <div className="group relative mx-auto aspect-square w-full max-w-sm overflow-hidden rounded-2xl border-4 border-background shadow-lg">
                                 {(referencePreviewUrl || referenceJobPreviewUrl) && (
                                   <>
                                     <Image
@@ -1368,12 +1368,12 @@ export default function GeneratorStudio({
                                       fill
                                       className="object-cover transition-transform duration-700 group-hover:scale-105"
                                     />
-                                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                    <div className="absolute inset-0 bg-black/20 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                                   </>
                                 )}
                               </div>
                               <div className="flex flex-col items-center gap-3">
-                                <p className="text-xs font-semibold text-muted-foreground bg-muted/50 px-3 py-1 rounded-full border border-border/50">
+                                <p className="bg-muted/50 border-border/50 rounded-full border px-3 py-1 text-xs font-semibold text-muted-foreground">
                                   {referenceJobId
                                     ? "Linked from a previous generation"
                                     : "Uploaded from your device"}
@@ -1389,10 +1389,10 @@ export default function GeneratorStudio({
                                     setReferenceJobId(null);
                                     setReferenceJobPreviewUrl(null);
                                   }}
-                                  className="rounded-full shadow-sm hover:shadow-md hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 transition-all"
+                                  className="hover:bg-destructive/10 hover:border-destructive/30 rounded-full shadow-sm transition-all hover:text-destructive hover:shadow-md"
                                   size="sm"
                                 >
-                                  <Icons.trash className="size-4 mr-2" />
+                                  <Icons.trash className="mr-2 size-4" />
                                   Remove Reference
                                 </Button>
                               </div>
@@ -1400,15 +1400,15 @@ export default function GeneratorStudio({
                           )}
                           
                           {referenceCreations && referenceCreations.length > 0 ? (
-                            <div className="space-y-3 pt-4 border-t border-border/50 mt-4">
+                            <div className="border-border/50 mt-4 space-y-3 border-t pt-4">
                               <div className="flex items-center justify-between gap-2">
-                                <p className="text-sm font-semibold flex items-center gap-2 text-foreground/80">
+                                <p className="text-foreground/80 flex items-center gap-2 text-sm font-semibold">
                                   <Icons.library className="size-4 text-primary" />
                                   Recent Creations
                                 </p>
                                 <Link
                                   href="/creations"
-                                  className="text-xs font-bold text-primary hover:underline underline-offset-4 decoration-primary/30 bg-primary/5 px-2 py-1 rounded-md"
+                                  className="decoration-primary/30 bg-primary/5 rounded-md px-2 py-1 text-xs font-bold text-primary underline-offset-4 hover:underline"
                                 >
                                   View Gallery
                                 </Link>
@@ -1436,7 +1436,7 @@ export default function GeneratorStudio({
                                           "relative aspect-square overflow-hidden rounded-xl border-2 transition-all",
                                           isSelected
                                             ? "border-primary shadow-sm"
-                                            : "border-transparent dark:border-border/60",
+                                            : "dark:border-border/60 border-transparent",
                                         )}
                                       >
                                         <Image
@@ -1450,7 +1450,7 @@ export default function GeneratorStudio({
                                           sizes="(min-width: 640px) 20vw, 30vw"
                                         />
                                         {isSelected && (
-                                           <div className="absolute inset-0 bg-primary/10" />
+                                           <div className="bg-primary/10 absolute inset-0" />
                                         )}
                                       </div>
                                     </button>
@@ -1459,7 +1459,7 @@ export default function GeneratorStudio({
                               </div>
                             </div>
                           ) : (
-                            <p className="text-sm font-medium text-muted-foreground bg-muted/40 p-4 rounded-xl border border-border/50 text-center">
+                            <p className="bg-muted/40 border-border/50 rounded-xl border p-4 text-center text-sm font-medium text-muted-foreground">
                               No creations yet. Generate one to reuse it here!
                             </p>
                           )}
@@ -1470,11 +1470,11 @@ export default function GeneratorStudio({
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1 }}
-                        className="bg-background/80 backdrop-blur-sm space-y-4 rounded-[2rem] border border-border/50 p-6 shadow-sm"
+                        className="bg-background/80 border-border/50 space-y-4 rounded-[2rem] border p-6 shadow-sm backdrop-blur-sm"
                       >
                         <Label
                           htmlFor="consistent-prompt"
-                          className="flex items-center gap-2 text-xl font-heading font-bold"
+                          className="flex items-center gap-2 font-heading text-xl font-bold"
                         >
                           <Icons.wandSparkles className="size-5 text-primary" />
                           New Scene Context
@@ -1486,23 +1486,23 @@ export default function GeneratorStudio({
                             value={consistentPrompt}
                             onChange={(e) => setConsistentPrompt(e.target.value)}
                             placeholder="Example: the same little girl riding a bicycle through a sunny flower market, smiling and waving..."
-                            className="focus-visible:ring-primary/40 focus-visible:border-primary/50 min-h-[140px] resize-none rounded-[1.5rem] bg-background p-5 text-base shadow-inner text-foreground/90 placeholder:text-muted-foreground/60 border-2"
+                            className="focus-visible:ring-primary/40 focus-visible:border-primary/50 text-foreground/90 placeholder:text-muted-foreground/60 min-h-[140px] resize-none rounded-3xl border-2 bg-background p-5 text-base shadow-inner"
                             disabled={isUploading}
                           />
                           {consistentPromptLength > 0 && consistentPromptLength < MINIMUM_PROMPT_LENGTH && (
-                            <div className="absolute bottom-4 right-4 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-3 py-1 rounded-full text-xs font-bold shadow-sm border border-amber-200/50 flex items-center gap-1.5">
+                            <div className="absolute bottom-4 right-4 flex items-center gap-1.5 rounded-full border border-amber-200/50 bg-amber-100 px-3 py-1 text-xs font-bold text-amber-700 shadow-sm dark:bg-amber-900/30 dark:text-amber-400">
                               <Icons.warning className="size-3" />
                               Need {MINIMUM_PROMPT_LENGTH - consistentPromptLength} chars
                             </div>
                           )}
                           {consistentPromptLength >= MINIMUM_PROMPT_LENGTH && (
-                            <div className="absolute bottom-4 right-4 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-3 py-1 rounded-full text-xs font-bold shadow-sm border border-emerald-200/50 flex items-center gap-1.5">
+                            <div className="absolute bottom-4 right-4 flex items-center gap-1.5 rounded-full border border-emerald-200/50 bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700 shadow-sm dark:bg-emerald-900/30 dark:text-emerald-400">
                               <Icons.check className="size-3" />
                               Ready
                             </div>
                           )}
                         </div>
-                        <div className="flex items-center justify-between text-xs font-medium text-muted-foreground px-2">
+                        <div className="flex items-center justify-between px-2 text-xs font-medium text-muted-foreground">
                           <p className="flex items-center gap-1.5">
                             <Icons.info className="size-4 opacity-70" />
                             We keep the character identity, you describe the action.
@@ -1533,10 +1533,10 @@ export default function GeneratorStudio({
                             (!referenceFile && !referenceJobId) ||
                             consistentPromptLength < MINIMUM_PROMPT_LENGTH
                           }
-                          className="w-full gap-3 rounded-full py-7 text-lg font-black shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] transition-transform hover:translate-y-[2px] active:translate-y-[4px] group relative overflow-hidden bg-blue-400 text-slate-900 border-2 border-slate-900 hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)]"
+                          className="group relative w-full gap-3 overflow-hidden rounded-full border-2 border-slate-900 bg-blue-400 py-7 text-lg font-black text-slate-900 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] transition-transform hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] active:translate-y-[4px]"
                           size="lg"
                         >
-                           <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 pointer-events-none" />
+                           <div className="pointer-events-none absolute inset-0 translate-y-full bg-white/20 transition-transform duration-300 group-hover:translate-y-0" />
                           {isUploading ? (
                             <>
                               <Icons.spinner className="size-6 animate-spin text-slate-900" />
@@ -1544,14 +1544,14 @@ export default function GeneratorStudio({
                             </>
                           ) : (
                             <>
-                              <Icons.userCircle className="size-6 relative z-10 group-hover:rotate-12 transition-transform duration-300" />
+                              <Icons.userCircle className="relative z-10 size-6 transition-transform duration-300 group-hover:rotate-12" />
                               <span className="relative z-10">Generate Consistent Scene</span>
-                              <Icons.arrowRight className="size-5 ml-1 opacity-70 group-hover:translate-x-1 transition-transform relative z-10" />
+                              <Icons.arrowRight className="relative z-10 ml-1 size-5 opacity-70 transition-transform group-hover:translate-x-1" />
                             </>
                           )}
                         </Button>
                         {!isReadyToSubmit && (
-                          <p className="text-center text-sm font-medium text-muted-foreground mt-4 animate-pulse">
+                          <p className="mt-4 animate-pulse text-center text-sm font-medium text-muted-foreground">
                             Add a reference and description to begin.
                           </p>
                         )}
@@ -1561,52 +1561,52 @@ export default function GeneratorStudio({
                 </Tabs>
 
                   <div className="space-y-4 xl:sticky xl:top-6">
-                  <div className="bg-white dark:bg-slate-900 space-y-5 rounded-[2rem] border-4 border-slate-900 dark:border-slate-700 p-5 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)] relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-blue-100 rounded-full blur-3xl opacity-50 -translate-y-1/2 translate-x-1/2" />
-                    <div className="flex flex-wrap items-center justify-between gap-3 relative z-10 border-b-2 border-slate-100 dark:border-slate-700 pb-4">
+                  <div className="relative space-y-5 overflow-hidden rounded-[2rem] border-4 border-slate-900 bg-white p-5 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)]">
+                    <div className="absolute right-0 top-0 size-32 -translate-y-1/2 translate-x-1/2 rounded-full bg-blue-100 opacity-50 blur-3xl" />
+                    <div className="relative z-10 flex flex-wrap items-center justify-between gap-3 border-b-2 border-slate-100 pb-4 dark:border-slate-700">
                       <div className="space-y-1">
-                        <h3 className="text-xl font-heading font-extrabold flex items-center gap-2 text-slate-900 dark:text-slate-50">
+                        <h3 className="flex items-center gap-2 font-heading text-xl font-extrabold text-slate-900 dark:text-slate-50">
                           <Icons.settings className="size-5 text-slate-900 dark:text-slate-50" />
                           Output Settings
                         </h3>
-                        <p className="text-sm text-slate-500 dark:text-slate-400 font-bold">
+                        <p className="text-sm font-bold text-slate-500 dark:text-slate-400">
                           Customize your generation preferences
                         </p>
                       </div>
                       <div
                         className={cn(
-                          "rounded-full px-3 py-1 text-xs font-black uppercase tracking-widest shadow-sm border-2",
+                          "rounded-full border-2 px-3 py-1 text-xs font-black uppercase tracking-widest shadow-sm",
                           isPaidUser
-                            ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700"
-                            : "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-700",
+                            ? "border-emerald-300 bg-emerald-100 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
+                            : "border-amber-300 bg-amber-100 text-amber-700 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-300",
                         )}
                       >
                         {isPaidUser ? "Pro Active ✨" : "Upgrade to Pro"}
                       </div>
                     </div>
 
-                    <div className="space-y-4 relative z-10">
+                    <div className="relative z-10 space-y-4">
                       {mode === "photo" && (
                         <motion.div 
                           initial={{ opacity: 0, height: 0 }}
                           animate={{ opacity: 1, height: "auto" }}
-                          className="bg-slate-50 dark:bg-slate-800 space-y-3 rounded-2xl border-2 border-slate-200 dark:border-slate-700 p-5 shadow-sm"
+                          className="space-y-3 rounded-2xl border-2 border-slate-200 bg-slate-50 p-5 shadow-sm dark:border-slate-700 dark:bg-slate-800"
                         >
                           <div className="flex items-center justify-between gap-2">
                             <div className="space-y-1">
-                              <p className="text-base font-extrabold flex items-center gap-2 text-slate-900">
+                              <p className="flex items-center gap-2 text-base font-extrabold text-slate-900">
                                 <Icons.copy className="size-4 text-blue-500" />
                                 Batch Generation
                               </p>
-                              <p className="text-xs text-slate-500 font-bold">
+                              <p className="text-xs font-bold text-slate-500">
                                 Generate {batchCount} variations in one run
                               </p>
                             </div>
-                            <div className="bg-blue-100 text-blue-700 font-black px-3 py-1 rounded-full text-sm border border-blue-200">
+                            <div className="rounded-full border border-blue-200 bg-blue-100 px-3 py-1 text-sm font-black text-blue-700">
                               x{batchCount}
                             </div>
                           </div>
-                          <div className="pt-2 px-1">
+                          <div className="px-1 pt-2">
                             <input
                               type="range"
                               min={BATCH_MIN}
@@ -1622,7 +1622,7 @@ export default function GeneratorStudio({
                               }
                               className="h-3 w-full cursor-pointer appearance-none rounded-full bg-slate-200 accent-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
                             />
-                            <div className="flex justify-between mt-2 text-xs font-black text-slate-400">
+                            <div className="mt-2 flex justify-between text-xs font-black text-slate-400">
                               <span>1</span>
                               <span>2</span>
                               <span>3</span>
@@ -1633,13 +1633,13 @@ export default function GeneratorStudio({
                         </motion.div>
                       )}
 
-                      <div className="bg-white dark:bg-slate-800 flex items-center justify-between gap-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 p-5 shadow-sm transition-colors hover:border-slate-400 dark:hover:border-slate-600">
-                        <div className="space-y-1.5 flex-1">
-                          <p className="text-base font-extrabold flex items-center gap-2 text-slate-900 dark:text-slate-50">
+                      <div className="flex items-center justify-between gap-4 rounded-2xl border-2 border-slate-200 bg-white p-5 shadow-sm transition-colors hover:border-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-600">
+                        <div className="flex-1 space-y-1.5">
+                          <p className="flex items-center gap-2 text-base font-extrabold text-slate-900 dark:text-slate-50">
                             <Icons.user className="size-4 text-purple-500 dark:text-purple-400" />
                             Private Mode
                           </p>
-                          <p className="text-xs text-slate-500 font-bold leading-relaxed">
+                          <p className="text-xs font-bold leading-relaxed text-slate-500">
                             Hide your creations from the public gallery. Included in Pro.
                           </p>
                         </div>
@@ -1648,17 +1648,17 @@ export default function GeneratorStudio({
                           onCheckedChange={setIsPrivateMode}
                           disabled={!isPaidUser || isUploading}
                           aria-label="Toggle private mode"
-                          className="data-[state=checked]:bg-purple-500 border-2 border-slate-200"
+                          className="border-2 border-slate-200 data-[state=checked]:bg-purple-500"
                         />
                       </div>
 
-                      <div className="bg-white flex items-center justify-between gap-4 rounded-2xl border-2 border-slate-200 p-5 shadow-sm transition-colors hover:border-slate-400">
-                        <div className="space-y-1.5 flex-1">
-                          <p className="text-base font-extrabold flex items-center gap-2 text-slate-900">
+                      <div className="flex items-center justify-between gap-4 rounded-2xl border-2 border-slate-200 bg-white p-5 shadow-sm transition-colors hover:border-slate-400">
+                        <div className="flex-1 space-y-1.5">
+                          <p className="flex items-center gap-2 text-base font-extrabold text-slate-900">
                             <Icons.arrowUpRight className="size-4 text-pink-500" />
                             High-Res Upscale
                           </p>
-                          <p className="text-xs text-slate-500 font-bold leading-relaxed">
+                          <p className="text-xs font-bold leading-relaxed text-slate-500">
                             Export in 4K resolution for crisper prints. Included in Pro.
                           </p>
                         </div>
@@ -1667,7 +1667,7 @@ export default function GeneratorStudio({
                           onCheckedChange={setIsUpscaleEnabled}
                           disabled={!isPaidUser || isUploading}
                           aria-label="Toggle upscale"
-                          className="data-[state=checked]:bg-pink-500 border-2 border-slate-200"
+                          className="border-2 border-slate-200 data-[state=checked]:bg-pink-500"
                         />
                       </div>
                     </div>
@@ -1690,10 +1690,10 @@ export default function GeneratorStudio({
                   </div>
               </div>
 
-              <div className="bg-white dark:bg-slate-900 space-y-5 rounded-[2rem] border-4 border-slate-900 dark:border-slate-700 p-5 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)] relative overflow-hidden xl:sticky xl:top-6 h-fit mt-6">
-                <div className="absolute top-0 right-0 w-40 h-40 bg-green-100 rounded-full blur-3xl opacity-50 -translate-y-1/2 translate-x-1/2" />
-                <div className="space-y-1.5 relative z-10">
-                  <h3 className="text-sm font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 flex items-center gap-2">
+              <div className="relative mt-6 h-fit space-y-5 overflow-hidden rounded-[2rem] border-4 border-slate-900 bg-white p-5 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)] xl:sticky xl:top-6">
+                <div className="absolute right-0 top-0 size-40 -translate-y-1/2 translate-x-1/2 rounded-full bg-green-100 opacity-50 blur-3xl" />
+                <div className="relative z-10 space-y-1.5">
+                  <h3 className="flex items-center gap-2 text-sm font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500">
                     <Icons.package className="size-4" />
                     What You&rsquo;ll Get
                   </h3>
@@ -1702,12 +1702,12 @@ export default function GeneratorStudio({
                   </p>
                 </div>
                 
-                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-2 relative z-10">
+                <div className="relative z-10 grid gap-4 sm:grid-cols-2 xl:grid-cols-2">
                   <motion.div 
                     whileHover={{ scale: 1.02 }}
-                    className="bg-slate-50 dark:bg-slate-800 rounded-2xl border-2 border-slate-200 dark:border-slate-700 p-4 text-left shadow-sm group hover:border-slate-400 dark:hover:border-slate-600 hover:shadow-md transition-all"
+                    className="group rounded-2xl border-2 border-slate-200 bg-slate-50 p-4 text-left shadow-sm transition-all hover:border-slate-400 hover:shadow-md dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-600"
                   >
-                    <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700">
+                    <div className="relative aspect-video w-full overflow-hidden rounded-xl border-2 border-slate-100 bg-white dark:border-slate-700 dark:bg-slate-800">
                       <Image
                         src="/illustrations/lineart-sample.svg"
                         alt="Line art sample"
@@ -1716,19 +1716,19 @@ export default function GeneratorStudio({
                       />
                     </div>
                     <div className="mt-3 flex items-center justify-between">
-                      <p className="text-sm font-bold flex items-center gap-1.5 text-slate-900 dark:text-slate-50">
+                      <p className="flex items-center gap-1.5 text-sm font-bold text-slate-900 dark:text-slate-50">
                         <Icons.imagePlus className="size-4 text-blue-500" />
                         HD PNG Image
                       </p>
-                      <span className="bg-blue-100 text-blue-700 text-[10px] uppercase tracking-wider font-black px-2 py-0.5 rounded-md">Transparent</span>
+                      <span className="rounded-md bg-blue-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-blue-700">Transparent</span>
                     </div>
                   </motion.div>
                   
                   <motion.div 
                     whileHover={{ scale: 1.02 }}
-                    className="bg-slate-50 dark:bg-slate-800 rounded-2xl border-2 border-slate-200 dark:border-slate-700 p-4 text-left shadow-sm group hover:border-slate-400 dark:hover:border-slate-600 hover:shadow-md transition-all"
+                    className="group rounded-2xl border-2 border-slate-200 bg-slate-50 p-4 text-left shadow-sm transition-all hover:border-slate-400 hover:shadow-md dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-600"
                   >
-                    <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700">
+                    <div className="relative aspect-video w-full overflow-hidden rounded-xl border-2 border-slate-100 bg-white dark:border-slate-700 dark:bg-slate-800">
                       <Image
                         src="/illustrations/color-sample.svg"
                         alt="Print ready preview"
@@ -1737,31 +1737,31 @@ export default function GeneratorStudio({
                       />
                     </div>
                     <div className="mt-3 flex items-center justify-between">
-                      <p className="text-sm font-bold flex items-center gap-1.5 text-slate-900 dark:text-slate-50">
+                      <p className="flex items-center gap-1.5 text-sm font-bold text-slate-900 dark:text-slate-50">
                         <Icons.fileText className="size-4 text-purple-500" />
                         Print-Ready PDF
                       </p>
-                      <span className="bg-purple-100 text-purple-700 text-[10px] uppercase tracking-wider font-black px-2 py-0.5 rounded-md">A4 Size</span>
+                      <span className="rounded-md bg-purple-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-purple-700">A4 Size</span>
                     </div>
                   </motion.div>
                 </div>
 
-                <div className="relative z-10 pt-4 border-t-2 border-slate-100 dark:border-slate-700">
+                <div className="relative z-10 border-t-2 border-slate-100 pt-4 dark:border-slate-700">
                   <ul className="space-y-3 text-sm font-bold text-slate-600 dark:text-slate-400">
                     <li className="flex items-start gap-2.5">
-                      <div className="bg-emerald-100 rounded-full p-1 mt-0.5 text-emerald-600">
+                      <div className="mt-0.5 rounded-full bg-emerald-100 p-1 text-emerald-600">
                         <Icons.check className="size-3" />
                       </div>
                       <span className="leading-snug">Vector-like crisp outlines that kids can color easily without bleeding.</span>
                     </li>
                     <li className="flex items-start gap-2.5">
-                      <div className="bg-emerald-100 rounded-full p-1 mt-0.5 text-emerald-600">
+                      <div className="mt-0.5 rounded-full bg-emerald-100 p-1 text-emerald-600">
                         <Icons.check className="size-3" />
                       </div>
                       <span className="leading-snug">Optimized for standard US Letter / A4 home & classroom printers.</span>
                     </li>
                     <li className="flex items-start gap-2.5">
-                      <div className="bg-emerald-100 rounded-full p-1 mt-0.5 text-emerald-600">
+                      <div className="mt-0.5 rounded-full bg-emerald-100 p-1 text-emerald-600">
                         <Icons.check className="size-3" />
                       </div>
                       <span className="leading-snug">Custom AI pipeline tuned specifically for coloring book formats.</span>
@@ -1779,38 +1779,38 @@ export default function GeneratorStudio({
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <Card className="rounded-[2rem] border-4 border-slate-900 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)] relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-2 bg-amber-500" />
+          <Card className="relative overflow-hidden rounded-[2rem] border-4 border-slate-900 bg-white shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)]">
+            <div className="absolute left-0 top-0 h-2 w-full bg-amber-500" />
             <CardHeader className="pb-4">
-              <CardTitle className="flex items-center gap-3 text-xl font-heading font-extrabold text-slate-900">
-                <div className="bg-yellow-100 p-2 rounded-full text-yellow-600 border-2 border-slate-900">
+              <CardTitle className="flex items-center gap-3 font-heading text-xl font-extrabold text-slate-900">
+                <div className="rounded-full border-2 border-slate-900 bg-yellow-100 p-2 text-yellow-600">
                   <Icons.help className="size-5" />
                 </div>
                 Tips for Magical Results ✨
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <ul className="grid gap-4 sm:grid-cols-2 text-sm font-bold text-slate-600">
-                <li className="flex items-start gap-3 bg-slate-50 p-4 rounded-xl border-2 border-slate-200 transition-colors hover:border-slate-400 hover:bg-white">
-                  <div className="bg-purple-100 text-purple-600 rounded-full p-1 shrink-0 mt-0.5 border border-purple-200">
+              <ul className="grid gap-4 text-sm font-bold text-slate-600 sm:grid-cols-2">
+                <li className="flex items-start gap-3 rounded-xl border-2 border-slate-200 bg-slate-50 p-4 transition-colors hover:border-slate-400 hover:bg-white">
+                  <div className="mt-0.5 shrink-0 rounded-full border border-purple-200 bg-purple-100 p-1 text-purple-600">
                     <Icons.wandSparkles className="size-3" />
                   </div>
                   <span className="leading-relaxed">Keep descriptions specific but simple. <strong className="text-slate-900">Avoid crowded scenes</strong> or too many tiny details.</span>
                 </li>
-                <li className="flex items-start gap-3 bg-slate-50 p-4 rounded-xl border-2 border-slate-200 transition-colors hover:border-slate-400 hover:bg-white">
-                  <div className="bg-blue-100 text-blue-600 rounded-full p-1 shrink-0 mt-0.5 border border-blue-200">
+                <li className="flex items-start gap-3 rounded-xl border-2 border-slate-200 bg-slate-50 p-4 transition-colors hover:border-slate-400 hover:bg-white">
+                  <div className="mt-0.5 shrink-0 rounded-full border border-blue-200 bg-blue-100 p-1 text-blue-600">
                     <Icons.wandSparkles className="size-3" />
                   </div>
                   <span className="leading-relaxed">For consistent characters, use a <strong className="text-slate-900">front-facing reference</strong> with clear facial features.</span>
                 </li>
-                <li className="flex items-start gap-3 bg-slate-50 p-4 rounded-xl border-2 border-slate-200 transition-colors hover:border-slate-400 hover:bg-white">
-                  <div className="bg-emerald-100 text-emerald-600 rounded-full p-1 shrink-0 mt-0.5 border border-emerald-200">
+                <li className="flex items-start gap-3 rounded-xl border-2 border-slate-200 bg-slate-50 p-4 transition-colors hover:border-slate-400 hover:bg-white">
+                  <div className="mt-0.5 shrink-0 rounded-full border border-emerald-200 bg-emerald-100 p-1 text-emerald-600">
                     <Icons.wandSparkles className="size-3" />
                   </div>
                   <span className="leading-relaxed">Include <strong className="text-slate-900">dynamic action words</strong> like: running, reading, flying, or exploring.</span>
                 </li>
-                <li className="flex items-start gap-3 bg-slate-50 p-4 rounded-xl border-2 border-slate-200 transition-colors hover:border-slate-400 hover:bg-white">
-                  <div className="bg-pink-100 text-pink-600 rounded-full p-1 shrink-0 mt-0.5 border border-pink-200">
+                <li className="flex items-start gap-3 rounded-xl border-2 border-slate-200 bg-slate-50 p-4 transition-colors hover:border-slate-400 hover:bg-white">
+                  <div className="mt-0.5 shrink-0 rounded-full border border-pink-200 bg-pink-100 p-1 text-pink-600">
                     <Icons.wandSparkles className="size-3" />
                   </div>
                   <span className="leading-relaxed">For Name Pages, <strong className="text-slate-900">shorter names</strong> create cleaner bubble letters and better overall spacing.</span>
@@ -1838,27 +1838,27 @@ function FlowStep({
   return (
     <div
       className={cn(
-        "rounded-[1.5rem] border-2 p-4 shadow-sm transition-all duration-300 relative overflow-hidden",
+        "relative overflow-hidden rounded-3xl border-2 p-4 shadow-sm transition-all duration-300",
         state === "active" &&
-          "border-slate-900 dark:border-slate-600 bg-white dark:bg-slate-800 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] dark:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.4)] scale-[1.02]",
-        state === "done" && "border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/20 opacity-80",
-        state === "idle" && "border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 opacity-60 grayscale-[50%] hover:grayscale-0 hover:opacity-100 hover:border-slate-300 dark:hover:border-slate-600"
+          "scale-[1.02] border-slate-900 bg-white shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] dark:border-slate-600 dark:bg-slate-800 dark:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.4)]",
+        state === "done" && "border-emerald-200 bg-emerald-50 opacity-80 dark:border-emerald-800 dark:bg-emerald-900/20",
+        state === "idle" && "border-slate-200 bg-slate-50 opacity-60 grayscale-[50%] hover:border-slate-300 hover:opacity-100 hover:grayscale-0 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-600"
       )}
     >
-      <div className="flex items-center gap-3 relative z-10">
+      <div className="relative z-10 flex items-center gap-3">
         <span
           className={cn(
-            "inline-flex size-8 items-center justify-center rounded-full text-sm font-black shadow-sm border-2 transition-colors",
-            state === "active" && "bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 border-slate-900 dark:border-slate-100",
-            state === "done" && "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-700",
-            state === "idle" && "bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 border-slate-300 dark:border-slate-600"
+            "inline-flex size-8 items-center justify-center rounded-full border-2 text-sm font-black shadow-sm transition-colors",
+            state === "active" && "border-slate-900 bg-slate-900 text-white dark:border-slate-100 dark:bg-slate-100 dark:text-slate-900",
+            state === "done" && "border-emerald-200 bg-emerald-100 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300",
+            state === "idle" && "border-slate-300 bg-slate-200 text-slate-500 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-400"
           )}
         >
           {state === "done" ? <Icons.check className="size-4" /> : id}
         </span>
         <div>
           <p className={cn("text-base font-extrabold", state === "idle" ? "text-slate-500 dark:text-slate-400" : "text-slate-900 dark:text-slate-50")}>{title}</p>
-          <p className="text-xs font-bold text-slate-500 dark:text-slate-400 leading-tight mt-0.5">{description}</p>
+          <p className="mt-0.5 text-xs font-bold leading-tight text-slate-500 dark:text-slate-400">{description}</p>
         </div>
       </div>
     </div>

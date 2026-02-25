@@ -170,7 +170,7 @@ export default async function BookChooserPage() {
           </p>
         </div>
         <Link href="/dashboard/book-editor/version-2/new">
-          <Button className="gap-3 rounded-full py-7 px-8 text-xl font-black shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] bg-yellow-400 text-slate-900 border-2 border-slate-900 hover:bg-yellow-500 hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] active:translate-y-[4px] active:shadow-none transition-all">
+          <Button className="gap-3 rounded-full border-2 border-slate-900 bg-yellow-400 px-8 py-7 text-xl font-black text-slate-900 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] transition-all hover:translate-y-[2px] hover:bg-yellow-500 hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] active:translate-y-[4px] active:shadow-none">
             <Icons.add className="size-6" />
             New Book
           </Button>
@@ -178,7 +178,7 @@ export default async function BookChooserPage() {
       </div>
 
       <div className="space-y-8 pb-10">
-        <Card className="rounded-[2rem] border-4 border-slate-900 bg-white shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] overflow-hidden">
+        <Card className="overflow-hidden rounded-[2rem] border-4 border-slate-900 bg-white shadow-[8px_8px_0px_0px_rgba(15,23,42,1)]">
           <CardContent className="flex flex-wrap items-center justify-between gap-6 p-8">
             <div className="space-y-1">
               <p className="text-2xl font-black text-slate-900">
@@ -201,15 +201,15 @@ export default async function BookChooserPage() {
 
         {books.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
-             <div className="mb-8 flex size-32 items-center justify-center rounded-[2.5rem] bg-white border-4 border-slate-200 rotate-6 shadow-sm">
-              <Icons.media className="text-slate-300 size-16 -rotate-6" />
+             <div className="mb-8 flex size-32 rotate-6 items-center justify-center rounded-[2.5rem] border-4 border-slate-200 bg-white shadow-sm">
+              <Icons.media className="size-16 -rotate-6 text-slate-300" />
             </div>
-            <h3 className="font-heading text-3xl font-black text-slate-400 mb-3">No books yet</h3>
-            <p className="text-lg font-bold text-slate-300 max-w-sm mb-10 leading-relaxed">
+            <h3 className="mb-3 font-heading text-3xl font-black text-slate-400">No books yet</h3>
+            <p className="mb-10 max-w-sm text-lg font-bold leading-relaxed text-slate-300">
               Create your first coloring book from your generated pages.
             </p>
             <Link href="/dashboard/book-editor/version-2/new">
-              <Button className="gap-3 rounded-full py-8 px-10 text-xl font-black shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] bg-emerald-400 text-slate-900 border-2 border-slate-900 hover:bg-emerald-500 hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] transition-all">
+              <Button className="gap-3 rounded-full border-2 border-slate-900 bg-emerald-400 px-10 py-8 text-xl font-black text-slate-900 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] transition-all hover:translate-y-[2px] hover:bg-emerald-500 hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)]">
                 <Icons.add className="size-6" />
                 Create First Book
               </Button>
@@ -223,9 +223,9 @@ export default async function BookChooserPage() {
               return (
                 <Card
                   key={book.id}
-                  className="group relative flex flex-col overflow-hidden rounded-[2.5rem] border-4 border-slate-200 bg-white shadow-sm transition-all duration-300 hover:border-slate-900 hover:shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] hover:-translate-y-2"
+                  className="group relative flex flex-col overflow-hidden rounded-[2.5rem] border-4 border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-2 hover:border-slate-900 hover:shadow-[8px_8px_0px_0px_rgba(15,23,42,1)]"
                 >
-                  <CardHeader className="border-b-4 border-slate-100 p-0 group-hover:border-slate-900 transition-colors duration-300">
+                  <CardHeader className="border-b-4 border-slate-100 p-0 transition-colors duration-300 group-hover:border-slate-900">
                     <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-50">
                       {book.thumbUrl ? (
                         <Image
@@ -236,7 +236,7 @@ export default async function BookChooserPage() {
                           className="object-cover transition-transform duration-500 group-hover:scale-110"
                         />
                       ) : (
-                        <div className="flex size-full flex-col items-center justify-center gap-4 text-slate-300 bg-slate-50">
+                        <div className="flex size-full flex-col items-center justify-center gap-4 bg-slate-50 text-slate-300">
                           <Icons.media className="size-12" />
                           <p className="text-base font-black">No preview yet</p>
                         </div>
@@ -253,13 +253,13 @@ export default async function BookChooserPage() {
                       </p>
                     </div>
 
-                    <div className="flex items-center justify-between gap-3 pt-4 border-t-2 border-slate-100 border-dashed group-hover:border-slate-200">
+                    <div className="flex items-center justify-between gap-3 border-t-2 border-dashed border-slate-100 pt-4 group-hover:border-slate-200">
                       <DeleteBookButton bookId={book.id} bookTitle={title} />
                       <Link
                         href={`/dashboard/book-editor/version-2/${book.id}`}
                         className="flex-1"
                       >
-                        <Button size="sm" className="w-full gap-2 rounded-xl h-12 font-bold bg-slate-900 text-white shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] border-2 border-slate-900 hover:bg-slate-800 hover:translate-y-[1px] hover:shadow-none transition-all">
+                        <Button size="sm" className="h-12 w-full gap-2 rounded-xl border-2 border-slate-900 bg-slate-900 font-bold text-white shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] transition-all hover:translate-y-px hover:bg-slate-800 hover:shadow-none">
                           Open
                           <Icons.arrowRight className="size-4" />
                         </Button>

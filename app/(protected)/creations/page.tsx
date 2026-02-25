@@ -129,7 +129,7 @@ export default async function CreationsPage({
 
   return (
     <>
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <div className="space-y-1.5">
           <h1 className="font-heading text-4xl font-black text-slate-900 dark:text-slate-50">My Creations</h1>
           <p className="text-lg font-bold text-slate-500 dark:text-slate-400">
@@ -138,13 +138,13 @@ export default async function CreationsPage({
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <Link href="/dashboard/book-editor/new">
-            <Button variant="outline" className="gap-2 rounded-full border-2 border-slate-900 dark:border-slate-600 font-bold hover:bg-slate-100 dark:hover:bg-slate-800 shadow-sm dark:text-slate-50 dark:hover:text-slate-50">
+            <Button variant="outline" className="gap-2 rounded-full border-2 border-slate-900 font-bold shadow-sm hover:bg-slate-100 dark:border-slate-600 dark:text-slate-50 dark:hover:bg-slate-800 dark:hover:text-slate-50">
               <Icons.bookOpen className="size-4" />
               New Book
             </Button>
           </Link>
           <Link href="/upload">
-            <Button className="gap-2 rounded-full bg-emerald-400 dark:bg-emerald-600 text-slate-900 dark:text-slate-50 border-2 border-slate-900 dark:border-slate-600 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] dark:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.4)] hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] transition-all font-bold">
+            <Button className="gap-2 rounded-full border-2 border-slate-900 bg-emerald-400 font-bold text-slate-900 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] transition-all hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] dark:border-slate-600 dark:bg-emerald-600 dark:text-slate-50 dark:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.4)]">
               <Icons.media className="size-4" />
               New Page
             </Button>
@@ -153,7 +153,7 @@ export default async function CreationsPage({
       </div>
 
       <div className="space-y-6 overflow-x-hidden pb-10">
-        <Card className="rounded-[2rem] border-4 border-slate-900 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)] overflow-hidden">
+        <Card className="overflow-hidden rounded-[2rem] border-4 border-slate-900 bg-white shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)]">
           <CardContent className="relative z-10 flex flex-wrap items-center justify-between gap-4 p-8">
             <div>
               <p className="text-2xl font-extrabold text-slate-900 dark:text-slate-50">
@@ -164,20 +164,20 @@ export default async function CreationsPage({
               </p>
             </div>
             <div className="flex flex-wrap gap-3 text-sm font-bold">
-              <span className="inline-flex items-center gap-2 rounded-full border-2 border-slate-900 dark:border-slate-600 bg-emerald-100 dark:bg-emerald-900/30 px-4 py-1.5 text-emerald-800 dark:text-emerald-300 shadow-sm">
-                <span className="size-3 rounded-full bg-emerald-500 border border-slate-900"></span> Ready: {readyCount}
+              <span className="inline-flex items-center gap-2 rounded-full border-2 border-slate-900 bg-emerald-100 px-4 py-1.5 text-emerald-800 shadow-sm dark:border-slate-600 dark:bg-emerald-900/30 dark:text-emerald-300">
+                <span className="size-3 rounded-full border border-slate-900 bg-emerald-500"></span> Ready: {readyCount}
               </span>
-              <span className="inline-flex items-center gap-2 rounded-full border-2 border-slate-900 dark:border-slate-600 bg-sky-100 dark:bg-sky-900/30 px-4 py-1.5 text-sky-800 dark:text-sky-300 shadow-sm">
-                <span className="size-3 animate-pulse rounded-full bg-sky-500 border border-slate-900"></span> In progress: {processingCount}
+              <span className="inline-flex items-center gap-2 rounded-full border-2 border-slate-900 bg-sky-100 px-4 py-1.5 text-sky-800 shadow-sm dark:border-slate-600 dark:bg-sky-900/30 dark:text-sky-300">
+                <span className="size-3 animate-pulse rounded-full border border-slate-900 bg-sky-500"></span> In progress: {processingCount}
               </span>
-              <span className="inline-flex items-center gap-2 rounded-full border-2 border-slate-900 dark:border-slate-600 bg-orange-100 dark:bg-orange-900/30 px-4 py-1.5 text-orange-800 dark:text-orange-300 shadow-sm">
-                <span className="size-3 rounded-full bg-orange-500 border border-slate-900"></span> Failed: {failedCount}
+              <span className="inline-flex items-center gap-2 rounded-full border-2 border-slate-900 bg-orange-100 px-4 py-1.5 text-orange-800 shadow-sm dark:border-slate-600 dark:bg-orange-900/30 dark:text-orange-300">
+                <span className="size-3 rounded-full border border-slate-900 bg-orange-500"></span> Failed: {failedCount}
               </span>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="rounded-[2rem] border-4 border-slate-900 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)] overflow-visible">
+        <Card className="overflow-visible rounded-[2rem] border-4 border-slate-900 bg-white shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)]">
           <CardContent className="space-y-6 p-8">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
               <form className="group relative flex-1" action="/creations" method="GET">
@@ -191,17 +191,17 @@ export default async function CreationsPage({
                   <input type="hidden" name="view" value={view} />
                 ) : null}
 
-                <Icons.search className="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-slate-400 dark:text-slate-500 transition-colors group-focus-within:text-slate-900 dark:group-focus-within:text-slate-50" />
+                <Icons.search className="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-slate-900 dark:text-slate-500 dark:group-focus-within:text-slate-50" />
                 <Input
                   name="q"
                   defaultValue={q}
                   placeholder="Search by file name"
-                  className="bg-slate-50 dark:bg-slate-800 focus-visible:ring-slate-900 h-12 rounded-2xl border-2 border-slate-200 dark:border-slate-600 pl-12 text-base font-medium transition-all focus-visible:border-slate-900 dark:focus-visible:border-slate-500 focus-visible:bg-white dark:focus-visible:bg-slate-700 dark:text-slate-50"
+                  className="h-12 rounded-2xl border-2 border-slate-200 bg-slate-50 pl-12 text-base font-medium transition-all focus-visible:border-slate-900 focus-visible:bg-white focus-visible:ring-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:focus-visible:border-slate-500 dark:focus-visible:bg-slate-700"
                 />
               </form>
 
               <div className="flex flex-wrap items-center gap-3 lg:justify-end">
-                <div className="bg-slate-100 dark:bg-slate-800 inline-flex items-center gap-1 rounded-full border-2 border-slate-200 dark:border-slate-600 p-1">
+                <div className="inline-flex items-center gap-1 rounded-full border-2 border-slate-200 bg-slate-100 p-1 dark:border-slate-600 dark:bg-slate-800">
                   <Link href={buildHref({ view: "grid" })}>
                     <Button
                       variant={view === "grid" ? "default" : "ghost"}
@@ -209,8 +209,8 @@ export default async function CreationsPage({
                       className={cn(
                         "rounded-full px-4 font-bold transition-all",
                         view === "grid" 
-                          ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-50 border-2 border-slate-900 dark:border-slate-600 shadow-sm hover:bg-white dark:hover:bg-slate-800" 
-                          : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-50 border-2 border-transparent",
+                          ? "border-2 border-slate-900 bg-white text-slate-900 shadow-sm hover:bg-white dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:hover:bg-slate-800" 
+                          : "border-2 border-transparent text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-50",
                       )}
                     >
                       <Icons.dashboard className="mr-2 size-4" />
@@ -224,8 +224,8 @@ export default async function CreationsPage({
                       className={cn(
                         "rounded-full px-4 font-bold transition-all",
                         view === "list" 
-                          ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-50 border-2 border-slate-900 dark:border-slate-600 shadow-sm hover:bg-white dark:hover:bg-slate-800" 
-                          : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-50 border-2 border-transparent",
+                          ? "border-2 border-slate-900 bg-white text-slate-900 shadow-sm hover:bg-white dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:hover:bg-slate-800" 
+                          : "border-2 border-transparent text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-50",
                       )}
                     >
                       <Icons.post className="mr-2 size-4" />
@@ -258,10 +258,10 @@ export default async function CreationsPage({
                       status === (key as FilterStatus) ? "default" : "outline"
                     }
                     className={cn(
-                      "rounded-full px-4 font-bold transition-all border-2",
+                      "rounded-full border-2 px-4 font-bold transition-all",
                       status === key 
-                        ? "bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 border-slate-900 dark:border-slate-100 shadow-md hover:bg-slate-800 dark:hover:bg-slate-200" 
-                        : "bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-600 hover:border-slate-400 dark:hover:border-slate-500 hover:text-slate-900 dark:hover:text-slate-50"
+                        ? "border-slate-900 bg-slate-900 text-white shadow-md hover:bg-slate-800 dark:border-slate-100 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200" 
+                        : "border-slate-200 bg-white text-slate-500 hover:border-slate-400 hover:text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-400 dark:hover:border-slate-500 dark:hover:text-slate-50"
                     )}
                   >
                     {label}
@@ -280,7 +280,7 @@ export default async function CreationsPage({
 
         {creations.length >= 50 ? (
           <div className="pt-6 text-center">
-            <Button variant="outline" size="lg" className="rounded-full border-2 border-slate-900 dark:border-slate-600 font-bold hover:bg-slate-50 dark:hover:bg-slate-800 dark:text-slate-50">
+            <Button variant="outline" size="lg" className="rounded-full border-2 border-slate-900 font-bold hover:bg-slate-50 dark:border-slate-600 dark:text-slate-50 dark:hover:bg-slate-800">
               Load More Creations
             </Button>
           </div>
@@ -313,7 +313,7 @@ function SortMenu({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="gap-2 rounded-full border-2 border-slate-200 dark:border-slate-600 font-bold text-slate-600 dark:text-slate-400 hover:border-slate-900 dark:hover:border-slate-500 hover:text-slate-900 dark:hover:text-slate-50">
+        <Button variant="outline" className="gap-2 rounded-full border-2 border-slate-200 font-bold text-slate-600 hover:border-slate-900 hover:text-slate-900 dark:border-slate-600 dark:text-slate-400 dark:hover:border-slate-500 dark:hover:text-slate-50">
           <Icons.arrowUpRight className="size-4 rotate-90" />
           Sort: {currentLabel}
         </Button>

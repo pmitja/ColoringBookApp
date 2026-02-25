@@ -289,7 +289,7 @@ export default function CreationsManager({
 
   return (
     <div className="space-y-4">
-      <div className="border-border/80 bg-card/95 dark:border-slate-700 dark:bg-slate-900 flex flex-wrap items-center justify-between gap-3 rounded-3xl border p-4">
+      <div className="border-border/80 bg-card/95 flex flex-wrap items-center justify-between gap-3 rounded-3xl border p-4 dark:border-slate-700 dark:bg-slate-900">
         <div className="flex items-center gap-2">
           <Checkbox
             checked={
@@ -399,12 +399,12 @@ function CreationCard({
   return (
     <Card
       className={cn(
-        "border-border/80 bg-card/95 dark:border-slate-700 dark:bg-slate-900 group overflow-hidden rounded-3xl border transition hover:-translate-y-0.5 hover:shadow-md",
+        "border-border/80 bg-card/95 group overflow-hidden rounded-3xl border transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-700 dark:bg-slate-900",
         selected && "ring-primary/35 ring-2",
       )}
     >
-      <div className="bg-background/60 dark:bg-slate-800/60 relative aspect-[3/4] sm:aspect-[4/5]">
-        <div className="bg-background/95 dark:bg-slate-900/95 absolute left-2 top-2 z-10 rounded-md p-1 shadow-sm">
+      <div className="bg-background/60 relative aspect-[3/4] dark:bg-slate-800/60 sm:aspect-[4/5]">
+        <div className="bg-background/95 absolute left-2 top-2 z-10 rounded-md p-1 shadow-sm dark:bg-slate-900/95">
           <Checkbox
             checked={selected}
             onCheckedChange={onSelect}
@@ -507,7 +507,7 @@ function CreationsTable({
   const someSelected = selectedIds.size > 0 && !allSelected;
 
   return (
-    <Card className="border-border/80 bg-card/95 dark:border-slate-700 dark:bg-slate-900 rounded-3xl">
+    <Card className="border-border/80 bg-card/95 rounded-3xl dark:border-slate-700 dark:bg-slate-900">
       <CardContent className="pt-6">
         <Table className="min-w-[420px] sm:min-w-[640px]">
           <TableHeader>

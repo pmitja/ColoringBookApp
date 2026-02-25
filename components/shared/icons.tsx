@@ -62,14 +62,14 @@ const BrandLogo = ({ className }: LucideProps) => (
       alt="Colorline AI"
       width={900}
       height={199}
-      className={cn(className, "w-auto dark:hidden")}
+      className={cn(className, "h-auto w-auto object-contain dark:hidden")}
     />
     <Image
       src="/_static/colorlineai-dark-logo-trim.webp"
       alt="Colorline AI"
       width={887}
       height={199}
-      className={cn(className, "hidden w-auto dark:block")}
+      className={cn(className, "hidden h-auto w-auto object-contain dark:block")}
     />
   </>
 );

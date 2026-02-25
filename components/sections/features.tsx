@@ -31,7 +31,7 @@ export default function Features() {
                     <div className="bg-accent/70 flex size-12 rounded-2xl text-primary *:m-auto *:size-6">
                       <Icon />
                     </div>
-                    <h3 className="font-heading mt-5 text-xl">
+                    <h3 className="mt-5 font-heading text-xl">
                       {feature.title}
                     </h3>
                     <p className="mt-2 leading-relaxed text-muted-foreground">

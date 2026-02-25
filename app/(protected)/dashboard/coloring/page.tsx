@@ -75,7 +75,7 @@ export default async function DashboardColoringPage({
 
   return (
     <>
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <div className="space-y-1.5">
           <h1 className="font-heading text-4xl font-black text-slate-900">Color Online</h1>
           <p className="text-lg font-bold text-slate-500">

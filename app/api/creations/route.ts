@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
+import { getMobileUserFromBearerHeaders } from "@/lib/mobile-auth";
 
 type CreationStatus = "QUEUED" | "PROCESSING" | "DONE" | "FAILED";
 type FilterStatus = "all" | CreationStatus;
@@ -18,8 +19,9 @@ const extractUploadThingKey = (url?: string | null) => {
 };
 
 export const GET = auth(async (req) => {
-  if (!req.auth?.user?.id) return new Response("Unauthorized", { status: 401 });
-  const userId = req.auth.user.id;
+  const mobileUser = await getMobileUserFromBearerHeaders(req.headers);
+  const userId = req.auth?.user?.id ?? mobileUser?.id;
+  if (!userId) return new Response("Unauthorized", { status: 401 });
 
   const q = (req.nextUrl.searchParams.get("q") ?? "").trim();
   const statusRaw = (req.nextUrl.searchParams.get("status") ?? "all").trim();
@@ -76,8 +78,9 @@ export const GET = auth(async (req) => {
 });
 
 export const DELETE = auth(async (req) => {
-  if (!req.auth?.user?.id) return new Response("Unauthorized", { status: 401 });
-  const userId = req.auth.user.id;
+  const mobileUser = await getMobileUserFromBearerHeaders(req.headers);
+  const userId = req.auth?.user?.id ?? mobileUser?.id;
+  if (!userId) return new Response("Unauthorized", { status: 401 });
 
   let payload: { ids?: unknown } | null = null;
   try {

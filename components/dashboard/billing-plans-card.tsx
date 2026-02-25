@@ -48,15 +48,15 @@ function PlanCard({
   return (
     <div
       className={cn(
-        "relative flex h-full flex-col justify-between space-y-6 rounded-[2rem] border-4 p-6 transition-all duration-300 overflow-hidden",
+        "relative flex h-full flex-col justify-between space-y-6 overflow-hidden rounded-[2rem] border-4 p-6 transition-all duration-300",
         isCurrent
-          ? "border-purple-500 bg-purple-50/50 dark:bg-purple-900/10 shadow-[8px_8px_0px_0px_rgba(168,85,247,0.4)] dark:border-purple-400"
-          : "border-slate-900 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)] hover:translate-y-[-2px] hover:shadow-[10px_10px_0px_0px_rgba(15,23,42,1)]",
+          ? "border-purple-500 bg-purple-50/50 shadow-[8px_8px_0px_0px_rgba(168,85,247,0.4)] dark:border-purple-400 dark:bg-purple-900/10"
+          : "border-slate-900 bg-white shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] hover:translate-y-[-2px] hover:shadow-[10px_10px_0px_0px_rgba(15,23,42,1)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)]",
       )}
     >
       {isCurrent && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-          <Badge className="bg-purple-600 px-4 py-1 text-xs font-black uppercase tracking-wider text-white shadow-sm border-2 border-white dark:border-slate-900">
+          <Badge className="border-2 border-white bg-purple-600 px-4 py-1 text-xs font-black uppercase tracking-wider text-white shadow-sm dark:border-slate-900">
             Current Plan
           </Badge>
         </div>
@@ -70,7 +70,7 @@ function PlanCard({
           </p>
         </div>
 
-        <div className="border-slate-100 dark:border-slate-800 flex items-baseline gap-2 border-b-2 pb-4">
+        <div className="flex items-baseline gap-2 border-b-2 border-slate-100 pb-4 dark:border-slate-800">
           <span className="text-5xl font-black tracking-tight text-slate-900 dark:text-slate-50">
             {formatPrice(displayPrice)}
           </span>
@@ -80,7 +80,7 @@ function PlanCard({
         </div>
 
         {plan.prices.monthly > 0 && (
-          <div className="flex items-center gap-2 text-sm font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1.5 rounded-lg w-fit">
+          <div className="flex w-fit items-center gap-2 rounded-lg bg-emerald-50 px-3 py-1.5 text-sm font-bold text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400">
             <Icons.check className="size-4" />
             {isYearly
               ? `Save ${formatPrice(plan.prices.monthly * 12 - plan.prices.yearly)} yearly`
@@ -90,7 +90,7 @@ function PlanCard({
 
         <div className="pt-2">
           <p className="mb-4 flex items-center gap-2 text-sm font-black text-slate-900 dark:text-slate-50">
-            <div className="bg-blue-100 dark:bg-blue-900/30 p-1.5 rounded-lg text-blue-600 dark:text-blue-400">
+            <div className="rounded-lg bg-blue-100 p-1.5 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
                <Icons.laptop className="size-4" />
             </div>
             {plan.monthlyGenerationLimit} generations/month
@@ -101,7 +101,7 @@ function PlanCard({
                 key={i}
                 className="flex items-start gap-3 text-sm font-medium text-slate-600 dark:text-slate-300"
               >
-                <Icons.check className="text-slate-900 dark:text-slate-50 mt-0.5 size-4 shrink-0 stroke-[3px]" />
+                <Icons.check className="mt-0.5 size-4 shrink-0 stroke-[3px] text-slate-900 dark:text-slate-50" />
                 <span className="leading-snug">{feature}</span>
               </li>
             ))}
@@ -118,7 +118,7 @@ function PlanCard({
               year={isYearly}
             />
           ) : (
-            <Button className="w-full rounded-xl border-2 border-slate-200 bg-slate-100 text-slate-500 font-bold" disabled>
+            <Button className="w-full rounded-xl border-2 border-slate-200 bg-slate-100 font-bold text-slate-500" disabled>
               Active Plan
             </Button>
           )
@@ -165,7 +165,7 @@ export function BillingPlansCard({
       <CardHeader className="px-0 pb-8">
         <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
           <div className="max-w-xl space-y-2">
-            <CardTitle className="text-3xl font-heading font-extrabold text-slate-900 dark:text-slate-50">
+            <CardTitle className="font-heading text-3xl font-extrabold text-slate-900 dark:text-slate-50">
               Available Plans
             </CardTitle>
             <CardDescription className="text-base font-bold text-slate-500 dark:text-slate-400">
@@ -173,7 +173,7 @@ export function BillingPlansCard({
               more generations and advanced features.
             </CardDescription>
           </div>
-          <div className="border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex w-fit items-center rounded-full p-1.5 shadow-sm">
+          <div className="flex w-fit items-center rounded-full border-2 border-slate-200 bg-white p-1.5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
             <ToggleGroup
               type="single"
               value={billingInterval}
@@ -195,7 +195,7 @@ export function BillingPlansCard({
                 className="h-auto rounded-full px-6 py-2.5 text-sm font-bold transition-all data-[state=on]:bg-slate-900 data-[state=on]:text-white dark:data-[state=on]:bg-slate-50 dark:data-[state=on]:text-slate-900"
               >
                 Yearly{" "}
-                <span className="ml-2 hidden rounded-full bg-emerald-100 border border-emerald-200 px-2 py-0.5 text-xs text-emerald-700 font-black sm:inline-block">
+                <span className="ml-2 hidden rounded-full border border-emerald-200 bg-emerald-100 px-2 py-0.5 text-xs font-black text-emerald-700 sm:inline-block">
                   Save 20%
                 </span>
               </ToggleGroupItem>

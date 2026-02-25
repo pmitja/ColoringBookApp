@@ -6,10 +6,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import { Mail, Loader2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { userAuthSchema } from "@/lib/validations/auth";
-import { buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -58,8 +59,8 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
   return (
     <div className={cn("grid gap-6", className)} {...props}>
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="grid gap-2">
-          <div className="grid gap-1">
+        <div className="grid gap-3">
+          <div className="grid gap-2">
             <Label className="sr-only" htmlFor="email">
               Email
             </Label>
@@ -71,35 +72,42 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
               autoComplete="email"
               autoCorrect="off"
               disabled={isLoading || isGoogleLoading}
+              className="h-12 rounded-2xl border-2 bg-muted/40 px-4 text-base font-medium shadow-sm focus-visible:ring-primary/50 transition-colors hover:border-border/50"
               {...register("email")}
             />
             {errors?.email && (
-              <p className="px-1 text-xs text-red-600">
+              <p className="px-1 text-sm font-bold text-destructive">
                 {errors.email.message}
               </p>
             )}
           </div>
-          <button className={cn(buttonVariants())} disabled={isLoading}>
-            {isLoading && (
-              <Icons.spinner className="mr-2 size-4 animate-spin" />
+          <Button 
+            className="h-12 w-full gap-2 rounded-2xl text-base font-bold shadow-md transition-all hover:scale-[1.02] active:scale-[0.98]" 
+            disabled={isLoading || isGoogleLoading}
+          >
+            {isLoading ? (
+              <Loader2 className="size-5 animate-spin" />
+            ) : (
+              <Mail className="size-5" />
             )}
             {type === "register" ? "Sign Up with Email" : "Sign In with Email"}
-          </button>
+          </Button>
         </div>
       </form>
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t" />
+          <span className="w-full border-t-2 border-border/50 border-dashed" />
         </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">
+        <div className="relative flex justify-center text-xs uppercase font-bold">
+          <span className="bg-background px-4 text-muted-foreground">
             Or continue with
           </span>
         </div>
       </div>
-      <button
+      <Button
         type="button"
-        className={cn(buttonVariants({ variant: "outline" }))}
+        variant="outline"
+        className="h-12 w-full gap-2 rounded-2xl border-2 text-base font-bold shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98] bg-background hover:bg-muted/50"
         onClick={() => {
           setIsGoogleLoading(true);
           signIn("google");
@@ -107,12 +115,12 @@ export function UserAuthForm({ className, type, ...props }: UserAuthFormProps) {
         disabled={isLoading || isGoogleLoading}
       >
         {isGoogleLoading ? (
-          <Icons.spinner className="mr-2 size-4 animate-spin" />
+          <Loader2 className="size-5 animate-spin" />
         ) : (
-          <Icons.google className="mr-2 size-4" />
+          <Icons.google className="size-5" />
         )}{" "}
         Google
-      </button>
+      </Button>
     </div>
   );
 }

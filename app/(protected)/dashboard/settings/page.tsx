@@ -19,7 +19,7 @@ export default async function SettingsPage() {
 
   return (
     <>
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
         <div className="space-y-1.5">
           <h1 className="font-heading text-4xl font-black text-slate-900 dark:text-slate-50">Settings</h1>
           <p className="text-lg font-bold text-slate-500 dark:text-slate-400">

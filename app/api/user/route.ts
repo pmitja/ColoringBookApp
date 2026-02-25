@@ -1,13 +1,11 @@
 import { auth } from "@/auth";
 
 import { prisma } from "@/lib/db";
+import { getMobileUserFromBearerHeaders } from "@/lib/mobile-auth";
 
 export const DELETE = auth(async (req) => {
-  if (!req.auth) {
-    return new Response("Not authenticated", { status: 401 });
-  }
-
-  const currentUser = req.auth.user;
+  const mobileUser = await getMobileUserFromBearerHeaders(req.headers);
+  const currentUser = req.auth?.user ?? mobileUser;
   if (!currentUser) {
     return new Response("Invalid user", { status: 401 });
   }

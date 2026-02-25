@@ -10,53 +10,53 @@ const features = [
     title: "Image to Lineart",
     description: "Upload a photo and instantly generate clean line art. Perfect for family moments.",
     icon: Icons.media,
-    color: "bg-blue-100",
-    iconColor: "text-blue-500",
+    color: "bg-blue-100 dark:bg-blue-900/40",
+    iconColor: "text-blue-500 dark:text-blue-400",
     animation: "rotateY",
   },
   {
     title: "Text to Page",
     description: "Describe any scene, character, or pattern, and watch it become a coloring page.",
     icon: Icons.post,
-    color: "bg-pink-100",
-    iconColor: "text-pink-500",
+    color: "bg-pink-100 dark:bg-pink-900/40",
+    iconColor: "text-pink-500 dark:text-pink-400",
     animation: "pulse",
   },
   {
     title: "Consistent Avatars",
     description: "Use your face as a reference to generate multiple pages starring YOU.",
     icon: Icons.user,
-    color: "bg-emerald-100",
-    iconColor: "text-emerald-500",
+    color: "bg-emerald-100 dark:bg-emerald-900/40",
+    iconColor: "text-emerald-500 dark:text-emerald-400",
     animation: "bounce",
   },
   {
     title: "Whole Book Generation",
     description: "One prompt creates a full 10-page book with a custom cover.",
     icon: Icons.bookOpen,
-    color: "bg-orange-100",
-    iconColor: "text-orange-500",
+    color: "bg-orange-100 dark:bg-orange-900/40",
+    iconColor: "text-orange-500 dark:text-orange-400",
     animation: "scale",
   },
 ];
 
 export function FeaturesBentoV2() {
   return (
-    <section className="bg-white py-20 lg:py-32 relative overflow-hidden">
+    <section className="relative overflow-hidden bg-white py-20 dark:bg-slate-900 lg:py-32">
       
       {/* Decorative Blob */}
-      <div className="absolute top-0 right-0 w-64 h-64 bg-purple-100 rounded-full blur-3xl opacity-50 -translate-y-1/2 translate-x-1/2" />
+      <div className="absolute right-0 top-0 size-64 -translate-y-1/2 translate-x-1/2 rounded-full bg-purple-100 opacity-50 blur-3xl dark:bg-purple-900/30 dark:opacity-40" />
       
       <MaxWidthWrapper>
         <div className="mx-auto mb-16 max-w-2xl text-center">
-          <div className="inline-block rounded-full bg-pink-100 px-4 py-1.5 text-sm font-semibold text-pink-600 mb-4 border-2 border-pink-200">
+          <div className="mb-4 inline-block rounded-full border-2 border-pink-200 bg-pink-100 px-4 py-1.5 text-sm font-semibold text-pink-600 dark:border-pink-800 dark:bg-pink-900/50 dark:text-pink-300">
             Endless Ways to Create
           </div>
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="font-heading text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl"
+            className="font-heading text-4xl font-extrabold tracking-tight text-slate-900 dark:text-slate-50 sm:text-5xl"
           >
             Combine our AI tools to craft the perfect coloring adventure.
           </motion.h2>
@@ -73,7 +73,7 @@ export function FeaturesBentoV2() {
                 whileHover={{ y: -5 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.3, delay: index * 0.1 }}
-                className={`group relative overflow-hidden rounded-3xl border-2 border-slate-900 ${feature.color} p-6 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] transition-all hover:shadow-[6px_6px_0px_0px_rgba(15,23,42,1)]`}
+                className={`group relative overflow-hidden rounded-3xl border-2 border-slate-900 dark:border-slate-700 ${feature.color} p-6 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] dark:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] transition-all hover:shadow-[6px_6px_0px_0px_rgba(15,23,42,1)] dark:hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.5)]`}
               >
                 <motion.div
                   animate={
@@ -89,13 +89,13 @@ export function FeaturesBentoV2() {
                     ease: "easeInOut",
                     delay: index * 0.5 
                   }}
-                  className="bg-white border-2 border-slate-900 shadow-sm mb-6 flex size-14 items-center justify-center rounded-2xl"
+                  className="mb-6 flex size-14 items-center justify-center rounded-2xl border-2 border-slate-900 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-800"
                 >
                   <Icon className={`size-7 ${feature.iconColor}`} />
                 </motion.div>
 
-                <h3 className="mb-2 font-heading text-xl font-bold text-slate-900">{feature.title}</h3>
-                <p className="relative z-10 text-sm font-medium leading-relaxed text-slate-700">
+                <h3 className="mb-2 font-heading text-xl font-bold text-slate-900 dark:text-slate-100">{feature.title}</h3>
+                <p className="relative z-10 text-sm font-medium leading-relaxed text-slate-700 dark:text-slate-400">
                   {feature.description}
                 </p>
               </motion.div>
@@ -108,28 +108,28 @@ export function FeaturesBentoV2() {
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="mt-16 flex flex-col overflow-hidden rounded-[2.5rem] border-4 border-slate-900 bg-white shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] md:flex-row"
+          className="mt-16 flex flex-col overflow-hidden rounded-[2.5rem] border-4 border-slate-900 bg-white shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:border-slate-700 dark:bg-slate-800 dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)] md:flex-row"
         >
           <div className="flex flex-col justify-center p-8 md:w-1/2 md:p-12">
-            <div className="mb-4 inline-flex w-fit items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-600 border-2 border-emerald-200">
+            <div className="mb-4 inline-flex w-fit items-center gap-2 rounded-full border-2 border-emerald-200 bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-600 dark:border-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-400">
                <Icons.user className="size-3" /> Consistent Character
             </div>
-            <h3 className="mb-4 font-heading text-3xl font-extrabold text-slate-900">Star in your own book</h3>
-            <p className="mb-6 text-lg font-medium text-slate-600">
+            <h3 className="mb-4 font-heading text-3xl font-extrabold text-slate-900 dark:text-slate-100">Star in your own book</h3>
+            <p className="mb-6 text-lg font-medium text-slate-600 dark:text-slate-400">
               Upload a single reference photo, and our AI will maintain your avatar&apos;s likeness across entirely new coloring pages.
             </p>
-            <button className="w-fit rounded-full bg-yellow-400 px-8 py-3 font-bold text-slate-900 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] border-2 border-slate-900 transition-all hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)]">
+            <button className="w-fit rounded-full border-2 border-slate-900 bg-yellow-400 px-8 py-3 font-bold text-slate-900 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] transition-all hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] dark:border-slate-600 dark:bg-primary dark:text-primary-foreground dark:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] dark:hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.5)]">
               Try It Out
             </button>
           </div>
-          <div className="relative flex min-h-[300px] items-center justify-center bg-blue-50 p-8 md:w-1/2 border-t-4 border-slate-900 md:border-t-0 md:border-l-4">
+          <div className="relative flex min-h-[300px] items-center justify-center border-t-4 border-slate-900 bg-blue-50 p-8 dark:border-slate-700 dark:bg-blue-900/20 md:w-1/2 md:border-l-4 md:border-t-0">
              {/* Animation: Avatar spreading to pages */}
              <div className="relative z-10 flex w-full items-center justify-center gap-4">
                 <motion.div 
                   initial={{ x: -20, opacity: 0 }}
                   whileInView={{ x: 0, opacity: 1 }}
                   viewport={{ once: true }}
-                  className="z-20 size-24 shrink-0 overflow-hidden rounded-full border-4 border-slate-900 bg-white shadow-[4px_4px_0px_0px_rgba(15,23,42,1)]"
+                  className="z-20 size-24 shrink-0 overflow-hidden rounded-full border-4 border-slate-900 bg-white shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] dark:border-slate-600 dark:bg-slate-800 dark:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)]"
                 >
                    <Image src="/avatars/avatar-01.svg" alt="Avatar" width={96} height={96} className="object-cover" />
                 </motion.div>
@@ -142,9 +142,9 @@ export function FeaturesBentoV2() {
                         whileInView={{ opacity: 1, x: 0, rotate: i * 12 - 24 }}
                         viewport={{ once: true }}
                         transition={{ delay: 0.2 + (i * 0.1), duration: 0.5 }}
-                        className="z-10 flex h-36 w-28 items-center justify-center rounded-xl border-4 border-slate-900 bg-white shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] transition-transform hover:-translate-y-4"
+                        className="z-10 flex h-36 w-28 items-center justify-center rounded-xl border-4 border-slate-900 bg-white shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] transition-transform hover:-translate-y-4 dark:border-slate-600 dark:bg-slate-800 dark:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)]"
                      >
-                       <Icons.page className="text-blue-200 size-10" />
+                       <Icons.page className="size-10 text-blue-200 dark:text-blue-600" />
                      </motion.div>
                   ))}
                 </div>
@@ -155,9 +155,9 @@ export function FeaturesBentoV2() {
       </MaxWidthWrapper>
       
       {/* Blue wave at the bottom */}
-      <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-none z-10 translate-y-px">
+      <div className="absolute bottom-0 left-0 z-10 w-full translate-y-px overflow-hidden leading-none">
         <svg
-          className="relative block w-full h-[60px]"
+          className="relative block h-[60px] w-full"
           data-name="Layer 1"
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 1200 120"
@@ -165,7 +165,7 @@ export function FeaturesBentoV2() {
         >
           <path
             d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V0C63.26,38.5,145.41,75.47,231.25,82.72c41.35,3.5,82.93-1.84,124.5-9.35z"
-            className="fill-blue-500/10"
+            className="fill-blue-500/10 dark:fill-blue-500/20"
           ></path>
         </svg>
       </div>

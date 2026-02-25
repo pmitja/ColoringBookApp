@@ -196,7 +196,7 @@ export default async function BookChooserPage() {
           </p>
         </div>
         <Link href="/dashboard/book-editor/new">
-          <Button className="gap-3 rounded-full py-7 px-8 text-xl font-black shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] dark:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.4)] bg-yellow-400 dark:bg-yellow-500 text-slate-900 dark:text-slate-900 border-2 border-slate-900 dark:border-slate-700 hover:bg-yellow-500 dark:hover:bg-yellow-600 hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] active:translate-y-[4px] active:shadow-none transition-all">
+          <Button className="gap-3 rounded-full border-2 border-slate-900 bg-yellow-400 px-8 py-7 text-xl font-black text-slate-900 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] transition-all hover:translate-y-[2px] hover:bg-yellow-500 hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] active:translate-y-[4px] active:shadow-none dark:border-slate-700 dark:bg-yellow-500 dark:text-slate-900 dark:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.4)] dark:hover:bg-yellow-600">
             <Plus className="size-6" />
             New Book
           </Button>
@@ -204,14 +204,14 @@ export default async function BookChooserPage() {
       </div>
 
       <div className="space-y-8 pb-10">
-        <Card className="rounded-[2rem] border-4 border-slate-900 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)] overflow-hidden">
+        <Card className="overflow-hidden rounded-[2rem] border-4 border-slate-900 bg-white shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)]">
           <CardContent className="relative z-10 flex flex-wrap items-center justify-between gap-6 p-8">
             <div className="flex items-center gap-5">
-              <div className="rounded-2xl bg-blue-100 dark:bg-blue-900/30 border-2 border-slate-900 dark:border-slate-600 p-4 text-blue-700 dark:text-blue-300 shadow-sm">
+              <div className="rounded-2xl border-2 border-slate-900 bg-blue-100 p-4 text-blue-700 shadow-sm dark:border-slate-600 dark:bg-blue-900/30 dark:text-blue-300">
                 <Library className="size-8" />
               </div>
               <div>
-                <p className="text-3xl font-heading font-black text-slate-900 dark:text-slate-50">
+                <p className="font-heading text-3xl font-black text-slate-900 dark:text-slate-50">
                   {books.length === 1
                     ? "1 Book Saved"
                     : `${books.length} Books Saved`}
@@ -223,7 +223,7 @@ export default async function BookChooserPage() {
             </div>
             
             <Link href="/dashboard/book-editor/new">
-              <Button variant="outline" className="h-14 gap-2 rounded-2xl border-2 border-slate-900 dark:border-slate-600 bg-white dark:bg-slate-800 px-6 text-lg font-bold text-slate-900 dark:text-slate-50 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] dark:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.4)] transition-all hover:translate-y-[2px] hover:bg-slate-50 dark:hover:bg-slate-700 hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)]">
+              <Button variant="outline" className="h-14 gap-2 rounded-2xl border-2 border-slate-900 bg-white px-6 text-lg font-bold text-slate-900 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] transition-all hover:translate-y-[2px] hover:bg-slate-50 hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.4)] dark:hover:bg-slate-700">
                 <Sparkles className="size-5 text-yellow-500" />
                 Create Another
               </Button>
@@ -233,15 +233,15 @@ export default async function BookChooserPage() {
 
         {books.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="mb-8 flex size-32 items-center justify-center rounded-[2.5rem] bg-white border-4 border-slate-200 rotate-6 shadow-sm">
-              <BookMarked className="text-slate-300 size-16 -rotate-6" />
+            <div className="mb-8 flex size-32 rotate-6 items-center justify-center rounded-[2.5rem] border-4 border-slate-200 bg-white shadow-sm">
+              <BookMarked className="size-16 -rotate-6 text-slate-300" />
             </div>
-            <h3 className="font-heading text-3xl font-black text-slate-400 mb-3">No books yet</h3>
-            <p className="text-lg font-bold text-slate-300 max-w-sm mb-10 leading-relaxed">
+            <h3 className="mb-3 font-heading text-3xl font-black text-slate-400">No books yet</h3>
+            <p className="mb-10 max-w-sm text-lg font-bold leading-relaxed text-slate-300">
               Start building your first custom coloring book. Add pages, arrange them, and export to PDF!
             </p>
             <Link href="/dashboard/book-editor/new">
-              <Button className="gap-3 rounded-full py-8 px-10 text-xl font-black shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] bg-emerald-400 text-slate-900 border-2 border-slate-900 hover:bg-emerald-500 hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] transition-all">
+              <Button className="gap-3 rounded-full border-2 border-slate-900 bg-emerald-400 px-10 py-8 text-xl font-black text-slate-900 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] transition-all hover:translate-y-[2px] hover:bg-emerald-500 hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)]">
                 <Plus className="size-6" />
                 Create First Book
               </Button>
@@ -255,9 +255,9 @@ export default async function BookChooserPage() {
               return (
                 <Card
                   key={book.id}
-                  className="group relative flex flex-col overflow-hidden rounded-[2.5rem] border-4 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-sm transition-all duration-300 hover:border-slate-900 dark:hover:border-slate-600 hover:shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)] hover:-translate-y-2"
+                  className="group relative flex flex-col overflow-hidden rounded-[2.5rem] border-4 border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-2 hover:border-slate-900 hover:shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:border-slate-700 dark:bg-slate-900 dark:hover:border-slate-600 dark:hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)]"
                 >
-                  <CardHeader className="border-b-4 border-slate-100 dark:border-slate-700 p-0 group-hover:border-slate-900 dark:group-hover:border-slate-600 transition-colors duration-300">
+                  <CardHeader className="border-b-4 border-slate-100 p-0 transition-colors duration-300 group-hover:border-slate-900 dark:border-slate-700 dark:group-hover:border-slate-600">
                     <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-50 dark:bg-slate-800">
                       {book.thumbUrl ? (
                         <Image
@@ -278,7 +278,7 @@ export default async function BookChooserPage() {
                       
                       <div className="absolute bottom-4 right-4 translate-y-12 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
                         <Link href={`/dashboard/book-editor/${book.id}`}>
-                          <Button size="icon" className="size-12 rounded-full border-2 border-slate-900 dark:border-slate-600 bg-yellow-400 dark:bg-yellow-500 text-slate-900 shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] dark:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.4)] hover:bg-yellow-500 dark:hover:bg-yellow-600 hover:scale-110">
+                          <Button size="icon" className="size-12 rounded-full border-2 border-slate-900 bg-yellow-400 text-slate-900 shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] hover:scale-110 hover:bg-yellow-500 dark:border-slate-600 dark:bg-yellow-500 dark:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.4)] dark:hover:bg-yellow-600">
                             <ArrowRight className="size-6" />
                           </Button>
                         </Link>
@@ -287,8 +287,8 @@ export default async function BookChooserPage() {
                   </CardHeader>
                   <CardContent className="relative z-10 flex flex-1 flex-col justify-between p-6">
                     <div className="space-y-2">
-                      <Link href={`/dashboard/book-editor/${book.id}`} className="block group/link">
-                        <p className="truncate text-2xl font-black text-slate-900 dark:text-slate-50 transition-colors group-hover/link:text-blue-600 dark:group-hover/link:text-blue-400">
+                      <Link href={`/dashboard/book-editor/${book.id}`} className="group/link block">
+                        <p className="truncate text-2xl font-black text-slate-900 transition-colors group-hover/link:text-blue-600 dark:text-slate-50 dark:group-hover/link:text-blue-400">
                           {title}
                         </p>
                       </Link>
@@ -298,9 +298,9 @@ export default async function BookChooserPage() {
                       </p>
                     </div>
 
-                    <div className="mt-6 flex items-center justify-between gap-3 pt-4 border-t-2 border-slate-100 dark:border-slate-700 border-dashed group-hover:border-slate-200 dark:group-hover:border-slate-600">
+                    <div className="mt-6 flex items-center justify-between gap-3 border-t-2 border-dashed border-slate-100 pt-4 group-hover:border-slate-200 dark:border-slate-700 dark:group-hover:border-slate-600">
                       <Link href={`/dashboard/book-editor/${book.id}`} className="flex-1">
-                        <Button variant="ghost" className="w-full gap-2 rounded-xl font-bold text-slate-600 dark:text-slate-400 hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-blue-700 dark:hover:text-blue-400 justify-start px-3 h-12">
+                        <Button variant="ghost" className="h-12 w-full justify-start gap-2 rounded-xl px-3 font-bold text-slate-600 hover:bg-blue-50 hover:text-blue-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-blue-400">
                           <BookOpen className="size-5" />
                           Open Book
                         </Button>

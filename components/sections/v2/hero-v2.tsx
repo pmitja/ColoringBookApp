@@ -189,7 +189,7 @@ export function HeroV2() {
                   <div className="absolute -bottom-4 -left-4 h-44 w-32 -rotate-12 rounded-xl border-4 border-slate-900 bg-white shadow-xl" />
                   <div className="absolute -bottom-4 -right-4 h-44 w-32 rotate-12 rounded-xl border-4 border-slate-900 bg-white shadow-xl" />
                   <div className="relative flex h-48 w-36 flex-col items-center justify-center overflow-hidden rounded-xl border-4 border-slate-900 bg-white shadow-[6px_6px_0px_0px_rgba(15,23,42,1)]">
-                    <div className="h-16 w-full border-b-2 border-slate-900 bg-gradient-to-br from-green-400 to-teal-400" />
+                    <div className="h-16 w-full border-b-2 border-slate-900 bg-teal-500" />
                     <div className="flex w-full flex-1 flex-col items-center justify-center bg-white p-2 text-center">
                       <div className="mb-2 h-2 w-20 rounded-full bg-slate-200" />
                       <div className="h-1.5 w-12 rounded-full bg-slate-200" />

@@ -1598,7 +1598,7 @@ export default function BookEditorV2({
               sizes="100px"
               className="object-cover transition duration-300 group-hover:scale-105"
             />
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-neutral-900/60 via-neutral-900/10 to-transparent opacity-0 transition duration-200 group-hover:opacity-100" />
+            <div className="pointer-events-none absolute inset-0 bg-black/20 opacity-0 transition duration-200 group-hover:opacity-100" />
             {asset.name ? (
               <div className="pointer-events-none absolute inset-x-1 bottom-1 truncate text-[10px] font-medium text-white opacity-0 transition duration-200 group-hover:opacity-100">
                 {asset.name}
@@ -1651,10 +1651,10 @@ export default function BookEditorV2({
     <div className="space-y-4">
       <div className={inspectorCardClass}>
         <div className="flex items-center justify-between">
-          <Label className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+          <Label className="text-xs uppercase tracking-[0.2em] text-muted-foreground dark:text-slate-400">
             Selection
           </Label>
-          <span className="text-xs text-muted-foreground">
+          <span className="text-xs text-muted-foreground dark:text-slate-500">
             Delete / Backspace
           </span>
         </div>
@@ -1682,10 +1682,10 @@ export default function BookEditorV2({
       {selectedElement.type === "image" ? (
         <div className={inspectorCardClass}>
           <div className="flex items-center justify-between">
-            <Label className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+            <Label className="text-xs uppercase tracking-[0.2em] text-muted-foreground dark:text-slate-400">
               Image
             </Label>
-            <span className="text-xs text-muted-foreground">Fit & rotate</span>
+            <span className="text-xs text-muted-foreground dark:text-slate-500">Fit & rotate</span>
           </div>
           <div className="mt-3 grid gap-2 sm:grid-cols-2">
             <Button
@@ -1761,7 +1761,7 @@ export default function BookEditorV2({
       ) : null}
 
       <div className={inspectorCardClass}>
-        <Label className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+        <Label className="text-xs uppercase tracking-[0.2em] text-muted-foreground dark:text-slate-400">
           Actions
         </Label>
         <div className="mt-3 grid gap-2 sm:grid-cols-2">
@@ -1796,35 +1796,35 @@ export default function BookEditorV2({
       </div>
     </div>
   ) : (
-    <div className="rounded-2xl border border-dashed p-4 text-sm text-muted-foreground">
+    <div className="rounded-2xl border border-dashed dark:border-slate-700 p-4 text-sm text-muted-foreground dark:text-slate-400">
       Select an element on the page to edit its properties.
     </div>
   );
 
   const documentInspectorContent = (
     <div className="space-y-4 text-sm">
-      <div className="bg-muted/20 rounded-2xl border p-4">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+      <div className="bg-muted/20 dark:bg-slate-800/50 rounded-2xl border dark:border-slate-700 p-4">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground dark:text-slate-500">
           Summary
         </p>
         <div className="mt-3 grid grid-cols-2 gap-3">
           <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">Pages</p>
-            <p className="text-base font-semibold">{book.pages.length}</p>
+            <p className="text-xs text-muted-foreground dark:text-slate-500">Pages</p>
+            <p className="text-base font-semibold dark:text-slate-50">{book.pages.length}</p>
           </div>
           <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">View</p>
-            <p className="text-base font-semibold">
+            <p className="text-xs text-muted-foreground dark:text-slate-500">View</p>
+            <p className="text-base font-semibold dark:text-slate-50">
               {isSingleMode ? "Single" : "Spread"}
             </p>
           </div>
           <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">Format</p>
-            <p className="text-base font-semibold">{pageFormat}</p>
+            <p className="text-xs text-muted-foreground dark:text-slate-500">Format</p>
+            <p className="text-base font-semibold dark:text-slate-50">{pageFormat}</p>
           </div>
           <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">Orientation</p>
-            <p className="text-base font-semibold capitalize">
+            <p className="text-xs text-muted-foreground dark:text-slate-500">Orientation</p>
+            <p className="text-base font-semibold dark:text-slate-50 capitalize">
               {pageOrientation}
             </p>
           </div>
@@ -1832,7 +1832,7 @@ export default function BookEditorV2({
       </div>
 
       <div className="rounded-2xl border bg-white/70 p-4 dark:bg-slate-900/70">
-        <Label className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+        <Label className="text-xs uppercase tracking-[0.2em] text-muted-foreground dark:text-slate-400">
           Format
         </Label>
         <div className="mt-3 grid grid-cols-3 gap-2">
@@ -1861,7 +1861,7 @@ export default function BookEditorV2({
       </div>
 
       <div className="rounded-2xl border bg-white/70 p-4 dark:bg-slate-900/70">
-        <Label className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+        <Label className="text-xs uppercase tracking-[0.2em] text-muted-foreground dark:text-slate-400">
           Orientation
         </Label>
         <div className="mt-3 grid grid-cols-2 gap-2">
@@ -1891,93 +1891,96 @@ export default function BookEditorV2({
   );
 
   return (
-    <div className="space-y-4 p-2 sm:p-4">
-      <div className="playful-card rounded-3xl border-2 border-border/50 bg-background/50 p-4 shadow-sm">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="flex min-w-[240px] flex-1 flex-col gap-2">
-            <div className="flex flex-wrap items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
-              <span className="rounded-lg bg-primary/10 px-2.5 py-1 text-[10px] font-bold text-primary ring-1 ring-primary/20">
+    <div className="space-y-6 p-4 sm:p-6 bg-[#f8fbff] dark:bg-slate-950 min-h-screen">
+      {/* Top Bar */}
+      <div className="rounded-[2rem] border-4 border-slate-900 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)] p-6">
+        <div className="flex flex-wrap items-start justify-between gap-6">
+          <div className="flex min-w-[240px] flex-1 flex-col gap-3">
+            <div className="flex flex-wrap items-center gap-3 text-xs font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">
+              <span className="rounded-xl bg-purple-100 dark:bg-purple-900/40 px-3 py-1 text-xs font-black text-purple-700 dark:text-purple-300 border-2 border-slate-900 dark:border-slate-600">
                 Studio
               </span>
-              <span>Book editor</span>
+              <span className="dark:text-slate-400">Book editor</span>
             </div>
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-wrap items-center gap-4">
               <Input
-                className="focus-visible:border-primary/40 h-12 w-full max-w-md rounded-2xl border-2 border-transparent bg-muted/40 px-4 text-base font-bold shadow-sm focus-visible:ring-0 hover:border-border/50 transition-colors sm:text-lg"
+                className="h-14 w-full max-w-md rounded-2xl border-4 border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 px-5 text-xl font-black text-slate-900 dark:text-slate-50 shadow-none focus-visible:ring-0 focus-visible:border-slate-900 dark:focus-visible:border-slate-500 focus-visible:bg-white dark:focus-visible:bg-slate-700 transition-all placeholder:text-slate-300 dark:placeholder:text-slate-500"
                 value={book.title}
                 onChange={(e) => setBook({ ...book, title: e.target.value })}
                 placeholder="Book title"
                 aria-label="Book title"
               />
-              <Badge
-                variant="secondary"
-                className="rounded-xl px-3 py-1 text-xs font-bold"
-              >
-                {saveLabel}
-              </Badge>
-              <div className="flex items-center gap-1.5 text-xs font-bold text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-xl">
-                <Icons.bookOpen className="size-4" />
+              <div className="flex items-center gap-2 text-sm font-black text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-4 py-2 rounded-2xl border-2 border-slate-200 dark:border-slate-600">
+                <Icons.bookOpen className="size-5" />
                 <span>{book.pages.length} pages</span>
               </div>
             </div>
           </div>
-          <div className="flex flex-wrap items-center gap-2 mt-2 sm:mt-0">
+          
+          <div className="flex flex-wrap items-center gap-3 mt-2 sm:mt-0">
+             {/* Cover Wizard Button */}
             <Button
               variant={isPaidUser ? "secondary" : "outline"}
-              className="h-11 rounded-2xl px-4 text-sm font-bold shadow-sm"
+              className="h-14 rounded-2xl px-6 text-base font-black shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] dark:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] border-2 border-slate-900 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] dark:hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.5)] transition-all dark:text-slate-50"
               onClick={openCoverWizard}
               disabled={Boolean(savingCoverOptionId)}
             >
-              <Icons.bookOpen className="mr-2 size-4 text-primary" />
+              <Icons.bookOpen className="mr-2 size-5 text-purple-600 dark:text-purple-400" />
               Cover Wizard
             </Button>
+            
+            {/* Actions Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="outline"
-                  className="h-11 rounded-2xl px-4 text-sm font-bold shadow-sm"
+                  className="h-14 rounded-2xl px-4 text-base font-black shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] dark:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] border-2 border-slate-900 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] dark:hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.5)] transition-all dark:text-slate-50"
                 >
-                  <Icons.ellipsis className="mr-2 size-4" />
+                  <Icons.ellipsis className="mr-2 size-5" />
                   Actions
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="rounded-2xl p-2 font-medium">
-                <DropdownMenuItem onClick={loadLatest} className="rounded-xl py-2 cursor-pointer focus:bg-primary/10 focus:text-primary">
-                  <Icons.download className="mr-2 size-4" />
+              <DropdownMenuContent align="end" className="rounded-2xl border-4 border-slate-900 dark:border-slate-700 dark:bg-slate-900 p-2 font-bold shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)]">
+                <DropdownMenuItem onClick={loadLatest} className="rounded-xl py-3 cursor-pointer focus:bg-slate-100 dark:focus:bg-slate-800 focus:font-black text-slate-900 dark:text-slate-50 text-base">
+                  <Icons.download className="mr-2 size-5" />
                   Load latest
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={exportToPdf} className="rounded-xl py-2 cursor-pointer focus:bg-primary/10 focus:text-primary">
-                  <Icons.download className="mr-2 size-4" />
+                <DropdownMenuItem onClick={exportToPdf} className="rounded-xl py-3 cursor-pointer focus:bg-slate-100 dark:focus:bg-slate-800 focus:font-black text-slate-900 dark:text-slate-50 text-base">
+                  <Icons.download className="mr-2 size-5" />
                   Export PDF
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+
+            {/* Save Button */}
             <Button
-              className="h-11 rounded-2xl px-6 text-sm font-bold shadow-md shadow-primary/20 transition-transform hover:scale-105 active:scale-95"
+              className="h-14 rounded-2xl px-8 text-lg font-black shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] dark:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] border-2 border-slate-900 dark:border-slate-600 bg-yellow-400 dark:bg-yellow-500 text-slate-900 hover:bg-yellow-500 dark:hover:bg-yellow-600 hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] dark:hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.5)] transition-all active:translate-y-[4px] active:shadow-none"
               onClick={saveBook}
             >
-              <Icons.check className="mr-2 size-4" />
+              <Icons.check className="mr-2 size-6" />
               {bookId ? "Save Changes" : "Save as New"}
             </Button>
           </div>
         </div>
 
-        <div className="mt-4 flex flex-wrap items-center gap-2 rounded-2xl border-2 border-border/50 bg-background p-2 shadow-sm">
+        {/* Toolbar */}
+        <div className="mt-8 flex flex-wrap items-center gap-3 rounded-[1.5rem] border-4 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 p-3 shadow-none">
           <TooltipProvider>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-3">
+              {/* Undo/Redo */}
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
                     variant="ghost"
                     disabled={!canUndo}
                     onClick={undo}
-                    className="h-9 px-2 text-xs sm:h-10 sm:px-3 sm:text-sm"
+                    className="h-12 px-4 rounded-xl font-bold text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-50 hover:shadow-sm hover:border-2 hover:border-slate-200 dark:hover:border-slate-700"
                   >
-                    <Icons.undo className="mr-1 size-3 sm:mr-2 sm:size-4" />
+                    <Icons.undo className="mr-1 size-5" />
                     <span className="hidden sm:inline">Undo</span>
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Undo (Cmd/Ctrl+Z)</TooltipContent>
+                <TooltipContent className="font-bold border-2 border-slate-900 rounded-xl">Undo (Cmd/Ctrl+Z)</TooltipContent>
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -1985,58 +1988,60 @@ export default function BookEditorV2({
                     variant="ghost"
                     disabled={!canRedo}
                     onClick={redo}
-                    className="h-9 px-2 text-xs sm:h-10 sm:px-3 sm:text-sm"
+                    className="h-12 px-4 rounded-xl font-bold text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-50 hover:shadow-sm hover:border-2 hover:border-slate-200 dark:hover:border-slate-700"
                   >
-                    <Icons.undo className="mr-1 size-3 sm:mr-2 sm:size-4" />
+                    <Icons.undo className="mr-1 size-5 rotate-180" />
                     <span className="hidden sm:inline">Redo</span>
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>
+                <TooltipContent className="font-bold border-2 border-slate-900 rounded-xl">
                   Redo (Cmd/Ctrl+Shift+Z or Cmd/Ctrl+Y)
                 </TooltipContent>
               </Tooltip>
 
               <Separator
                 orientation="vertical"
-                className="mx-1 hidden h-6 lg:block"
+                className="mx-2 hidden h-8 w-1 bg-slate-200 dark:bg-slate-700 lg:block rounded-full"
               />
 
+              {/* Add Content Buttons */}
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
                     variant="secondary"
                     onClick={addTextBox}
-                    className="h-9 px-2 text-xs sm:h-10 sm:px-3 sm:text-sm"
+                    className="h-12 px-5 rounded-xl border-2 border-slate-900 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold text-slate-900 dark:text-slate-50 shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] dark:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.5)] hover:translate-y-[1px] hover:shadow-sm hover:bg-blue-50 dark:hover:bg-blue-900/20"
                   >
-                    <Icons.post className="mr-1 size-3 sm:mr-2 sm:size-4" />
+                    <Icons.post className="mr-2 size-5 text-blue-600 dark:text-blue-400" />
                     <span className="hidden sm:inline">Add text</span>
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent>Add a text box</TooltipContent>
+                <TooltipContent className="font-bold border-2 border-slate-900 rounded-xl">Add a text box</TooltipContent>
               </Tooltip>
 
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
-                    className="h-9 px-2 text-xs sm:h-10 sm:px-3 sm:text-sm"
+                    className="h-12 px-5 rounded-xl border-2 border-slate-900 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold text-slate-900 dark:text-slate-50 shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] dark:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.5)] hover:translate-y-[1px] hover:shadow-sm hover:bg-pink-50 dark:hover:bg-pink-900/20"
                   >
-                    <Icons.media className="mr-1 size-3 sm:mr-2 sm:size-4" />
+                    <Icons.media className="mr-2 size-5 text-pink-600 dark:text-pink-400" />
                     <span className="hidden sm:inline">Add image</span>
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-[280px] max-w-[90vw] sm:w-[360px]">
-                  <div className="space-y-2">
+                <PopoverContent className="w-[320px] max-w-[90vw] rounded-2xl border-4 border-slate-900 dark:border-slate-700 dark:bg-slate-900 p-4 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)]">
+                  <div className="space-y-4">
                     <Input
                       placeholder="Search assets..."
                       value={assetQuery}
                       onChange={(e) => setAssetQuery(e.target.value)}
+                      className="h-12 rounded-xl border-2 border-slate-200 dark:border-slate-700 dark:bg-slate-800 font-bold focus:border-slate-900 dark:focus:border-slate-500"
                     />
                     <ScrollArea className="h-[200px] pr-2 sm:h-[280px]">
                       <TooltipProvider>
-                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                           {filteredAssets.length === 0 ? (
-                            <p className="col-span-2 text-xs text-muted-foreground sm:col-span-3">
+                            <p className="col-span-2 text-sm font-bold text-slate-400 sm:col-span-3 text-center py-8">
                               No matching assets.
                             </p>
                           ) : (
@@ -2058,19 +2063,20 @@ export default function BookEditorV2({
 
               <Separator
                 orientation="vertical"
-                className="mx-1 hidden h-6 lg:block"
+                className="mx-2 hidden h-8 w-1 bg-slate-200 dark:bg-slate-700 lg:block rounded-full"
               />
 
+              {/* Navigation */}
               <Button
                 variant="outline"
                 onClick={() => bookRef.current?.flipPrev()}
-                className="h-9 px-2 text-xs sm:h-10 sm:px-3 sm:text-sm"
+                className="h-12 px-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold text-slate-600 dark:text-slate-400 hover:border-slate-900 dark:hover:border-slate-500 hover:text-slate-900 dark:hover:text-slate-50"
               >
-                <Icons.chevronLeft className="mr-1 size-3 sm:mr-2 sm:size-4" />
+                <Icons.chevronLeft className="mr-1 size-5" />
                 <span className="hidden sm:inline">Prev</span>
               </Button>
-              <div className="bg-muted/60 rounded-full px-3 py-1 text-xs font-medium text-muted-foreground">
-                Page {currentPageIndex + 1} of {book.pages.length}
+              <div className="bg-slate-200 dark:bg-slate-800 rounded-xl px-4 py-2 text-sm font-black text-slate-600 dark:text-slate-400">
+                Page {currentPageIndex + 1} / {book.pages.length}
               </div>
               <Button
                 variant="outline"
@@ -2092,20 +2098,21 @@ export default function BookEditorV2({
                     bookRef.current?.flipNext();
                   }
                 }}
-                className="h-9 px-2 text-xs sm:h-10 sm:px-3 sm:text-sm"
+                className="h-12 px-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 font-bold text-slate-600 dark:text-slate-400 hover:border-slate-900 dark:hover:border-slate-500 hover:text-slate-900 dark:hover:text-slate-50"
               >
                 <span className="hidden sm:inline">Next</span>
-                <Icons.arrowRight className="ml-1 size-3 sm:ml-2 sm:size-4" />
+                <Icons.arrowRight className="ml-1 size-5" />
               </Button>
 
               <Separator
                 orientation="vertical"
-                className="mx-1 hidden h-6 lg:block"
+                className="mx-2 hidden h-8 w-1 bg-slate-200 dark:bg-slate-700 lg:block rounded-full"
               />
 
-              <div className="flex flex-wrap items-center gap-2">
-                <Label className="text-xs">Zoom</Label>
-                <div className="w-24 sm:w-40">
+              {/* Zoom */}
+              <div className="flex flex-wrap items-center gap-3 bg-white dark:bg-slate-900 px-4 py-2 rounded-xl border-2 border-slate-200 dark:border-slate-700">
+                <Label className="text-xs font-black uppercase tracking-wider text-slate-400">Zoom</Label>
+                <div className="w-24 sm:w-32">
                   <Slider
                     value={[Math.round(renderZoom * 100)]}
                     min={50}
@@ -2115,9 +2122,10 @@ export default function BookEditorV2({
                       setZoom(val / 100);
                       setHasUserZoomed(true);
                     }}
+                    className="cursor-pointer"
                   />
                 </div>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-sm font-black text-slate-600 dark:text-slate-400 min-w-[3ch]">
                   {Math.round(renderZoom * 100)}%
                 </span>
               </div>
@@ -2125,28 +2133,28 @@ export default function BookEditorV2({
               <Button
                 variant="outline"
                 onClick={() => setPropertiesOpen(true)}
-                className="h-9 px-2 text-xs sm:h-10 sm:px-3 sm:text-sm 2xl:hidden"
+                className="h-12 px-4 ml-auto rounded-xl border-2 border-slate-900 dark:border-slate-700 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 font-bold hover:bg-slate-800 dark:hover:bg-slate-200 2xl:hidden"
               >
-                <Icons.settings className="mr-1 size-3 sm:mr-2 sm:size-4" />
+                <Icons.settings className="mr-2 size-5" />
                 <span className="hidden sm:inline">Inspector</span>
               </Button>
             </div>
           </TooltipProvider>
         </div>
 
-        <div className="mt-6 grid min-w-0 gap-4 lg:grid-cols-[260px_minmax(0,1fr)] 2xl:grid-cols-[260px_minmax(0,1fr)_320px]">
-          <Card className="order-2 min-w-0 rounded-3xl border bg-white/80 shadow-sm dark:bg-slate-900/80 lg:order-1">
-            <CardContent className="space-y-4 p-4">
+        <div className="mt-8 grid min-w-0 gap-6 lg:grid-cols-[300px_minmax(0,1fr)] 2xl:grid-cols-[300px_minmax(0,1fr)_360px]">
+          <Card className="order-2 min-w-0 rounded-[2rem] border-4 border-slate-900 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)] lg:order-1 overflow-hidden">
+            <CardContent className="space-y-5 p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-muted-foreground">
+                  <p className="text-xs font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">
                     Library
                   </p>
-                  <p className="font-heading text-lg text-foreground">Assets</p>
+                  <p className="font-heading text-2xl font-black text-slate-900 dark:text-slate-50">Assets</p>
                 </div>
                 <Badge
                   variant="outline"
-                  className="rounded-full px-2 py-0.5 text-[10px] uppercase tracking-[0.2em]"
+                  className="rounded-xl border-2 border-slate-200 dark:border-slate-600 px-3 py-1 text-xs font-bold text-slate-500 dark:text-slate-400"
                 >
                   {editorAssets.length} items
                 </Badge>
@@ -2155,7 +2163,7 @@ export default function BookEditorV2({
                 placeholder="Search assets..."
                 value={assetQuery}
                 onChange={(e) => setAssetQuery(e.target.value)}
-                className="rounded-xl bg-white/80 dark:bg-slate-900/80"
+                className="h-12 rounded-xl border-2 border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-800 font-bold focus:border-slate-900 dark:focus:border-slate-500 focus:bg-white dark:focus:bg-slate-700 transition-all"
               />
               <ScrollArea className="h-[240px] pr-3 sm:h-[320px] xl:h-[400px]">
                 <TooltipProvider>
@@ -2185,17 +2193,17 @@ export default function BookEditorV2({
             </CardContent>
           </Card>
 
-          <div className="order-1 flex min-w-0 flex-col gap-3 lg:order-2">
-            <Card className="min-w-0 rounded-3xl border bg-white/80 shadow-sm dark:bg-slate-900/80">
-              <CardContent className="space-y-3 p-3">
-                <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-foreground">
+          <div className="order-1 flex min-w-0 flex-col gap-6 lg:order-2">
+            <Card className="min-w-0 rounded-[2rem] border-4 border-slate-900 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)] overflow-hidden">
+              <CardContent className="space-y-4 p-6">
+                <div className="flex flex-wrap items-center justify-between gap-3 text-sm font-bold text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center gap-3">
+                    <span className="font-black text-slate-900 dark:text-slate-50 text-lg">
                       Canvas
                     </span>
                     <Badge
                       variant="outline"
-                      className="rounded-full px-2 py-0.5 text-[10px] uppercase tracking-[0.2em]"
+                      className="rounded-xl border-2 border-slate-200 dark:border-slate-600 px-3 py-1 text-xs font-bold dark:text-slate-400"
                     >
                       {isSingleMode ? "Single" : "Spread"}
                     </Badge>
@@ -2206,7 +2214,7 @@ export default function BookEditorV2({
                 </div>
                 <div
                   ref={viewportRef}
-                  className="flex min-w-0 justify-center overflow-hidden rounded-2xl bg-gradient-to-b from-slate-50 to-white p-3 dark:from-slate-900 dark:to-slate-950"
+                  className="flex min-w-0 justify-center overflow-hidden rounded-2xl border-4 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-6 shadow-inner"
                 >
                   <div className="w-full min-w-0 max-w-full">
                     <SimpleFlipBook
@@ -2228,7 +2236,7 @@ export default function BookEditorV2({
                           else if (rightId) setSelectedPageId(rightId);
                         }
                       }}
-                      className="mx-auto shadow-2xl ring-1 ring-black/10"
+                      className="mx-auto shadow-[12px_12px_0px_0px_rgba(15,23,42,0.1)] border-4 border-slate-900"
                     >
                       {book.pages.map((page, pageIndex) => {
                         const pagePadding = getPagePaddingByIndex(pageIndex);
@@ -2559,9 +2567,9 @@ export default function BookEditorV2({
               </CardContent>
             </Card>
 
-            <div className="rounded-2xl border bg-white/80 p-3 shadow-sm dark:bg-slate-900/80">
+            <div className="rounded-2xl border dark:border-slate-700 bg-white/80 dark:bg-slate-900/80 p-3 shadow-sm">
               <div className="flex items-center justify-between gap-2">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground dark:text-slate-500">
                   Page strip
                 </p>
                 <div className="flex gap-2">
@@ -2607,21 +2615,21 @@ export default function BookEditorV2({
                   </button>
                 ))}
               </div>
-              <div className="mt-4 border-t pt-4">
-                <Label className="text-sm font-medium">Document settings</Label>
+              <div className="mt-4 border-t dark:border-slate-700 pt-4">
+                <Label className="text-sm font-medium dark:text-slate-50">Document settings</Label>
                 <div className="mt-3">{documentInspectorContent}</div>
               </div>
             </div>
           </div>
 
-          <Card className="order-3 hidden rounded-3xl border bg-white/80 shadow-sm dark:bg-slate-900/80 2xl:block">
+          <Card className="order-3 hidden rounded-3xl border dark:border-slate-700 bg-white/80 dark:bg-slate-900/80 shadow-sm 2xl:block">
             <CardContent className="flex h-full flex-col gap-3 p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-muted-foreground">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-muted-foreground dark:text-slate-500">
                     Inspector
                   </p>
-                  <p className="font-heading text-lg text-foreground">
+                  <p className="font-heading text-lg text-foreground dark:text-slate-50">
                     Properties
                   </p>
                 </div>
@@ -2643,7 +2651,7 @@ export default function BookEditorV2({
       <Dialog open={coverDialogOpen} onOpenChange={onCoverDialogChange}>
         <DialogContent className="dashboard-theme max-h-[76vh] w-[92vw] max-w-[92vw] overflow-hidden p-0 md:w-[66vw] md:max-w-[66vw]">
           <div className="flex max-h-[76vh] flex-col">
-            <div className="from-secondary/70 via-muted/50 to-accent/40 border-b bg-gradient-to-r px-4 py-3">
+            <div className="bg-muted dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-4 py-3">
               <DialogHeader>
                 <DialogTitle>Cover Wizard</DialogTitle>
                 <DialogDescription>

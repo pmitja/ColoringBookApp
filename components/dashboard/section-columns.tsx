@@ -12,10 +12,10 @@ export function SectionColumns({
   children,
 }: SectionColumnsType) {
   return (
-    <section className="border-border/80 bg-card/95 rounded-3xl border p-6">
+    <section className="border-border/80 bg-card/95 rounded-3xl border dark:border-slate-700 dark:bg-slate-900 p-6">
       <div className="grid grid-cols-1 gap-6 md:grid-cols-12">
         <div className="space-y-2 md:col-span-5">
-          <h2 className="text-lg font-semibold leading-tight text-foreground">
+          <h2 className="text-lg font-semibold leading-tight text-foreground dark:text-slate-50">
             {title}
           </h2>
           {description ? (

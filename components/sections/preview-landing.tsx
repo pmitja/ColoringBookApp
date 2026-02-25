@@ -17,7 +17,7 @@ export default function PreviewLanding() {
           </div>
 
           <div className="border-border/70 bg-card/80 relative overflow-hidden rounded-[24px] border">
-            <div className="dark:from-cyan-300/8 absolute inset-0 bg-gradient-to-br from-sky-100/40 via-transparent to-amber-100/40 dark:to-orange-300/10" />
+            <div className="absolute inset-0 bg-sky-100/40 dark:bg-cyan-300/10" />
             <Image
               className="relative z-10 size-full object-cover object-center"
               src="/illustrations/preview-coloring.svg"

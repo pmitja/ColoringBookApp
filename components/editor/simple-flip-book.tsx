@@ -174,8 +174,8 @@ export const SimpleFlipBook = React.forwardRef<
 
           {/* Gutter */}
           <div className="pointer-events-none absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-neutral-300" />
-          <div className="pointer-events-none absolute inset-y-0 left-1/2 w-8 -translate-x-1/2 bg-gradient-to-r from-black/5 to-transparent" />
-          <div className="pointer-events-none absolute inset-y-0 left-1/2 w-8 -translate-x-1/2 bg-gradient-to-l from-black/5 to-transparent" />
+          <div className="pointer-events-none absolute inset-y-0 left-1/2 w-8 -translate-x-1/2 bg-black/5" />
+          <div className="pointer-events-none absolute inset-y-0 left-1/2 w-8 -translate-x-1/2 bg-black/5" />
         </div>
       ) : (
         <div

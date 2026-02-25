@@ -225,46 +225,46 @@ export default function ResultsPage({ params }: ResultsPageProps) {
         text={`Created from: ${jobData.inputFileName}`}
       />
 
-      <div className="mx-auto max-w-4xl space-y-6 pb-10">
-        <Card className="border-border/80 bg-card/95 rounded-3xl">
-          <CardHeader>
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <CardTitle className="font-heading text-xl">
+      <div className="mx-auto max-w-4xl space-y-8 pb-10">
+        <Card className="rounded-[2rem] border-4 border-slate-900 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)] overflow-hidden">
+          <CardHeader className="border-b-4 border-slate-900 dark:border-slate-700 bg-yellow-50 dark:bg-yellow-900/20 p-6">
+            <div className="flex items-center justify-between gap-4">
+              <div className="space-y-1">
+                <CardTitle className="font-heading text-2xl font-black text-slate-900 dark:text-slate-50">
                   Coloring Page Output
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-base font-bold text-slate-500 dark:text-slate-400">
                   Clean line art optimized for printing.
                 </CardDescription>
               </div>
-              <Badge variant="secondary" className="rounded-full">
+              <Badge className="rounded-full border-2 border-emerald-700 dark:border-emerald-600 bg-emerald-100 dark:bg-emerald-900/40 px-4 py-1 text-sm font-black text-emerald-700 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-900/60">
                 Ready
               </Badge>
             </div>
           </CardHeader>
-          <CardContent className="space-y-5">
+          <CardContent className="space-y-8 p-8">
             {jobData.lineartUrl ? (
-              <div className="border-border/70 bg-background/60 relative aspect-square w-full overflow-hidden rounded-2xl border">
+              <div className="relative aspect-square w-full overflow-hidden rounded-3xl border-4 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 shadow-inner">
                 <Image
                   src={jobData.lineartUrl}
                   alt="Coloring page line art"
                   fill
-                  className="object-contain"
+                  className="object-contain p-4"
                   priority
                 />
               </div>
             ) : null}
 
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <Button
                 onClick={() => handleDownload("png")}
                 disabled={downloading === "png"}
-                className="gap-2"
+                className="h-14 gap-2 rounded-2xl border-2 border-slate-900 bg-yellow-400 text-lg font-black text-slate-900 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] transition-all hover:translate-y-[2px] hover:bg-yellow-500 hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] disabled:opacity-50"
               >
                 {downloading === "png" ? (
-                  <Icons.spinner className="size-4 animate-spin" />
+                  <Icons.spinner className="size-5 animate-spin" />
                 ) : (
-                  <Icons.package className="size-4" />
+                  <Icons.package className="size-5" />
                 )}
                 Download PNG
               </Button>
@@ -272,32 +272,36 @@ export default function ResultsPage({ params }: ResultsPageProps) {
                 onClick={() => handleDownload("pdf")}
                 disabled={downloading === "pdf"}
                 variant="outline"
-                className="gap-2"
+                className="h-14 gap-2 rounded-2xl border-2 border-slate-900 dark:border-slate-600 bg-white dark:bg-slate-800 text-lg font-black text-slate-900 dark:text-slate-50 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] dark:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.4)] transition-all hover:translate-y-[2px] hover:bg-slate-50 dark:hover:bg-slate-700 hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] dark:hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.4)] disabled:opacity-50"
               >
                 {downloading === "pdf" ? (
-                  <Icons.spinner className="size-4 animate-spin" />
+                  <Icons.spinner className="size-5 animate-spin" />
                 ) : (
-                  <Icons.page className="size-4" />
+                  <Icons.page className="size-5" />
                 )}
                 Download PDF
               </Button>
-              <Button onClick={handleShare} variant="ghost" className="gap-2">
-                <Icons.arrowUpRight className="size-4" />
+              <Button 
+                onClick={handleShare} 
+                variant="ghost" 
+                className="h-14 gap-2 rounded-2xl border-2 border-transparent text-lg font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-50"
+              >
+                <Icons.arrowUpRight className="size-5" />
                 Share
               </Button>
             </div>
 
             {consistentGeneratorHref ? (
-              <div className="border-border/70 bg-secondary/35 rounded-2xl border p-4">
-                <p className="text-sm font-medium text-foreground">
+              <div className="rounded-3xl border-4 border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-purple-900/20 p-6">
+                <p className="text-lg font-black text-purple-900 dark:text-purple-200">
                   Reuse this character
                 </p>
-                <p className="mt-1 text-sm text-muted-foreground">
+                <p className="mt-1 text-base font-bold text-purple-700/80 dark:text-purple-300/90">
                   Open consistent mode with this result preselected as reference.
                 </p>
                 <Link href={consistentGeneratorHref}>
-                  <Button className="mt-3 gap-2" size="sm">
-                    <Icons.arrowRight className="size-4" />
+                  <Button className="mt-4 w-full gap-2 rounded-xl border-2 border-purple-900 dark:border-purple-600 bg-purple-200 dark:bg-purple-800 text-purple-900 dark:text-purple-100 shadow-sm hover:bg-purple-300 dark:hover:bg-purple-700 sm:w-auto" size="lg">
+                    <Icons.arrowRight className="size-5" />
                     Continue with this character
                   </Button>
                 </Link>
@@ -306,26 +310,26 @@ export default function ResultsPage({ params }: ResultsPageProps) {
           </CardContent>
         </Card>
 
-        <Card className="border-border/80 bg-card/95 rounded-3xl">
-          <CardContent className="flex flex-wrap items-center justify-between gap-3 pt-6">
-            <div className="text-sm text-muted-foreground">
+        <Card className="rounded-[2rem] border-4 border-slate-900 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)]">
+          <CardContent className="flex flex-wrap items-center justify-between gap-6 p-8">
+            <div className="text-sm font-bold text-slate-500 dark:text-slate-400">
               {createdDate ? <p>Created: {createdDate}</p> : null}
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-3">
               <Link href={`/dashboard/coloring?jobId=${jobData.id}`}>
-                <Button variant="outline" className="gap-2">
+                <Button variant="outline" className="h-12 gap-2 rounded-xl border-2 border-slate-900 dark:border-slate-600 bg-white dark:bg-slate-800 font-bold text-slate-900 dark:text-slate-50 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] dark:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.4)] hover:translate-y-[2px] hover:bg-slate-50 dark:hover:bg-slate-700 hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)]">
                   <Icons.palette className="size-4" />
                   Color Online
                 </Button>
               </Link>
               <Link href="/upload">
-                <Button className="gap-2">
+                <Button className="h-12 gap-2 rounded-xl border-2 border-slate-900 dark:border-slate-600 bg-pink-400 dark:bg-pink-600 font-bold text-slate-900 dark:text-slate-50 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] dark:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.4)] hover:translate-y-[2px] hover:bg-pink-500 dark:hover:bg-pink-700 hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)]">
                   <Icons.media className="size-4" />
                   Create Another
                 </Button>
               </Link>
               <Link href="/creations">
-                <Button variant="outline" className="gap-2">
+                <Button variant="outline" className="h-12 gap-2 rounded-xl border-2 border-slate-900 dark:border-slate-600 bg-slate-100 dark:bg-slate-800 font-bold text-slate-900 dark:text-slate-50 hover:bg-slate-200 dark:hover:bg-slate-700">
                   <Icons.bookOpen className="size-4" />
                   View All
                 </Button>

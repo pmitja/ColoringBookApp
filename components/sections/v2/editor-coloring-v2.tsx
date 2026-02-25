@@ -90,7 +90,7 @@ export function EditorAndColoringV2() {
             viewport={{ once: true }}
             className="relative order-2 flex aspect-square w-full items-center justify-center rounded-[2.5rem] border-4 border-slate-900 bg-purple-50 p-6 md:aspect-video lg:order-1 lg:aspect-square shadow-[8px_8px_0px_0px_rgba(15,23,42,1)]"
           >
-             <div className="absolute inset-0 rounded-[2rem] bg-gradient-to-tl from-purple-200/50 to-transparent" />
+             <div className="absolute inset-0 rounded-[2rem] bg-purple-200/30 dark:bg-purple-900/20" />
              
              {/* Simulated Coloring UI */}
              <div className="relative z-10 flex aspect-[3/4] w-3/4 flex-col items-center justify-center overflow-hidden rounded-2xl border-4 border-slate-900 bg-white p-4 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)]">

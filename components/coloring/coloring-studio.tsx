@@ -515,22 +515,22 @@ export default function ColoringStudio({
           </div>
         </div>
 
-        <Card className="playful-card overflow-hidden border-2 shadow-xl shadow-primary/5">
-          <CardHeader className="relative z-10 space-y-4 border-b border-border/50 bg-muted/20 pb-6">
-            <div className="flex items-center gap-3">
-              <div className="rounded-xl bg-primary/10 p-2.5 text-primary ring-1 ring-primary/20">
+        <Card className="rounded-[2rem] border-4 border-slate-900 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)] overflow-hidden">
+          <CardHeader className="relative z-10 space-y-4 border-b-4 border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 pb-6">
+            <div className="flex items-center gap-4">
+              <div className="rounded-2xl bg-purple-100 dark:bg-purple-900/30 p-3 text-purple-600 dark:text-purple-400 border-2 border-slate-900 dark:border-slate-700 shadow-sm">
                 <Palette className="size-6" />
               </div>
               <div>
-                <CardTitle className="font-heading text-2xl">Choose a Page to Color</CardTitle>
-                <CardDescription className="text-base font-medium mt-1">
+                <CardTitle className="font-heading text-2xl font-extrabold text-slate-900 dark:text-slate-50">Choose a Page to Color</CardTitle>
+                <CardDescription className="text-base font-bold text-slate-500 dark:text-slate-400 mt-1">
                   Select one of your generated pages below to start painting.
                 </CardDescription>
               </div>
             </div>
           </CardHeader>
           <CardContent className="relative z-10 p-6 sm:p-8">
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {pages.map((page) => {
                 const isSelected = selectedPageId === page.id;
 
@@ -540,35 +540,35 @@ export default function ColoringStudio({
                     type="button"
                     onClick={() => handleSelectPage(page.id)}
                     className={cn(
-                      "group relative rounded-2xl border-2 p-3 text-left transition-all duration-300",
+                      "group relative rounded-[1.5rem] border-4 p-3 text-left transition-all duration-300",
                       isSelected
-                        ? "border-primary bg-primary/5 shadow-md shadow-primary/10 scale-[1.02]"
-                        : "border-border/50 bg-background/50 hover:border-primary/50 hover:bg-muted/50 hover:shadow-sm"
+                        ? "border-purple-500 bg-purple-50 dark:bg-purple-900/20 shadow-[4px_4px_0px_0px_rgba(168,85,247,0.4)] scale-[1.02]"
+                        : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:border-slate-400 dark:hover:border-slate-500 hover:shadow-sm"
                     )}
                   >
-                    <div className="relative aspect-[3/4] overflow-hidden rounded-xl border border-border/50 bg-white shadow-sm transition-transform duration-300 group-hover:scale-[1.02]">
+                    <div className="relative aspect-[3/4] overflow-hidden rounded-xl border-2 border-slate-100 dark:border-slate-800 bg-white shadow-inner transition-transform duration-300 group-hover:scale-[1.02]">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={`/api/download/lineart/${page.id}`}
                         alt={`Coloring page preview for ${stripFileExtension(page.inputFileName)}`}
-                        className="size-full object-contain"
+                        className="size-full object-contain p-2"
                         loading="lazy"
                         decoding="async"
                       />
                       {isSelected && (
-                        <div className="absolute inset-0 bg-primary/10 ring-inset ring-4 ring-primary" />
+                        <div className="absolute inset-0 bg-purple-500/10 ring-inset ring-4 ring-purple-500 rounded-xl" />
                       )}
                       {isSelected ? (
-                        <Badge className="absolute right-3 top-3 shadow-md border-0 bg-primary text-primary-foreground font-bold px-3 py-1">
+                        <Badge className="absolute right-3 top-3 shadow-md border-2 border-white bg-purple-500 text-white font-black px-3 py-1 rounded-lg uppercase tracking-wider text-[10px]">
                           Selected
                         </Badge>
                       ) : null}
                     </div>
                     <div className="mt-4 px-1">
-                      <p className="truncate text-sm font-bold text-foreground">
+                      <p className="truncate text-base font-black text-slate-900 dark:text-slate-50">
                         {stripFileExtension(page.inputFileName)}
                       </p>
-                      <p className="text-xs font-medium text-muted-foreground mt-1">
+                      <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mt-1">
                         {formatCreatedAt(page.createdAt)}
                       </p>
                     </div>
@@ -584,11 +584,11 @@ export default function ColoringStudio({
                   handleSelectPage(selectedPageId, true);
                 }}
                 disabled={!selectedPageId}
-                className="gap-2 rounded-full py-6 px-8 text-lg font-bold shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98]"
+                className="gap-3 rounded-full py-7 px-10 text-xl font-black shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] dark:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] border-2 border-slate-900 dark:border-slate-700 bg-yellow-400 text-slate-900 hover:bg-yellow-500 hover:translate-y-[2px] active:translate-y-[4px] transition-all"
               >
-                <Palette className="size-5" />
+                <Palette className="size-6" />
                 Start Coloring
-                <ChevronRight className="size-5 ml-1" />
+                <ChevronRight className="size-6 ml-1" />
               </Button>
             </div>
           </CardContent>
@@ -635,25 +635,27 @@ export default function ColoringStudio({
       </div>
 
       <section className="grid gap-6 lg:grid-cols-[340px_minmax(0,1fr)]">
-        <Card className="playful-card overflow-hidden border-2 shadow-sm order-2 lg:order-1 h-fit sticky top-24">
-          <CardHeader className="bg-muted/20 border-b border-border/50 pb-5">
-            <div className="flex items-center gap-2">
-              <PaintBucket className="size-5 text-primary" />
-              <CardTitle className="font-heading text-xl">Color Palette</CardTitle>
+        <Card className="rounded-[2rem] border-4 border-slate-900 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)] overflow-hidden order-2 lg:order-1 h-fit sticky top-24">
+          <CardHeader className="bg-slate-50 dark:bg-slate-800/50 border-b-4 border-slate-100 dark:border-slate-800 pb-5">
+            <div className="flex items-center gap-3">
+              <div className="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-xl border-2 border-slate-900 dark:border-slate-700 text-blue-600 dark:text-blue-400">
+                <PaintBucket className="size-5" />
+              </div>
+              <CardTitle className="font-heading text-xl font-black text-slate-900 dark:text-slate-50">Color Palette</CardTitle>
             </div>
           </CardHeader>
-          <CardContent className="space-y-6 p-5">
+          <CardContent className="space-y-6 p-6">
             
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <Label htmlFor="fill-color-picker" className="text-sm font-bold">Selected Color</Label>
-                <Badge variant="outline" className="font-mono bg-background">
+                <Label htmlFor="fill-color-picker" className="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-wide">Selected Color</Label>
+                <Badge variant="outline" className="font-mono font-bold bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-slate-50 border-2 border-slate-200 dark:border-slate-700">
                   {fillHex.toUpperCase()}
                 </Badge>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4">
                 <div 
-                  className="size-12 rounded-xl border-2 border-border/50 shadow-inner overflow-hidden shrink-0"
+                  className="size-14 rounded-2xl border-4 border-slate-200 dark:border-slate-700 shadow-inner overflow-hidden shrink-0"
                   style={{ backgroundColor: fillHex }}
                 >
                   <input
@@ -665,15 +667,15 @@ export default function ColoringStudio({
                     aria-label="Choose fill color"
                   />
                 </div>
-                <div className="flex-1 text-xs font-medium text-muted-foreground leading-snug">
+                <div className="flex-1 text-xs font-bold text-slate-500 dark:text-slate-400 leading-snug">
                   Click the color square to pick a custom color, or choose a preset below.
                 </div>
               </div>
             </div>
 
             <div className="space-y-3">
-              <Label className="text-sm font-bold">Presets</Label>
-              <div className="grid grid-cols-5 gap-2">
+              <Label className="text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-wide">Presets</Label>
+              <div className="grid grid-cols-5 gap-3">
                 {COLOR_PRESETS.map((color) => (
                   <button
                     key={color}
@@ -682,8 +684,8 @@ export default function ColoringStudio({
                     className={cn(
                       "aspect-square rounded-xl border-2 transition-all hover:scale-110 active:scale-95 shadow-sm",
                       fillHex.toLowerCase() === color.toLowerCase()
-                        ? "border-foreground ring-2 ring-foreground/20 ring-offset-1 scale-110 z-10"
-                        : "border-black/10 dark:border-white/20 hover:border-foreground/50",
+                        ? "border-slate-900 dark:border-slate-100 ring-2 ring-slate-900/20 dark:ring-slate-100/20 ring-offset-2 dark:ring-offset-slate-900 scale-110 z-10"
+                        : "border-slate-200 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-500",
                     )}
                     style={{ backgroundColor: color }}
                     aria-label={`Use color ${color}`}
@@ -692,14 +694,14 @@ export default function ColoringStudio({
               </div>
             </div>
 
-            <div className="h-px bg-border/50 w-full" />
+            <div className="h-0.5 bg-slate-100 dark:bg-slate-800 w-full" />
 
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-3">
               <Button
                 onClick={handleUndo}
                 disabled={!canUndo || isLoadingCanvas || isFilling}
                 variant="outline"
-                className="gap-2 rounded-xl font-bold border-2"
+                className="gap-2 rounded-xl font-bold border-2 border-slate-200 dark:border-slate-700 h-12 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-50 hover:border-slate-900 dark:hover:border-slate-500"
               >
                 <Undo2 className="size-4" />
                 Undo
@@ -708,7 +710,7 @@ export default function ColoringStudio({
                 onClick={handleRedo}
                 disabled={!canRedo || isLoadingCanvas || isFilling}
                 variant="outline"
-                className="gap-2 rounded-xl font-bold border-2"
+                className="gap-2 rounded-xl font-bold border-2 border-slate-200 dark:border-slate-700 h-12 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-50 hover:border-slate-900 dark:hover:border-slate-500"
               >
                 <Redo2 className="size-4" />
                 Redo
@@ -717,7 +719,7 @@ export default function ColoringStudio({
                 onClick={handleReset}
                 disabled={isLoadingCanvas || isFilling}
                 variant="destructive"
-                className="col-span-2 gap-2 rounded-xl font-bold bg-destructive/10 text-destructive hover:bg-destructive/20 hover:text-destructive border-0"
+                className="col-span-2 gap-2 rounded-xl font-bold bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 hover:text-red-700 border-2 border-red-100 dark:border-red-900/50 h-12 shadow-none"
               >
                 <RotateCcw className="size-4" />
                 Reset Canvas
@@ -732,12 +734,12 @@ export default function ColoringStudio({
                 onValueChange={(value) =>
                   setGalleryAccordionValue(value || undefined)
                 }
-                className="rounded-2xl border-2 border-border/50 bg-muted/20 px-4"
+                className="rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 px-4"
               >
                 <AccordionItem value="pages" className="border-none">
-                  <AccordionTrigger className="py-4 text-sm font-bold hover:no-underline [&[data-state=open]]:pb-2">
+                  <AccordionTrigger className="py-4 text-sm font-bold text-slate-700 dark:text-slate-300 hover:no-underline hover:text-slate-900 dark:hover:text-slate-50 [&[data-state=open]]:pb-2">
                     <span className="flex items-center gap-2">
-                      <ImageIcon className="size-4 text-muted-foreground" />
+                      <ImageIcon className="size-4 text-slate-400" />
                       Switch Page
                     </span>
                   </AccordionTrigger>
@@ -755,11 +757,11 @@ export default function ColoringStudio({
                               className={cn(
                                 "group rounded-xl border-2 p-1.5 text-left transition-all",
                                 isSelected
-                                  ? "border-primary bg-primary/5"
-                                  : "border-border/50 bg-background hover:border-primary/30"
+                                  ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                                  : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:border-blue-300"
                               )}
                             >
-                              <div className="relative aspect-[3/4] overflow-hidden rounded-lg border border-border/50 bg-white">
+                              <div className="relative aspect-[3/4] overflow-hidden rounded-lg border border-slate-100 dark:border-slate-800 bg-white shadow-sm">
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 <img
                                   src={`/api/download/lineart/${page.id}`}
@@ -780,10 +782,10 @@ export default function ColoringStudio({
             </div>
 
             {selectedPage || lastSavedJobId ? (
-              <div className="space-y-2 pt-2">
+              <div className="space-y-3 pt-4 border-t-2 border-slate-100 dark:border-slate-800">
                 {lastSavedJobId && (
                   <Link href={`/results/${lastSavedJobId}`} className="block">
-                    <Button variant="outline" className="w-full gap-2 rounded-xl font-bold bg-muted/30">
+                    <Button variant="outline" className="w-full gap-2 rounded-xl h-12 font-bold bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-slate-900 dark:hover:border-slate-500">
                       <ExternalLink className="size-4" />
                       View Last Saved
                     </Button>
@@ -791,7 +793,7 @@ export default function ColoringStudio({
                 )}
                 {selectedPage && (
                   <Link href={`/results/${selectedPage.id}`} className="block">
-                    <Button variant="ghost" className="w-full gap-2 rounded-xl font-medium text-muted-foreground hover:text-foreground">
+                    <Button variant="ghost" className="w-full gap-2 rounded-xl h-12 font-bold text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800">
                       <ExternalLink className="size-4" />
                       Original Results
                     </Button>
@@ -803,36 +805,38 @@ export default function ColoringStudio({
           </CardContent>
         </Card>
 
-        <Card className="playful-card overflow-hidden border-2 shadow-xl shadow-primary/5 order-1 lg:order-2">
-          <CardHeader className="bg-muted/20 border-b border-border/50 pb-5">
+        <Card className="rounded-[2rem] border-4 border-slate-900 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)] overflow-hidden order-1 lg:order-2">
+          <CardHeader className="bg-slate-50 dark:bg-slate-800/50 border-b-4 border-slate-100 dark:border-slate-800 pb-5">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
-                <CardTitle className="font-heading text-xl">Canvas</CardTitle>
-                <CardDescription className="text-sm font-medium mt-1">
+                <CardTitle className="font-heading text-xl font-black text-slate-900 dark:text-slate-50">Canvas</CardTitle>
+                <CardDescription className="text-sm font-bold text-slate-500 dark:text-slate-400 mt-1">
                   Click inside any enclosed area to fill it.
                 </CardDescription>
               </div>
               {canvasSize ? (
-                <Badge variant="outline" className="bg-background shadow-sm px-3 py-1 font-mono text-xs">
+                <Badge variant="outline" className="bg-white dark:bg-slate-900 shadow-sm px-3 py-1 font-mono text-xs font-bold border-2 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300">
                   {canvasSize.width} × {canvasSize.height}
                 </Badge>
               ) : null}
             </div>
           </CardHeader>
           <CardContent className="p-6">
-            <div className="relative flex min-h-[400px] items-center justify-center overflow-hidden rounded-2xl border-2 border-border/50 bg-[url('/checkered-pattern.png')] bg-repeat shadow-inner dark:bg-[url('/checkered-pattern-dark.png')]">
-              <div className="absolute inset-0 bg-background/50 backdrop-blur-[2px]" />
+            <div className="relative flex min-h-[500px] items-center justify-center overflow-hidden rounded-2xl border-4 border-slate-200 dark:border-slate-700 bg-[url('/checkered-pattern.png')] bg-repeat shadow-inner dark:bg-[url('/checkered-pattern-dark.png')] bg-white dark:bg-slate-950">
+              <div className="absolute inset-0 bg-white/50 dark:bg-black/50 backdrop-blur-[2px]" />
               <canvas
                 ref={canvasRef}
                 onPointerDown={fillRegionFromPointer}
-                className="relative z-10 block max-h-[75vh] w-auto max-w-full cursor-crosshair touch-none bg-white shadow-xl ring-1 ring-border/50"
+                className="relative z-10 block max-h-[75vh] w-auto max-w-full cursor-crosshair touch-none bg-white shadow-2xl shadow-slate-900/10 ring-4 ring-slate-900/5 dark:ring-slate-700"
                 aria-label="Coloring page canvas"
               />
               {(isLoadingCanvas || isFilling) && (
-                <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/40 backdrop-blur-sm">
-                  <div className="flex items-center gap-3 rounded-2xl border-2 border-primary/20 bg-background px-6 py-4 shadow-xl">
-                    <Icons.spinner className="size-5 animate-spin text-primary" />
-                    <span className="font-bold text-base">
+                <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/60 dark:bg-slate-950/60 backdrop-blur-sm">
+                  <div className="flex items-center gap-4 rounded-2xl border-4 border-slate-900 dark:border-slate-700 bg-white dark:bg-slate-900 px-8 py-6 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)]">
+                    <div className="bg-yellow-100 dark:bg-yellow-900/30 p-2 rounded-full">
+                       <Icons.spinner className="size-6 animate-spin text-yellow-600 dark:text-yellow-400" />
+                    </div>
+                    <span className="font-black text-lg text-slate-900 dark:text-slate-50">
                       {isLoadingCanvas ? "Preparing canvas..." : "Filling color..."}
                     </span>
                   </div>
@@ -841,9 +845,9 @@ export default function ColoringStudio({
             </div>
 
             {canvasError ? (
-              <Alert className="mt-6 border-destructive/20 bg-destructive/10 text-destructive rounded-2xl">
-                <Icons.warning className="size-4" />
-                <AlertDescription className="font-bold ml-2">
+              <Alert className="mt-6 border-2 border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-300 rounded-2xl shadow-sm">
+                <Icons.warning className="size-5 text-red-600 dark:text-red-400" />
+                <AlertDescription className="font-bold ml-2 text-base">
                   {canvasError}
                 </AlertDescription>
               </Alert>

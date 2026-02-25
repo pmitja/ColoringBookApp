@@ -190,41 +190,41 @@ export default async function BookChooserPage() {
     <div className="space-y-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="space-y-1.5">
-          <h1 className="font-heading text-3xl md:text-4xl">My Books</h1>
-          <p className="text-base font-medium text-muted-foreground">
+          <h1 className="font-heading text-4xl font-black text-slate-900 dark:text-slate-50">My Books</h1>
+          <p className="text-lg font-bold text-slate-500 dark:text-slate-400">
             Manage your coloring books before exporting to printable PDFs.
           </p>
         </div>
         <Link href="/dashboard/book-editor/new">
-          <Button className="gap-2 rounded-2xl py-6 px-6 text-base font-bold shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98]">
-            <Plus className="size-5" />
+          <Button className="gap-3 rounded-full py-7 px-8 text-xl font-black shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] dark:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.4)] bg-yellow-400 dark:bg-yellow-500 text-slate-900 dark:text-slate-900 border-2 border-slate-900 dark:border-slate-700 hover:bg-yellow-500 dark:hover:bg-yellow-600 hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] active:translate-y-[4px] active:shadow-none transition-all">
+            <Plus className="size-6" />
             New Book
           </Button>
         </Link>
       </div>
 
-      <div className="space-y-6 pb-10">
-        <Card className="playful-card overflow-hidden border-2 shadow-sm">
-          <CardContent className="relative z-10 flex flex-wrap items-center justify-between gap-6 p-6 sm:p-8">
-            <div className="flex items-center gap-4">
-              <div className="rounded-2xl bg-primary/10 p-3 ring-1 ring-primary/20">
-                <Library className="size-8 text-primary" />
+      <div className="space-y-8 pb-10">
+        <Card className="rounded-[2rem] border-4 border-slate-900 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)] overflow-hidden">
+          <CardContent className="relative z-10 flex flex-wrap items-center justify-between gap-6 p-8">
+            <div className="flex items-center gap-5">
+              <div className="rounded-2xl bg-blue-100 dark:bg-blue-900/30 border-2 border-slate-900 dark:border-slate-600 p-4 text-blue-700 dark:text-blue-300 shadow-sm">
+                <Library className="size-8" />
               </div>
               <div>
-                <p className="text-2xl font-heading text-foreground">
+                <p className="text-3xl font-heading font-black text-slate-900 dark:text-slate-50">
                   {books.length === 1
                     ? "1 Book Saved"
                     : `${books.length} Books Saved`}
                 </p>
-                <p className="mt-1 text-sm font-medium text-muted-foreground">
+                <p className="mt-1 text-base font-bold text-slate-500 dark:text-slate-400">
                   Your personal library of custom creations.
                 </p>
               </div>
             </div>
             
             <Link href="/dashboard/book-editor/new">
-              <Button variant="outline" className="bg-background/80 border-2 border-border/50 gap-2 rounded-xl py-6 px-6 font-bold shadow-sm transition-all hover:scale-105 hover:bg-muted/50">
-                <Sparkles className="size-4 text-primary" />
+              <Button variant="outline" className="h-14 gap-2 rounded-2xl border-2 border-slate-900 dark:border-slate-600 bg-white dark:bg-slate-800 px-6 text-lg font-bold text-slate-900 dark:text-slate-50 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] dark:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.4)] transition-all hover:translate-y-[2px] hover:bg-slate-50 dark:hover:bg-slate-700 hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)]">
+                <Sparkles className="size-5 text-yellow-500" />
                 Create Another
               </Button>
             </Link>
@@ -232,75 +232,76 @@ export default async function BookChooserPage() {
         </Card>
 
         {books.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="mb-6 flex size-24 items-center justify-center rounded-[2rem] bg-muted/40 shadow-sm border-2 border-border/50 rotate-3">
-              <BookMarked className="text-muted-foreground/60 size-12 -rotate-3" />
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="mb-8 flex size-32 items-center justify-center rounded-[2.5rem] bg-white border-4 border-slate-200 rotate-6 shadow-sm">
+              <BookMarked className="text-slate-300 size-16 -rotate-6" />
             </div>
-            <h3 className="font-heading text-2xl mb-2">No books yet</h3>
-            <p className="text-base font-medium text-muted-foreground max-w-sm mb-8">
+            <h3 className="font-heading text-3xl font-black text-slate-400 mb-3">No books yet</h3>
+            <p className="text-lg font-bold text-slate-300 max-w-sm mb-10 leading-relaxed">
               Start building your first custom coloring book. Add pages, arrange them, and export to PDF!
             </p>
             <Link href="/dashboard/book-editor/new">
-              <Button className="gap-2 rounded-2xl px-8 py-7 text-lg font-bold shadow-xl transition-all hover:scale-[1.02] active:scale-[0.98]">
+              <Button className="gap-3 rounded-full py-8 px-10 text-xl font-black shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] bg-emerald-400 text-slate-900 border-2 border-slate-900 hover:bg-emerald-500 hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] transition-all">
                 <Plus className="size-6" />
                 Create First Book
               </Button>
             </Link>
           </div>
         ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {books.map((book) => {
               const title = book.title?.trim() || "Untitled book";
 
               return (
                 <Card
                   key={book.id}
-                  className="group relative flex flex-col overflow-hidden rounded-[2rem] border-2 border-border/50 bg-background/50 shadow-sm transition-all duration-300 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-1"
+                  className="group relative flex flex-col overflow-hidden rounded-[2.5rem] border-4 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-sm transition-all duration-300 hover:border-slate-900 dark:hover:border-slate-600 hover:shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)] hover:-translate-y-2"
                 >
-                  <CardHeader className="border-border/50 relative z-10 border-b-2 p-0">
-                    <div className="bg-muted/20 relative aspect-[4/3] w-full overflow-hidden">
+                  <CardHeader className="border-b-4 border-slate-100 dark:border-slate-700 p-0 group-hover:border-slate-900 dark:group-hover:border-slate-600 transition-colors duration-300">
+                    <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-50 dark:bg-slate-800">
                       {book.thumbUrl ? (
                         <Image
                           src={book.thumbUrl}
                           alt={title}
                           fill
                           sizes="(min-width: 1280px) 25vw, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                          className="object-cover transition-transform duration-500 group-hover:scale-105"
+                          className="object-cover transition-transform duration-500 group-hover:scale-110"
                         />
                       ) : (
-                        <div className="flex size-full flex-col items-center justify-center gap-3 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-background to-muted/30">
-                          <BookText className="size-10 text-muted-foreground/30" />
-                          <p className="text-sm font-bold text-muted-foreground/50">Empty Cover</p>
+                        <div className="flex size-full flex-col items-center justify-center gap-4 bg-slate-50 dark:bg-slate-800">
+                          <BookText className="size-12 text-slate-200 dark:text-slate-600" />
+                          <p className="text-base font-black text-slate-300 dark:text-slate-500">Empty Cover</p>
                         </div>
                       )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                       
-                      <div className="absolute bottom-4 right-4 translate-y-4 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+                      <div className="absolute inset-0 bg-black/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                      
+                      <div className="absolute bottom-4 right-4 translate-y-12 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
                         <Link href={`/dashboard/book-editor/${book.id}`}>
-                          <Button size="icon" className="rounded-full shadow-lg bg-primary text-primary-foreground hover:scale-110">
-                            <ArrowRight className="size-5" />
+                          <Button size="icon" className="size-12 rounded-full border-2 border-slate-900 dark:border-slate-600 bg-yellow-400 dark:bg-yellow-500 text-slate-900 shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] dark:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.4)] hover:bg-yellow-500 dark:hover:bg-yellow-600 hover:scale-110">
+                            <ArrowRight className="size-6" />
                           </Button>
                         </Link>
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="relative z-10 flex flex-1 flex-col justify-between p-5">
-                    <div className="space-y-1.5">
+                  <CardContent className="relative z-10 flex flex-1 flex-col justify-between p-6">
+                    <div className="space-y-2">
                       <Link href={`/dashboard/book-editor/${book.id}`} className="block group/link">
-                        <p className="truncate text-xl font-bold text-foreground transition-colors group-hover/link:text-primary">
+                        <p className="truncate text-2xl font-black text-slate-900 dark:text-slate-50 transition-colors group-hover/link:text-blue-600 dark:group-hover/link:text-blue-400">
                           {title}
                         </p>
                       </Link>
-                      <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                        <Clock className="size-3.5" />
+                      <p className="flex items-center gap-2 text-sm font-bold text-slate-400 dark:text-slate-500">
+                        <Clock className="size-4" />
                         {formatLastEdited(book.updatedAt)}
                       </p>
                     </div>
 
-                    <div className="mt-5 flex items-center justify-between gap-3 pt-4 border-t-2 border-border/50 border-dashed">
+                    <div className="mt-6 flex items-center justify-between gap-3 pt-4 border-t-2 border-slate-100 dark:border-slate-700 border-dashed group-hover:border-slate-200 dark:group-hover:border-slate-600">
                       <Link href={`/dashboard/book-editor/${book.id}`} className="flex-1">
-                        <Button variant="ghost" className="w-full gap-2 rounded-xl font-bold hover:bg-primary/5 hover:text-primary justify-start px-2">
-                          <BookOpen className="size-4" />
+                        <Button variant="ghost" className="w-full gap-2 rounded-xl font-bold text-slate-600 dark:text-slate-400 hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-blue-700 dark:hover:text-blue-400 justify-start px-3 h-12">
+                          <BookOpen className="size-5" />
                           Open Book
                         </Button>
                       </Link>

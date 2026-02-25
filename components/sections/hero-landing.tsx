@@ -83,7 +83,7 @@ export default function HeroLanding() {
 
           <div className="animate-rise relative mx-auto w-full max-w-xl">
             <div className="playful-card relative overflow-hidden p-3 sm:p-4">
-              <div className="absolute inset-0 bg-gradient-to-br from-sky-200/20 via-transparent to-amber-200/25 dark:from-cyan-300/10 dark:to-orange-300/10" />
+              <div className="absolute inset-0 bg-sky-200/20 dark:bg-cyan-300/10" />
               <Image
                 src="/illustrations/hero-coloring.svg"
                 alt="Preview of coloring book conversion"

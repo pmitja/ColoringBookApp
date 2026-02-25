@@ -167,39 +167,11 @@
   }
 
   .dashboard-theme {
-    background-image:
-      radial-gradient(
-        circle at 8% 12%,
-        rgb(14 165 233 / 0.12) 0%,
-        transparent 28%
-      ),
-      radial-gradient(
-        circle at 88% 6%,
-        rgb(250 204 21 / 0.12) 0%,
-        transparent 30%
-      ),
-      linear-gradient(
-        180deg,
-        rgb(248 251 255 / 0.86) 0%,
-        rgb(237 244 253 / 0.92) 100%
-      );
-    background-attachment: fixed;
+    background-color: rgb(248 251 255);
   }
 
   .dark .dashboard-theme {
-    background-image:
-      radial-gradient(
-        circle at 8% 12%,
-        rgb(45 212 191 / 0.12) 0%,
-        transparent 28%
-      ),
-      radial-gradient(
-        circle at 90% 8%,
-        rgb(56 189 248 / 0.11) 0%,
-        transparent 30%
-      ),
-      linear-gradient(180deg, rgb(8 14 28 / 0.92) 0%, rgb(10 18 34 / 0.95) 100%);
-    background-attachment: fixed;
+    background-color: rgb(10 18 34);
   }
 }
 
@@ -283,45 +255,11 @@
   }
 
   .playful-theme {
-    background-image:
-      radial-gradient(
-        circle at 12% -4%,
-        rgb(251 191 142 / 0.28) 0%,
-        transparent 30%
-      ),
-      radial-gradient(
-        circle at 88% 2%,
-        rgb(125 211 252 / 0.24) 0%,
-        transparent 28%
-      ),
-      radial-gradient(
-        circle at 74% 82%,
-        rgb(167 243 208 / 0.2) 0%,
-        transparent 30%
-      ),
-      linear-gradient(180deg, #fcf8f3 0%, #f0f5fc 100%);
-    background-attachment: fixed;
+    background-color: #fcf8f3;
   }
 
   .dark .playful-theme {
-    background-image:
-      radial-gradient(
-        circle at 10% 0%,
-        rgb(45 212 191 / 0.14) 0%,
-        transparent 28%
-      ),
-      radial-gradient(
-        circle at 92% 4%,
-        rgb(56 189 248 / 0.14) 0%,
-        transparent 30%
-      ),
-      radial-gradient(
-        circle at 72% 84%,
-        rgb(251 146 60 / 0.1) 0%,
-        transparent 28%
-      ),
-      linear-gradient(180deg, rgb(8 14 28 / 0.92) 0%, rgb(10 18 34 / 0.95) 100%);
-    background-attachment: fixed;
+    background-color: rgb(10 18 34);
   }
 }
 

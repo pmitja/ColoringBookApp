@@ -48,15 +48,15 @@ function PlanCard({
   return (
     <div
       className={cn(
-        "relative flex h-full flex-col justify-between space-y-6 rounded-3xl border p-6 transition-all duration-300",
+        "relative flex h-full flex-col justify-between space-y-6 rounded-[2rem] border-4 p-6 transition-all duration-300 overflow-hidden",
         isCurrent
-          ? "border-primary/50 bg-primary/5 shadow-[0_0_30px_-15px_hsl(var(--primary))] backdrop-blur-xl"
-          : "border-border/40 bg-background/40 hover:border-border/80 hover:bg-background/60 backdrop-blur-xl hover:shadow-md",
+          ? "border-purple-500 bg-purple-50/50 dark:bg-purple-900/10 shadow-[8px_8px_0px_0px_rgba(168,85,247,0.4)] dark:border-purple-400"
+          : "border-slate-900 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)] hover:translate-y-[-2px] hover:shadow-[10px_10px_0px_0px_rgba(15,23,42,1)]",
       )}
     >
       {isCurrent && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-          <Badge className="bg-primary px-3 py-0.5 text-xs font-semibold uppercase tracking-wider text-primary-foreground shadow-sm">
+          <Badge className="bg-purple-600 px-4 py-1 text-xs font-black uppercase tracking-wider text-white shadow-sm border-2 border-white dark:border-slate-900">
             Current Plan
           </Badge>
         </div>
@@ -64,23 +64,23 @@ function PlanCard({
 
       <div className="space-y-5">
         <div className="space-y-2">
-          <h3 className="text-xl font-bold tracking-tight">{plan.title}</h3>
-          <p className="text-sm leading-relaxed text-muted-foreground">
+          <h3 className="text-2xl font-black tracking-tight text-slate-900 dark:text-slate-50">{plan.title}</h3>
+          <p className="text-sm font-bold leading-relaxed text-slate-500 dark:text-slate-400">
             {plan.description}
           </p>
         </div>
 
-        <div className="border-border/40 flex items-baseline gap-2 border-b pb-2">
-          <span className="text-4xl font-extrabold tracking-tight">
+        <div className="border-slate-100 dark:border-slate-800 flex items-baseline gap-2 border-b-2 pb-4">
+          <span className="text-5xl font-black tracking-tight text-slate-900 dark:text-slate-50">
             {formatPrice(displayPrice)}
           </span>
-          <span className="text-sm font-medium text-muted-foreground">
+          <span className="text-base font-bold text-slate-500 dark:text-slate-400">
             {isYearly ? "/year" : "/month"}
           </span>
         </div>
 
         {plan.prices.monthly > 0 && (
-          <div className="flex items-center gap-1.5 text-sm font-medium text-emerald-600 dark:text-emerald-500">
+          <div className="flex items-center gap-2 text-sm font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1.5 rounded-lg w-fit">
             <Icons.check className="size-4" />
             {isYearly
               ? `Save ${formatPrice(plan.prices.monthly * 12 - plan.prices.yearly)} yearly`
@@ -89,17 +89,19 @@ function PlanCard({
         )}
 
         <div className="pt-2">
-          <p className="mb-3 flex items-center gap-2 text-sm font-semibold">
-            <Icons.laptop className="size-4 text-primary" />
+          <p className="mb-4 flex items-center gap-2 text-sm font-black text-slate-900 dark:text-slate-50">
+            <div className="bg-blue-100 dark:bg-blue-900/30 p-1.5 rounded-lg text-blue-600 dark:text-blue-400">
+               <Icons.laptop className="size-4" />
+            </div>
             {plan.monthlyGenerationLimit} generations/month
           </p>
           <ul className="space-y-3">
             {plan.benefits.map((feature, i) => (
               <li
                 key={i}
-                className="flex items-start gap-3 text-sm text-muted-foreground"
+                className="flex items-start gap-3 text-sm font-medium text-slate-600 dark:text-slate-300"
               >
-                <Icons.check className="text-primary/70 mt-0.5 size-4 shrink-0" />
+                <Icons.check className="text-slate-900 dark:text-slate-50 mt-0.5 size-4 shrink-0 stroke-[3px]" />
                 <span className="leading-snug">{feature}</span>
               </li>
             ))}
@@ -116,7 +118,7 @@ function PlanCard({
               year={isYearly}
             />
           ) : (
-            <Button className="w-full rounded-xl" variant="secondary" disabled>
+            <Button className="w-full rounded-xl border-2 border-slate-200 bg-slate-100 text-slate-500 font-bold" disabled>
               Active Plan
             </Button>
           )
@@ -127,7 +129,7 @@ function PlanCard({
             year={isYearly}
           />
         ) : (
-          <Button className="w-full rounded-xl" variant="outline" disabled>
+          <Button className="w-full rounded-xl border-2 border-slate-200" variant="outline" disabled>
             Unavailable
           </Button>
         )}
@@ -163,15 +165,15 @@ export function BillingPlansCard({
       <CardHeader className="px-0 pb-8">
         <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
           <div className="max-w-xl space-y-2">
-            <CardTitle className="text-3xl font-bold tracking-tight">
+            <CardTitle className="text-3xl font-heading font-extrabold text-slate-900 dark:text-slate-50">
               Available Plans
             </CardTitle>
-            <CardDescription className="text-base">
+            <CardDescription className="text-base font-bold text-slate-500 dark:text-slate-400">
               Choose the perfect plan for your needs. Upgrade anytime to unlock
               more generations and advanced features.
             </CardDescription>
           </div>
-          <div className="border-border/50 bg-background/50 flex w-fit items-center rounded-full border p-1 backdrop-blur-xl">
+          <div className="border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex w-fit items-center rounded-full p-1.5 shadow-sm">
             <ToggleGroup
               type="single"
               value={billingInterval}
@@ -184,16 +186,16 @@ export function BillingPlansCard({
             >
               <ToggleGroupItem
                 value="monthly"
-                className="h-auto rounded-full px-6 py-2 text-sm font-medium transition-all data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                className="h-auto rounded-full px-6 py-2.5 text-sm font-bold transition-all data-[state=on]:bg-slate-900 data-[state=on]:text-white dark:data-[state=on]:bg-slate-50 dark:data-[state=on]:text-slate-900"
               >
                 Monthly
               </ToggleGroupItem>
               <ToggleGroupItem
                 value="yearly"
-                className="h-auto rounded-full px-6 py-2 text-sm font-medium transition-all data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+                className="h-auto rounded-full px-6 py-2.5 text-sm font-bold transition-all data-[state=on]:bg-slate-900 data-[state=on]:text-white dark:data-[state=on]:bg-slate-50 dark:data-[state=on]:text-slate-900"
               >
                 Yearly{" "}
-                <span className="ml-1.5 hidden rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 sm:inline-block">
+                <span className="ml-2 hidden rounded-full bg-emerald-100 border border-emerald-200 px-2 py-0.5 text-xs text-emerald-700 font-black sm:inline-block">
                   Save 20%
                 </span>
               </ToggleGroupItem>
@@ -202,7 +204,7 @@ export function BillingPlansCard({
         </div>
       </CardHeader>
       <CardContent className="px-0">
-        <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-8 lg:grid-cols-2 xl:grid-cols-3">
           {visiblePlans.map(({ plan, index }) => (
             <PlanCard
               key={plan.title}

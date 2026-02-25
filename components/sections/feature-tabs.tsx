@@ -167,7 +167,7 @@ export default function FeatureTabs() {
                   Type a prompt like <strong>&quot;A cute dragon eating tacos&quot;</strong> and let our AI generate a unique coloring page.
                 </p>
                 <div className="relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-3xl border-8 border-white bg-muted shadow-xl">
-                   <div className="absolute inset-0 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-950/40 dark:to-purple-950/40" />
+                   <div className="absolute inset-0 bg-indigo-100 dark:bg-indigo-950/40" />
                    <div className="bg-background/80 z-10 flex w-full max-w-lg flex-col items-center gap-4 rounded-2xl border border-border p-8 text-center shadow-sm backdrop-blur-sm">
                       <div className="flex w-full items-center gap-2 rounded-lg border bg-background px-4 py-3 shadow-inner">
                         <Icons.search className="size-5 text-muted-foreground" />
@@ -196,7 +196,7 @@ export default function FeatureTabs() {
                   Upload a face and watch it become a consistent character across multiple coloring adventures.
                 </p>
                 <div className="relative flex aspect-video w-full items-center justify-center overflow-hidden rounded-3xl border-8 border-white bg-muted shadow-xl">
-                   <div className="absolute inset-0 bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-950/40 dark:to-teal-950/40" />
+                   <div className="absolute inset-0 bg-emerald-100 dark:bg-emerald-950/40" />
                    <div className="bg-background/80 z-10 flex items-center gap-6 rounded-2xl border border-border p-6 shadow-sm backdrop-blur-sm">
                       <div className="flex flex-col items-center gap-2">
                         <div className="flex size-24 items-center justify-center overflow-hidden rounded-full border-4 border-white bg-muted shadow-md">
@@ -230,7 +230,7 @@ export default function FeatureTabs() {
                   Generate a complete book with a front cover, back cover, and interior pages from a single prompt.
                 </p>
                 <div className="relative flex aspect-video w-full flex-col items-center justify-center overflow-hidden rounded-3xl border-8 border-white bg-muted p-6 shadow-xl">
-                   <div className="absolute inset-0 bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-950/40 dark:to-orange-950/40" />
+                   <div className="absolute inset-0 bg-amber-100 dark:bg-amber-950/40" />
                    
                    <Image
                       src="/illustrations/landing-book.svg"

@@ -19,10 +19,10 @@ export function DeleteAccountSection() {
         title="Delete Account"
         description="This action is permanent and cannot be undone."
       >
-        <div className="border-destructive/30 bg-destructive/5 rounded-2xl border p-5">
+        <div className="border-destructive/30 bg-destructive/5 dark:border-destructive/50 dark:bg-destructive/10 rounded-2xl border p-5">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <span className="text-[15px] font-semibold text-foreground">
+              <span className="text-[15px] font-semibold text-foreground dark:text-slate-50">
                 Confirm account deletion
               </span>
               {userPaidPlan ? (

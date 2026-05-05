@@ -273,15 +273,17 @@ export default function AIColorBookGenerator() {
     <div className="mx-auto w-full max-w-6xl">
       <div className="grid items-start gap-8 lg:grid-cols-[1.5fr_1fr]">
         {/* Left Column - Form */}
-        <Card className="overflow-hidden rounded-[2rem] border-4 border-slate-900 bg-white shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)]">
-          <CardHeader className="relative z-10 space-y-4 border-b-4 border-slate-900 bg-purple-50 p-8 pb-6 dark:border-slate-700 dark:bg-purple-900/20">
+        <Card className="overflow-hidden shadow-sm">
+          <CardHeader className="relative z-10 space-y-4 border-b border-border bg-muted/50 p-8 pb-6">
             <div className="flex items-center gap-4">
-              <div className="rounded-2xl border-2 border-slate-900 bg-white p-3 text-purple-600 shadow-sm dark:border-slate-600 dark:bg-slate-800 dark:text-purple-400">
+              <div className="rounded-2xl bg-card p-3 text-primary shadow-sm ring-1 ring-border">
                 <Wand2 className="size-8" />
               </div>
               <div>
-                <CardTitle className="font-heading text-4xl font-extrabold text-slate-900 dark:text-slate-50">Book Studio</CardTitle>
-                <CardDescription className="mt-1 text-lg font-bold text-slate-500 dark:text-slate-400">
+                <CardTitle className="font-heading text-3xl font-bold text-foreground">
+                  Book Studio
+                </CardTitle>
+                <CardDescription className="mt-1 text-lg leading-relaxed text-foreground/80">
                   Describe your idea, we&apos;ll draw the entire book.
                 </CardDescription>
               </div>
@@ -291,17 +293,20 @@ export default function AIColorBookGenerator() {
             <form onSubmit={submit} className="space-y-10">
               {/* Concept Section */}
               <div className="space-y-5">
-                <div className="flex items-center gap-3 text-slate-900 dark:text-slate-50">
-                  <div className="rounded-full border-2 border-slate-900 bg-blue-100 p-2 dark:border-slate-600 dark:bg-blue-900/30">
-                    <BookOpen className="size-5 text-blue-700 dark:text-blue-400" />
-                  </div>
-                  <h3 className="font-heading text-2xl font-black">1. The Concept</h3>
+                <div className="flex items-center gap-3 text-foreground">
+                  <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-accent font-heading text-base font-bold text-accent-foreground">
+                    1
+                  </span>
+                  <h3 className="font-heading text-xl font-bold">The Concept</h3>
                 </div>
                 
-                <div className="grid gap-6 rounded-3xl border-4 border-slate-200 bg-slate-50 p-6 shadow-none transition-all focus-within:border-slate-900 focus-within:bg-white focus-within:shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] dark:border-slate-700 dark:bg-slate-800 dark:focus-within:border-slate-500 dark:focus-within:bg-slate-800">
+                <div className="grid gap-6 rounded-2xl border border-border bg-card p-6 shadow-sm transition-all focus-within:ring-2 focus-within:ring-ring/40 focus-within:ring-offset-2 focus-within:ring-offset-background">
                   <div className="space-y-3">
-                    <Label htmlFor="book-title" className="flex items-center gap-2 text-lg font-black text-slate-900 dark:text-slate-50">
-                      Book Title <span className="text-xs font-bold uppercase tracking-wider text-slate-400">(Optional)</span>
+                    <Label htmlFor="book-title" className="flex items-center gap-2 text-base font-semibold text-foreground">
+                      Book Title{" "}
+                      <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                        (Optional)
+                      </span>
                     </Label>
                     <Input
                       id="book-title"
@@ -309,15 +314,15 @@ export default function AIColorBookGenerator() {
                       onChange={(event) => setTitle(event.target.value)}
                       placeholder="e.g. Magical Forest Adventures"
                       maxLength={120}
-                      className="h-14 rounded-2xl border-2 border-slate-300 bg-white px-5 text-lg font-bold placeholder:text-slate-300 focus-visible:border-slate-900 focus-visible:ring-0 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:placeholder:text-slate-500 dark:focus-visible:border-slate-500"
+                      className="h-14 rounded-xl border-input bg-background px-5 text-base font-medium shadow-sm placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
                       disabled={isGenerating || isSubmitting}
                     />
                   </div>
                   
                   <div className="space-y-3">
-                    <Label htmlFor="book-prompt" className="flex justify-between text-lg font-black text-slate-900 dark:text-slate-50">
+                    <Label htmlFor="book-prompt" className="flex justify-between text-base font-semibold text-foreground">
                       <span>Book Prompt</span>
-                      <span className={cn("rounded-md border-2 bg-white px-2 py-1 text-xs font-bold dark:bg-slate-800", prompt.length < MIN_PROMPT_LENGTH ? "border-red-200 text-red-500 dark:border-red-800 dark:text-red-400" : "border-slate-200 text-slate-400 dark:border-slate-600 dark:text-slate-500")}>
+                      <span className={cn("rounded-md border bg-muted px-2 py-1 text-xs font-semibold", prompt.length < MIN_PROMPT_LENGTH ? "border-destructive/40 text-destructive" : "border-border text-muted-foreground")}>
                         {prompt.length} / 2000
                       </span>
                     </Label>
@@ -326,13 +331,13 @@ export default function AIColorBookGenerator() {
                       placeholder="e.g. Cute woodland animals learning letters in a playful forest classroom. Friendly and educational."
                       value={prompt}
                       onChange={(event) => setPrompt(event.target.value)}
-                      className="min-h-[160px] resize-none rounded-2xl border-2 border-slate-300 bg-white p-5 text-lg font-medium leading-relaxed placeholder:text-slate-300 focus-visible:border-slate-900 focus-visible:ring-0 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:placeholder:text-slate-500 dark:focus-visible:border-slate-500"
+                      className="min-h-[160px] resize-none rounded-xl border border-input bg-background p-5 text-base font-medium leading-relaxed text-foreground shadow-sm placeholder:text-muted-foreground focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring/30"
                       maxLength={2000}
                       disabled={isGenerating || isSubmitting}
                       required
                     />
-                    <p className="mt-1 flex items-center gap-2 text-sm font-bold text-slate-500 dark:text-slate-400">
-                      <Icons.info className="size-4" />
+                    <p className="mt-1 flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                      <Icons.info className="size-4 shrink-0 text-primary" />
                       Be descriptive! This will be used to generate the cover and all interior pages.
                     </p>
                   </div>
@@ -341,16 +346,16 @@ export default function AIColorBookGenerator() {
 
               {/* Style Section */}
               <div className="space-y-5">
-                <div className="flex items-center gap-3 text-slate-900 dark:text-slate-50">
-                  <div className="rounded-full border-2 border-slate-900 bg-pink-100 p-2 dark:border-slate-600 dark:bg-pink-900/30">
-                    <Paintbrush className="size-5 text-pink-700 dark:text-pink-400" />
-                  </div>
-                  <h3 className="font-heading text-2xl font-black">2. The Look</h3>
+                <div className="flex items-center gap-3 text-foreground">
+                  <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-accent font-heading text-base font-bold text-accent-foreground">
+                    2
+                  </span>
+                  <h3 className="font-heading text-xl font-bold">The Look</h3>
                 </div>
                 
                 <div className="grid gap-6 sm:grid-cols-2">
-                  <div className="space-y-3 rounded-3xl border-4 border-slate-200 bg-slate-50 p-6 transition-all hover:border-slate-400 hover:bg-white dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-600 dark:hover:bg-slate-800">
-                    <Label htmlFor="style-preset" className="mb-1 block text-lg font-black text-slate-900 dark:text-slate-50">Illustration Style</Label>
+                  <div className="space-y-3 rounded-2xl border border-border bg-card p-6 shadow-sm transition-colors hover:bg-muted/30">
+                    <Label htmlFor="style-preset" className="mb-1 block text-base font-semibold text-foreground">Illustration Style</Label>
                     <Select
                       value={stylePreset}
                       onValueChange={(value) => setStylePreset(value as StylePreset)}
@@ -358,18 +363,18 @@ export default function AIColorBookGenerator() {
                     >
                       <SelectTrigger
                         id="style-preset"
-                        className="h-14 w-full rounded-2xl border-2 border-slate-300 bg-white px-4 text-base font-bold shadow-sm focus:border-slate-900 focus:ring-0 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:focus:border-slate-500"
+                        className="h-14 w-full rounded-xl border border-input bg-background px-4 text-base font-semibold text-foreground shadow-sm focus:border-primary focus:ring-2 focus:ring-ring/25"
                       >
                         <SelectValue placeholder="Select style">
                           {stylePreset ? STYLE_PRESET_LABELS[stylePreset] : "Select style"}
                         </SelectValue>
                       </SelectTrigger>
-                      <SelectContent className="rounded-2xl border-2 border-slate-900 shadow-lg">
+                      <SelectContent className="rounded-xl border border-border shadow-md">
                         {STYLE_PRESETS.map((preset) => (
-                          <SelectItem key={preset} value={preset} className="cursor-pointer rounded-xl py-3 focus:bg-slate-100 focus:font-bold">
+                          <SelectItem key={preset} value={preset} className="cursor-pointer rounded-lg py-3 focus:bg-muted">
                             <div className="flex flex-col text-left">
-                              <span className="font-black text-slate-900">{STYLE_PRESET_LABELS[preset]}</span>
-                              <span className="mt-0.5 text-xs font-bold text-slate-500">{STYLE_PRESET_DESCRIPTIONS[preset]}</span>
+                              <span className="font-semibold text-foreground">{STYLE_PRESET_LABELS[preset]}</span>
+                              <span className="mt-0.5 text-xs font-medium text-muted-foreground">{STYLE_PRESET_DESCRIPTIONS[preset]}</span>
                             </div>
                           </SelectItem>
                         ))}
@@ -377,8 +382,8 @@ export default function AIColorBookGenerator() {
                     </Select>
                   </div>
 
-                  <div className="space-y-3 rounded-3xl border-4 border-slate-200 bg-slate-50 p-6 transition-all hover:border-slate-400 hover:bg-white dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-600 dark:hover:bg-slate-800">
-                    <Label htmlFor="paper-format" className="mb-1 block text-lg font-black text-slate-900 dark:text-slate-50">Paper Format</Label>
+                  <div className="space-y-3 rounded-2xl border border-border bg-card p-6 shadow-sm transition-colors hover:bg-muted/30">
+                    <Label htmlFor="paper-format" className="mb-1 block text-base font-semibold text-foreground">Paper Format</Label>
                     <Select
                       value={paperFormat}
                       onValueChange={(value) => setPaperFormat(value as PaperFormat)}
@@ -386,14 +391,14 @@ export default function AIColorBookGenerator() {
                     >
                       <SelectTrigger
                         id="paper-format"
-                        className="h-14 w-full rounded-2xl border-2 border-slate-300 bg-white px-4 text-base font-bold shadow-sm focus:border-slate-900 focus:ring-0 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:focus:border-slate-500"
+                        className="h-14 w-full rounded-xl border border-input bg-background px-4 text-base font-semibold text-foreground shadow-sm focus:border-primary focus:ring-2 focus:ring-ring/25"
                       >
                         <SelectValue placeholder="Select format" />
                       </SelectTrigger>
-                      <SelectContent className="rounded-2xl border-2 border-slate-900 shadow-lg">
+                      <SelectContent className="rounded-xl border border-border shadow-md">
                         {PAPER_FORMATS.map((format) => (
-                          <SelectItem key={format} value={format} className="cursor-pointer rounded-xl py-3 focus:bg-slate-100">
-                            <span className="font-black text-slate-900">{format}</span>
+                          <SelectItem key={format} value={format} className="cursor-pointer rounded-lg py-3 focus:bg-muted">
+                            <span className="font-semibold text-foreground">{format}</span>
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -404,22 +409,22 @@ export default function AIColorBookGenerator() {
 
               {/* Length Section */}
               <div className="space-y-5">
-                <div className="flex items-center gap-3 text-slate-900 dark:text-slate-50">
-                  <div className="rounded-full border-2 border-slate-900 bg-emerald-100 p-2 dark:border-slate-600 dark:bg-emerald-900/30">
-                    <Layers className="size-5 text-emerald-700 dark:text-emerald-400" />
-                  </div>
-                  <h3 className="font-heading text-2xl font-black">3. The Size</h3>
+                <div className="flex items-center gap-3 text-foreground">
+                  <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-accent font-heading text-base font-bold text-accent-foreground">
+                    3
+                  </span>
+                  <h3 className="font-heading text-xl font-bold">The Size</h3>
                 </div>
                 
-                <div className="space-y-6 rounded-3xl border-4 border-slate-200 bg-slate-50 p-6 shadow-none transition-all hover:border-slate-400 hover:bg-white dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-600 dark:hover:bg-slate-800 sm:p-8">
+                <div className="space-y-6 rounded-2xl border border-border bg-card p-6 shadow-sm transition-colors hover:bg-muted/20 sm:p-8">
                   <div className="flex items-center justify-between gap-4">
                     <div>
-                      <Label htmlFor="page-count" className="block text-lg font-black text-slate-900 dark:text-slate-50">Interior Pages</Label>
-                      <span className="mt-1 block text-sm font-bold text-slate-500 dark:text-slate-400">
+                      <Label htmlFor="page-count" className="block text-base font-semibold text-foreground">Interior Pages</Label>
+                      <span className="mt-1 block text-sm font-medium text-muted-foreground">
                         + Front and back cover automatically added
                       </span>
                     </div>
-                    <div className="flex items-center gap-2 rounded-2xl border-2 border-slate-300 bg-white px-4 py-2 shadow-sm dark:border-slate-600 dark:bg-slate-800">
+                    <div className="flex items-center gap-2 rounded-xl border border-input bg-background px-4 py-2 shadow-sm">
                        <Input
                          id="page-count"
                          type="number"
@@ -435,9 +440,9 @@ export default function AIColorBookGenerator() {
                            setPageCount(clampPageCount(parsed));
                          }}
                          disabled={isGenerating || isSubmitting}
-                         className="h-10 w-16 border-0 bg-transparent p-0 text-center text-2xl font-black text-slate-900 shadow-none focus-visible:ring-0 dark:text-slate-50"
+                         className="h-10 w-16 border-0 bg-transparent p-0 text-center text-2xl font-bold text-foreground shadow-none focus-visible:ring-0"
                        />
-                       <span className="text-sm font-extrabold text-slate-400 dark:text-slate-500">pages</span>
+                       <span className="text-sm font-semibold text-muted-foreground">pages</span>
                     </div>
                   </div>
                   <div className="px-2 pb-1 pt-2">
@@ -457,16 +462,17 @@ export default function AIColorBookGenerator() {
               <div className="pt-4">
                 <Button
                   type="submit"
+                  size="lg"
                   className={cn(
-                    "w-full gap-3 rounded-full border-2 border-slate-900 bg-yellow-400 py-8 text-2xl font-black text-slate-900 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] transition-all hover:bg-yellow-500",
-                    canSubmit ? "hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] active:translate-y-[4px]" : "opacity-80 grayscale",
-                    isGenerating && "pointer-events-none cursor-not-allowed border-slate-300 bg-slate-100 text-slate-400 shadow-none"
+                    "w-full gap-3 rounded-full py-8 text-xl font-semibold",
+                    !canSubmit && "opacity-70",
+                    isGenerating && "pointer-events-none cursor-not-allowed opacity-60",
                   )}
                   disabled={!canSubmit || isGenerating || isSubmitting}
                 >
                   {isSubmitting || isGenerating ? (
                     <>
-                      <Loader2 className="size-8 animate-spin text-slate-400" />
+                      <Loader2 className="size-8 animate-spin text-primary-foreground/90" />
                       {isGenerating ? "Generating Magic..." : "Starting..."}
                     </>
                   ) : (
@@ -477,7 +483,7 @@ export default function AIColorBookGenerator() {
                   )}
                 </Button>
                 {isGenerating && (
-                  <p className="mt-4 animate-pulse text-center text-sm font-bold text-slate-400">
+                  <p className="mt-4 text-center text-sm font-medium text-muted-foreground">
                     Please keep this page open while we prepare your book.
                   </p>
                 )}
@@ -489,25 +495,23 @@ export default function AIColorBookGenerator() {
         {/* Right Column - Status */}
         <div className="space-y-8 lg:sticky lg:top-24">
           <Card className={cn(
-            "flex flex-col overflow-hidden rounded-[2rem] border-4 transition-all duration-500",
-            isGenerating 
-              ? "border-slate-900 bg-white shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)]" 
-              : "border-dashed border-slate-200 bg-slate-50 shadow-none dark:border-slate-700 dark:bg-slate-800"
+            "flex flex-col overflow-hidden border border-border bg-card shadow-sm transition-all duration-500",
+            isGenerating && "ring-1 ring-primary/20",
           )}>
             <CardHeader className={cn(
-              "relative z-10 space-y-2 border-b-4 p-8 pb-6 transition-colors duration-500",
-              isGenerating ? "border-slate-900 bg-yellow-50 dark:border-slate-700 dark:bg-yellow-900/20" : "border-slate-200 bg-transparent dark:border-slate-700"
+              "relative z-10 space-y-2 border-b border-border p-8 pb-6 transition-colors duration-500",
+              isGenerating ? "bg-muted/50" : "bg-muted/30",
             )}>
               <div className="flex items-center justify-between">
-                <CardTitle className="font-heading text-3xl font-extrabold text-slate-900 dark:text-slate-50">Status</CardTitle>
+                <CardTitle className="font-heading text-2xl font-bold text-foreground">Status</CardTitle>
                 {isGenerating && (
                   <span className="relative flex size-4">
-                    <span className="absolute inline-flex size-full animate-ping rounded-full bg-yellow-500 opacity-75"></span>
-                    <span className="relative inline-flex size-4 rounded-full border-2 border-slate-900 bg-yellow-500"></span>
+                    <span className="absolute inline-flex size-full animate-ping rounded-full bg-primary/50 opacity-75"></span>
+                    <span className="relative inline-flex size-4 rounded-full bg-primary"></span>
                   </span>
                 )}
               </div>
-              <CardDescription className="font-bold text-slate-500 dark:text-slate-400">
+              <CardDescription className="text-base font-medium text-foreground/75">
                 Live generation progress.
               </CardDescription>
             </CardHeader>
@@ -525,33 +529,33 @@ export default function AIColorBookGenerator() {
                               : "secondary"
                         }
                         className={cn(
-                          "rounded-full border-2 px-4 py-1.5 text-sm font-black shadow-sm",
-                          meta.status === "PROCESSING" && "border-yellow-300 bg-yellow-100 text-yellow-700",
-                          meta.status === "DONE" && "border-emerald-300 bg-emerald-100 text-emerald-700",
-                          meta.status === "FAILED" && "border-red-300 bg-red-100 text-red-700"
+                          "rounded-full px-4 py-1.5 text-sm font-medium",
+                          meta.status === "PROCESSING" && "bg-muted text-foreground",
+                          meta.status === "DONE" && "bg-primary/15 text-primary",
+                          meta.status === "FAILED" && "bg-destructive/10 text-destructive"
                         )}
                       >
                         {meta.status === "PROCESSING"
-                          ? "✨ Processing"
+                          ? "Processing"
                           : meta.status === "DONE"
-                            ? "✅ Ready!"
-                            : "❌ Failed"}
+                            ? "Ready"
+                            : "Failed"}
                       </Badge>
-                      <div className="flex items-center gap-2 rounded-full border-2 border-slate-200 bg-slate-100 px-4 py-1.5 text-sm font-black text-slate-600">
-                        <FileImage className="size-4 text-slate-400" />
+                      <div className="flex items-center gap-2 rounded-full border border-border bg-background px-4 py-1.5 text-sm font-semibold text-foreground">
+                        <FileImage className="size-4 text-primary" />
                         {meta.completedAssets} / {meta.totalAssets}
                       </div>
                     </div>
                     
                     <div className="relative pt-2">
-                      <div className="h-4 w-full overflow-hidden rounded-full border-2 border-slate-200 bg-slate-100">
+                      <div className="h-3 w-full overflow-hidden rounded-full bg-muted">
                         <div 
-                          className="h-full border-r-2 border-slate-900 bg-yellow-400 transition-all duration-500 ease-out"
+                          className="bg-primary h-full transition-all duration-500 ease-out"
                           style={{ width: `${progressValue}%` }}
                         />
                       </div>
                       <div 
-                        className="absolute right-0 top-0 -translate-y-full pb-1 text-xs font-black text-slate-900 transition-all duration-300"
+                        className="absolute right-0 top-0 -translate-y-full pb-1 text-xs font-semibold text-foreground transition-all duration-300"
                         style={{ left: `${progressValue}%`, transform: 'translateX(-50%)' }}
                       >
                         {progressValue}%
@@ -560,9 +564,9 @@ export default function AIColorBookGenerator() {
                   </div>
 
                   {meta.currentStep ? (
-                    <div className="flex items-center justify-center gap-3 rounded-2xl border-2 border-blue-100 bg-blue-50 p-5">
-                      <Loader2 className="size-5 animate-spin text-blue-600" />
-                      <p className="text-sm font-bold text-blue-800">
+                    <div className="flex items-center justify-center gap-3 rounded-2xl border border-primary/25 bg-primary/10 p-5">
+                      <Loader2 className="size-5 animate-spin text-primary" />
+                      <p className="text-sm font-semibold text-foreground">
                         {meta.currentStep}
                       </p>
                     </div>
@@ -578,7 +582,7 @@ export default function AIColorBookGenerator() {
                   {canOpenGeneratedBook && (
                     <div className="pt-2 duration-500 animate-in fade-in slide-in-from-bottom-4">
                       <Link href={`/dashboard/book-editor/${activeBookId}`}>
-                        <Button className="group w-full rounded-full border-2 border-slate-900 bg-emerald-400 py-8 text-lg font-black text-slate-900 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] transition-all hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)]">
+                        <Button size="lg" className="group w-full rounded-full py-8 text-lg font-semibold">
                           Open Editor <ChevronRight className="ml-2 size-6 transition-transform group-hover:translate-x-1" />
                         </Button>
                       </Link>
@@ -586,12 +590,14 @@ export default function AIColorBookGenerator() {
                   )}
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center py-12 text-center opacity-60">
-                  <div className="mb-6 flex size-24 rotate-6 items-center justify-center rounded-[2rem] border-4 border-slate-300 bg-white shadow-sm dark:border-slate-600 dark:bg-slate-800">
-                    <BookOpenCheck className="size-12 -rotate-6 text-slate-300 dark:text-slate-500" />
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <div className="mb-6 flex size-24 rotate-6 items-center justify-center rounded-2xl border border-border bg-muted/50 shadow-sm">
+                    <BookOpenCheck className="size-12 -rotate-6 text-primary/70" />
                   </div>
-                  <h4 className="mb-2 font-heading text-xl font-bold text-slate-400 dark:text-slate-500">Ready to Create</h4>
-                  <p className="max-w-[200px] text-sm font-bold leading-relaxed text-slate-300 dark:text-slate-400">
+                  <h4 className="mb-2 font-heading text-xl font-bold text-foreground">
+                    Ready to Create
+                  </h4>
+                  <p className="max-w-[240px] text-sm font-medium leading-relaxed text-muted-foreground">
                     Fill out the form to start generating your custom coloring book.
                   </p>
                 </div>
@@ -599,17 +605,17 @@ export default function AIColorBookGenerator() {
             </CardContent>
           </Card>
 
-          <Card className="overflow-hidden rounded-[2rem] border-4 border-slate-900 bg-white shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)]">
-            <CardContent className="flex items-center gap-4 p-6">
-              <div className="shrink-0 rounded-2xl border-2 border-slate-900 bg-purple-100 p-4 dark:border-slate-600 dark:bg-purple-900/30">
-                <BookOpen className="size-6 text-purple-700 dark:text-purple-400" />
+          <Card className="overflow-hidden shadow-sm">
+            <CardContent className="flex items-center gap-4 bg-muted/40 p-6">
+              <div className="shrink-0 rounded-2xl bg-accent/60 p-4 text-primary">
+                <BookOpen className="size-6" />
               </div>
               <div>
-                <h4 className="text-base font-black text-slate-900 dark:text-slate-50">View Previous Books</h4>
-                <p className="mt-1 text-xs font-bold text-slate-500 dark:text-slate-400">Manage and edit your saved creations.</p>
+                <h4 className="text-base font-semibold text-foreground">View Previous Books</h4>
+                <p className="mt-1 text-sm font-medium text-foreground/75">Manage and edit your saved creations.</p>
               </div>
               <Link href="/dashboard/book-editor" className="ml-auto shrink-0">
-                <Button variant="ghost" size="icon" className="size-12 rounded-full border-2 border-slate-200 bg-slate-50 text-slate-900 hover:bg-slate-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:hover:bg-slate-700">
+                <Button variant="outline" size="icon" className="size-12 rounded-full">
                   <ChevronRight className="size-6" />
                 </Button>
               </Link>

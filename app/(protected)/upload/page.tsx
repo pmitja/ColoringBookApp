@@ -5,7 +5,7 @@ import { isUserOnPaidPlan } from "@/lib/subscription";
 import GeneratorStudio from "@/components/generator/generator-studio";
 
 export const metadata: Metadata = {
-  title: "Upload Photo – Colorline AI",
+  title: "Upload Photo – Color Genie",
   description: "Upload a photo and turn it into a printable coloring page.",
 };
 

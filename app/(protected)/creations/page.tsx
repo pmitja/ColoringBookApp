@@ -22,7 +22,7 @@ import { EmptyPlaceholder } from "@/components/shared/empty-placeholder";
 import { Icons } from "@/components/shared/icons";
 
 export const metadata = constructMetadata({
-  title: "My Creations – Colorline AI",
+  title: "My Creations – Color Genie",
   description: "Browse all your coloring book creations.",
 });
 
@@ -129,56 +129,54 @@ export default async function CreationsPage({
 
   return (
     <>
-      <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-        <div className="space-y-1.5">
-          <h1 className="font-heading text-4xl font-black text-slate-900 dark:text-slate-50">My Creations</h1>
-          <p className="text-lg font-bold text-slate-500 dark:text-slate-400">
-            Browse, filter, and manage your generated coloring pages.
-          </p>
-        </div>
+      <DashboardHeader
+        heading="My Creations"
+        text="Browse, filter, and manage your generated coloring pages."
+      >
         <div className="flex flex-wrap items-center gap-3">
           <Link href="/dashboard/book-editor/new">
-            <Button variant="outline" className="gap-2 rounded-full border-2 border-slate-900 font-bold shadow-sm hover:bg-slate-100 dark:border-slate-600 dark:text-slate-50 dark:hover:bg-slate-800 dark:hover:text-slate-50">
+            <Button variant="outline" className="gap-2 rounded-full">
               <Icons.bookOpen className="size-4" />
               New Book
             </Button>
           </Link>
           <Link href="/upload">
-            <Button className="gap-2 rounded-full border-2 border-slate-900 bg-emerald-400 font-bold text-slate-900 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] transition-all hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] dark:border-slate-600 dark:bg-emerald-600 dark:text-slate-50 dark:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.4)]">
+            <Button className="gap-2 rounded-full">
               <Icons.media className="size-4" />
               New Page
             </Button>
           </Link>
         </div>
-      </div>
+      </DashboardHeader>
 
       <div className="space-y-6 overflow-x-hidden pb-10">
-        <Card className="overflow-hidden rounded-[2rem] border-4 border-slate-900 bg-white shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)]">
-          <CardContent className="relative z-10 flex flex-wrap items-center justify-between gap-4 p-8">
+        <Card className="shadow-sm">
+          <CardContent className="flex flex-wrap items-center justify-between gap-4 p-6">
             <div>
-              <p className="text-2xl font-extrabold text-slate-900 dark:text-slate-50">
-                {creationItems.length} total page{creationItems.length === 1 ? "" : "s"}
+              <p className="font-heading text-xl font-bold text-foreground">
+                {creationItems.length} total page
+                {creationItems.length === 1 ? "" : "s"}
               </p>
-              <p className="mt-1 text-base font-medium text-slate-500 dark:text-slate-400">
+              <p className="mt-1 text-sm text-muted-foreground">
                 Keep only the pages you still want to color, print, or export.
               </p>
             </div>
-            <div className="flex flex-wrap gap-3 text-sm font-bold">
-              <span className="inline-flex items-center gap-2 rounded-full border-2 border-slate-900 bg-emerald-100 px-4 py-1.5 text-emerald-800 shadow-sm dark:border-slate-600 dark:bg-emerald-900/30 dark:text-emerald-300">
-                <span className="size-3 rounded-full border border-slate-900 bg-emerald-500"></span> Ready: {readyCount}
+            <p className="text-sm text-muted-foreground">
+              <span className="font-semibold text-foreground">
+                {creationItems.length} total
               </span>
-              <span className="inline-flex items-center gap-2 rounded-full border-2 border-slate-900 bg-sky-100 px-4 py-1.5 text-sky-800 shadow-sm dark:border-slate-600 dark:bg-sky-900/30 dark:text-sky-300">
-                <span className="size-3 animate-pulse rounded-full border border-slate-900 bg-sky-500"></span> In progress: {processingCount}
-              </span>
-              <span className="inline-flex items-center gap-2 rounded-full border-2 border-slate-900 bg-orange-100 px-4 py-1.5 text-orange-800 shadow-sm dark:border-slate-600 dark:bg-orange-900/30 dark:text-orange-300">
-                <span className="size-3 rounded-full border border-slate-900 bg-orange-500"></span> Failed: {failedCount}
-              </span>
-            </div>
+              {" · "}
+              <span className="text-primary">{readyCount} ready</span>
+              {" · "}
+              <span>{processingCount} in progress</span>
+              {" · "}
+              <span>{failedCount} failed</span>
+            </p>
           </CardContent>
         </Card>
 
-        <Card className="overflow-visible rounded-[2rem] border-4 border-slate-900 bg-white shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)]">
-          <CardContent className="space-y-6 p-8">
+        <Card className="shadow-sm">
+          <CardContent className="space-y-6 p-6 md:p-8">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
               <form className="group relative flex-1" action="/creations" method="GET">
                 {status !== "all" ? (
@@ -191,26 +189,26 @@ export default async function CreationsPage({
                   <input type="hidden" name="view" value={view} />
                 ) : null}
 
-                <Icons.search className="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-slate-900 dark:text-slate-500 dark:group-focus-within:text-slate-50" />
+                <Icons.search className="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-foreground" />
                 <Input
                   name="q"
                   defaultValue={q}
                   placeholder="Search by file name"
-                  className="h-12 rounded-2xl border-2 border-slate-200 bg-slate-50 pl-12 text-base font-medium transition-all focus-visible:border-slate-900 focus-visible:bg-white focus-visible:ring-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:focus-visible:border-slate-500 dark:focus-visible:bg-slate-700"
+                  className="h-12 rounded-2xl pl-12 text-base"
                 />
               </form>
 
               <div className="flex flex-wrap items-center gap-3 lg:justify-end">
-                <div className="inline-flex items-center gap-1 rounded-full border-2 border-slate-200 bg-slate-100 p-1 dark:border-slate-600 dark:bg-slate-800">
+                <div className="inline-flex items-center gap-0.5 rounded-full bg-muted p-1">
                   <Link href={buildHref({ view: "grid" })}>
                     <Button
                       variant={view === "grid" ? "default" : "ghost"}
                       size="sm"
                       className={cn(
-                        "rounded-full px-4 font-bold transition-all",
-                        view === "grid" 
-                          ? "border-2 border-slate-900 bg-white text-slate-900 shadow-sm hover:bg-white dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:hover:bg-slate-800" 
-                          : "border-2 border-transparent text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-50",
+                        "rounded-full px-4 font-medium transition-all",
+                        view === "grid"
+                          ? "shadow-sm"
+                          : "text-muted-foreground hover:text-foreground",
                       )}
                     >
                       <Icons.dashboard className="mr-2 size-4" />
@@ -222,10 +220,10 @@ export default async function CreationsPage({
                       variant={view === "list" ? "default" : "ghost"}
                       size="sm"
                       className={cn(
-                        "rounded-full px-4 font-bold transition-all",
-                        view === "list" 
-                          ? "border-2 border-slate-900 bg-white text-slate-900 shadow-sm hover:bg-white dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:hover:bg-slate-800" 
-                          : "border-2 border-transparent text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-50",
+                        "rounded-full px-4 font-medium transition-all",
+                        view === "list"
+                          ? "shadow-sm"
+                          : "text-muted-foreground hover:text-foreground",
                       )}
                     >
                       <Icons.post className="mr-2 size-4" />
@@ -257,12 +255,7 @@ export default async function CreationsPage({
                     variant={
                       status === (key as FilterStatus) ? "default" : "outline"
                     }
-                    className={cn(
-                      "rounded-full border-2 px-4 font-bold transition-all",
-                      status === key 
-                        ? "border-slate-900 bg-slate-900 text-white shadow-md hover:bg-slate-800 dark:border-slate-100 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200" 
-                        : "border-slate-200 bg-white text-slate-500 hover:border-slate-400 hover:text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-400 dark:hover:border-slate-500 dark:hover:text-slate-50"
-                    )}
+                    className="rounded-full px-4 font-medium"
                   >
                     {label}
                   </Button>
@@ -280,7 +273,7 @@ export default async function CreationsPage({
 
         {creations.length >= 50 ? (
           <div className="pt-6 text-center">
-            <Button variant="outline" size="lg" className="rounded-full border-2 border-slate-900 font-bold hover:bg-slate-50 dark:border-slate-600 dark:text-slate-50 dark:hover:bg-slate-800">
+            <Button variant="outline" size="lg" className="rounded-full">
               Load More Creations
             </Button>
           </div>
@@ -313,7 +306,7 @@ function SortMenu({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="gap-2 rounded-full border-2 border-slate-200 font-bold text-slate-600 hover:border-slate-900 hover:text-slate-900 dark:border-slate-600 dark:text-slate-400 dark:hover:border-slate-500 dark:hover:text-slate-50">
+        <Button variant="outline" className="gap-2 rounded-full font-medium">
           <Icons.arrowUpRight className="size-4 rotate-90" />
           Sort: {currentLabel}
         </Button>

@@ -28,7 +28,7 @@ export function BlogHeaderLayout() {
           </h1>
           <p className="mt-3.5 text-base text-muted-foreground md:text-lg">
             {data?.description ||
-              "Latest news and updates from Colorline AI."}
+              "Latest news and updates from Color Genie."}
           </p>
         </div>
 

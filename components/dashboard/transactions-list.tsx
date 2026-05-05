@@ -21,10 +21,10 @@ import {
 
 export default function TransactionsList() {
   return (
-    <Card className="xl:col-span-2">
+    <Card className="shadow-sm xl:col-span-2">
       <CardHeader className="flex flex-row items-center">
         <div className="grid gap-2">
-          <CardTitle>Transactions</CardTitle>
+          <CardTitle className="font-heading text-lg font-semibold">Transactions</CardTitle>
           <CardDescription className="text-balance">
             Recent transactions from your store.
           </CardDescription>

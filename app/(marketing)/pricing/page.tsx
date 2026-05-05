@@ -9,7 +9,7 @@ import { PricingCards } from "@/components/pricing/pricing-cards";
 import { PricingFaq } from "@/components/pricing/pricing-faq";
 
 export const metadata = constructMetadata({
-  title: "Pricing – Colorline AI",
+  title: "Pricing – Color Genie",
   description: "Compare Free, Starter, Hobby, and Pro plans.",
 });
 

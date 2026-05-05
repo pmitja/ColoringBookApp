@@ -8,7 +8,7 @@ interface MarketingLayoutProps {
 
 export default function MarketingLayout({ children }: MarketingLayoutProps) {
   return (
-    <div className="playful-theme relative flex min-h-screen flex-col overflow-x-clip">
+    <div className="marketing-light-theme playful-theme relative flex min-h-screen flex-col overflow-x-clip">
       <NavMobile />
       <NavBar scroll={true} />
       <main id="main-content" className="relative flex-1">

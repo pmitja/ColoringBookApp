@@ -6,7 +6,7 @@ import { isUserOnPaidPlan } from "@/lib/subscription";
 import GeneratorStudio from "@/components/generator/generator-studio";
 
 export const metadata: Metadata = {
-  title: "AI Generator – Colorline AI",
+  title: "AI Generator – Color Genie",
   description:
     "Generate coloring pages from prompts and consistent character references.",
 };

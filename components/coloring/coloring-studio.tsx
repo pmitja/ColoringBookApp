@@ -515,15 +515,17 @@ export default function ColoringStudio({
           </div>
         </div>
 
-        <Card className="overflow-hidden rounded-[2rem] border-4 border-slate-900 bg-white shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)]">
-          <CardHeader className="relative z-10 space-y-4 border-b-4 border-slate-100 bg-slate-50/50 pb-6 dark:border-slate-800 dark:bg-slate-800/50">
+        <Card className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+          <CardHeader className="relative z-10 space-y-4 border-b border-border bg-muted/30 pb-6">
             <div className="flex items-center gap-4">
-              <div className="rounded-2xl border-2 border-slate-900 bg-purple-100 p-3 text-purple-600 shadow-sm dark:border-slate-700 dark:bg-purple-900/30 dark:text-purple-400">
+              <div className="rounded-2xl bg-accent/60 p-3 text-primary shadow-sm ring-1 ring-border">
                 <Palette className="size-6" />
               </div>
               <div>
-                <CardTitle className="font-heading text-2xl font-extrabold text-slate-900 dark:text-slate-50">Choose a Page to Color</CardTitle>
-                <CardDescription className="mt-1 text-base font-bold text-slate-500 dark:text-slate-400">
+                <CardTitle className="font-heading text-2xl font-bold text-foreground">
+                  Choose a Page to Color
+                </CardTitle>
+                <CardDescription className="mt-1 text-base font-medium text-muted-foreground">
                   Select one of your generated pages below to start painting.
                 </CardDescription>
               </div>
@@ -540,10 +542,10 @@ export default function ColoringStudio({
                     type="button"
                     onClick={() => handleSelectPage(page.id)}
                     className={cn(
-                      "group relative rounded-3xl border-4 p-3 text-left transition-all duration-300",
+                      "group relative rounded-2xl border p-3 text-left transition-all duration-300",
                       isSelected
-                        ? "scale-[1.02] border-purple-500 bg-purple-50 shadow-[4px_4px_0px_0px_rgba(168,85,247,0.4)] dark:bg-purple-900/20"
-                        : "border-slate-200 bg-white hover:border-slate-400 hover:shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:hover:border-slate-500"
+                        ? "scale-[1.02] border-primary bg-accent/40 shadow-md"
+                        : "border-border bg-card hover:border-primary/40 hover:shadow-sm"
                     )}
                   >
                     <div className="relative aspect-[3/4] overflow-hidden rounded-xl border-2 border-slate-100 bg-white shadow-inner transition-transform duration-300 group-hover:scale-[1.02] dark:border-slate-800">
@@ -556,16 +558,16 @@ export default function ColoringStudio({
                         decoding="async"
                       />
                       {isSelected && (
-                        <div className="absolute inset-0 rounded-xl bg-purple-500/10 ring-4 ring-inset ring-purple-500" />
+                        <div className="absolute inset-0 rounded-xl bg-primary/10 ring-4 ring-inset ring-primary" />
                       )}
                       {isSelected ? (
-                        <Badge className="absolute right-3 top-3 rounded-lg border-2 border-white bg-purple-500 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-white shadow-md">
+                        <Badge className="absolute right-3 top-3 rounded-lg border border-primary-foreground/20 bg-primary px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-primary-foreground shadow-md">
                           Selected
                         </Badge>
                       ) : null}
                     </div>
                     <div className="mt-4 px-1">
-                      <p className="truncate text-base font-black text-slate-900 dark:text-slate-50">
+                      <p className="truncate text-base font-semibold text-slate-900 dark:text-slate-50">
                         {stripFileExtension(page.inputFileName)}
                       </p>
                       <p className="mt-1 text-xs font-bold uppercase tracking-wide text-slate-400">
@@ -584,7 +586,7 @@ export default function ColoringStudio({
                   handleSelectPage(selectedPageId, true);
                 }}
                 disabled={!selectedPageId}
-                className="gap-3 rounded-full border-2 border-slate-900 bg-yellow-400 px-10 py-7 text-xl font-black text-slate-900 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] transition-all hover:translate-y-[2px] hover:bg-yellow-500 active:translate-y-[4px] dark:border-slate-700 dark:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)]"
+                className="gap-3 rounded-full px-10 py-7 text-xl font-semibold"
               >
                 <Palette className="size-6" />
                 Start Coloring
@@ -614,7 +616,8 @@ export default function ColoringStudio({
           <Button
             onClick={handleDownload}
             disabled={isLoadingCanvas || isFilling || isSaving}
-            className="gap-2 rounded-xl bg-sky-500 font-bold text-white shadow-sm hover:bg-sky-600"
+            variant="secondary"
+            className="gap-2 rounded-xl font-semibold shadow-sm"
           >
             <Download className="size-4" />
             Download PNG
@@ -622,7 +625,7 @@ export default function ColoringStudio({
           <Button
             onClick={handleSaveToCreations}
             disabled={isLoadingCanvas || isFilling || isSaving}
-            className="hover:bg-primary/90 shadow-primary/20 gap-2 rounded-xl bg-primary font-bold text-primary-foreground shadow-md"
+            className="gap-2 rounded-xl font-semibold shadow-md"
           >
             {isSaving ? (
               <Icons.spinner className="size-4 animate-spin" />
@@ -635,27 +638,29 @@ export default function ColoringStudio({
       </div>
 
       <section className="grid gap-6 lg:grid-cols-[340px_minmax(0,1fr)]">
-        <Card className="sticky top-24 order-2 h-fit overflow-hidden rounded-[2rem] border-4 border-slate-900 bg-white shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)] lg:order-1">
-          <CardHeader className="border-b-4 border-slate-100 bg-slate-50 pb-5 dark:border-slate-800 dark:bg-slate-800/50">
+        <Card className="sticky top-24 order-2 h-fit overflow-hidden rounded-2xl border border-border bg-card shadow-sm lg:order-1">
+          <CardHeader className="border-b border-border bg-muted/30 pb-5">
             <div className="flex items-center gap-3">
-              <div className="rounded-xl border-2 border-slate-900 bg-blue-100 p-2 text-blue-600 dark:border-slate-700 dark:bg-blue-900/30 dark:text-blue-400">
+              <div className="rounded-xl bg-accent/60 p-2 text-primary ring-1 ring-border">
                 <PaintBucket className="size-5" />
               </div>
-              <CardTitle className="font-heading text-xl font-black text-slate-900 dark:text-slate-50">Color Palette</CardTitle>
+              <CardTitle className="font-heading text-xl font-semibold text-foreground">
+                Color Palette
+              </CardTitle>
             </div>
           </CardHeader>
           <CardContent className="space-y-6 p-6">
             
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <Label htmlFor="fill-color-picker" className="text-sm font-black uppercase tracking-wide text-slate-500 dark:text-slate-400">Selected Color</Label>
-                <Badge variant="outline" className="border-2 border-slate-200 bg-slate-50 font-mono font-bold text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-50">
+                <Label htmlFor="fill-color-picker" className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Selected Color</Label>
+                <Badge variant="outline" className="border-border bg-muted/50 font-mono font-semibold text-foreground">
                   {fillHex.toUpperCase()}
                 </Badge>
               </div>
               <div className="flex items-center gap-4">
                 <div 
-                  className="size-14 shrink-0 overflow-hidden rounded-2xl border-4 border-slate-200 shadow-inner dark:border-slate-700"
+                  className="size-14 shrink-0 overflow-hidden rounded-2xl border-2 border-border shadow-inner ring-1 ring-border"
                   style={{ backgroundColor: fillHex }}
                 >
                   <input
@@ -674,7 +679,7 @@ export default function ColoringStudio({
             </div>
 
             <div className="space-y-3">
-              <Label className="text-sm font-black uppercase tracking-wide text-slate-500 dark:text-slate-400">Presets</Label>
+              <Label className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Presets</Label>
               <div className="grid grid-cols-5 gap-3">
                 {COLOR_PRESETS.map((color) => (
                   <button
@@ -805,12 +810,12 @@ export default function ColoringStudio({
           </CardContent>
         </Card>
 
-        <Card className="order-1 overflow-hidden rounded-[2rem] border-4 border-slate-900 bg-white shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)] lg:order-2">
-          <CardHeader className="border-b-4 border-slate-100 bg-slate-50 pb-5 dark:border-slate-800 dark:bg-slate-800/50">
+        <Card className="order-1 overflow-hidden rounded-2xl border border-border bg-card shadow-sm lg:order-2">
+          <CardHeader className="border-b border-border bg-muted/30 pb-5">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
-                <CardTitle className="font-heading text-xl font-black text-slate-900 dark:text-slate-50">Canvas</CardTitle>
-                <CardDescription className="mt-1 text-sm font-bold text-slate-500 dark:text-slate-400">
+                <CardTitle className="font-heading text-xl font-semibold text-foreground">Canvas</CardTitle>
+                <CardDescription className="mt-1 text-sm font-medium text-muted-foreground">
                   Click inside any enclosed area to fill it.
                 </CardDescription>
               </div>
@@ -822,7 +827,7 @@ export default function ColoringStudio({
             </div>
           </CardHeader>
           <CardContent className="p-6">
-            <div className="relative flex min-h-[500px] items-center justify-center overflow-hidden rounded-2xl border-4 border-slate-200 bg-white bg-[url('/checkered-pattern.png')] bg-repeat shadow-inner dark:border-slate-700 dark:bg-slate-950 dark:bg-[url('/checkered-pattern-dark.png')]">
+            <div className="relative flex min-h-[500px] items-center justify-center overflow-hidden rounded-2xl border border-border bg-white bg-[url('/checkered-pattern.png')] bg-repeat shadow-inner dark:bg-slate-950 dark:bg-[url('/checkered-pattern-dark.png')]">
               <div className="absolute inset-0 bg-white/50 backdrop-blur-[2px] dark:bg-black/50" />
               <canvas
                 ref={canvasRef}
@@ -832,11 +837,11 @@ export default function ColoringStudio({
               />
               {(isLoadingCanvas || isFilling) && (
                 <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/60 backdrop-blur-sm dark:bg-slate-950/60">
-                  <div className="flex items-center gap-4 rounded-2xl border-4 border-slate-900 bg-white px-8 py-6 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)]">
-                    <div className="rounded-full bg-yellow-100 p-2 dark:bg-yellow-900/30">
-                       <Icons.spinner className="size-6 animate-spin text-yellow-600 dark:text-yellow-400" />
+                  <div className="flex items-center gap-4 rounded-2xl border border-border bg-card px-8 py-6 shadow-md">
+                    <div className="rounded-full bg-accent/60 p-2">
+                       <Icons.spinner className="size-6 animate-spin text-primary" />
                     </div>
-                    <span className="text-lg font-black text-slate-900 dark:text-slate-50">
+                    <span className="text-lg font-semibold text-foreground">
                       {isLoadingCanvas ? "Preparing canvas..." : "Filling color..."}
                     </span>
                   </div>

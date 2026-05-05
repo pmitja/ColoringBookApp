@@ -15,8 +15,6 @@ import { ModalContext } from "@/components/modals/providers";
 import { Icons } from "@/components/shared/icons";
 import MaxWidthWrapper from "@/components/shared/max-width-wrapper";
 
-import { ModeToggle } from "./mode-toggle";
-
 interface NavBarProps {
   scroll?: boolean;
   large?: boolean;
@@ -52,9 +50,9 @@ export function NavBar({ scroll = false }: NavBarProps) {
           <div className="flex items-center gap-4 md:gap-6">
             <Link
               href="/"
-              className="flex items-center rounded-full bg-white/90 px-3 py-1.5 shadow-sm transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:bg-white/10"
+              className="flex items-center transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <Icons.logo className="h-7 w-auto sm:h-8" />
+              <Icons.logo className="h-20 w-auto" />
             </Link>
 
             {links && links.length > 0 ? (
@@ -94,10 +92,6 @@ export function NavBar({ scroll = false }: NavBarProps) {
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="hidden md:block">
-              <ModeToggle />
-            </div>
-
             {session ? (
               <Link
                 href={session.user.role === "ADMIN" ? "/admin" : "/dashboard"}

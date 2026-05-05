@@ -13,7 +13,7 @@ export function EmptyPlaceholder({
   return (
     <div
       className={cn(
-        "border-border/80 bg-card/95 flex flex-1 items-center justify-center rounded-3xl border p-8 text-center shadow-sm animate-in fade-in-50",
+        "border-border/80 bg-card/95 flex flex-1 items-center justify-center rounded-2xl border p-8 text-center shadow-sm animate-in fade-in-50",
         className,
       )}
       {...props}

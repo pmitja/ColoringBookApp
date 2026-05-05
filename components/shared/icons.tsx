@@ -1,17 +1,17 @@
 import Image from "next/image";
-
 import {
   AlertTriangle,
   ArrowRight,
   ArrowUpRight,
   BookOpen,
+  Calendar,
   Check,
   ChevronLeft,
   ChevronRight,
+  Cloud,
   Copy,
   CreditCard,
   Download,
-  Calendar,
   File,
   FileText,
   HelpCircle,
@@ -19,8 +19,8 @@ import {
   ImagePlus,
   Info,
   Laptop,
-  Library,
   LayoutDashboard,
+  Library,
   LineChart,
   Loader2,
   LucideIcon,
@@ -28,13 +28,14 @@ import {
   MessageSquarePlus,
   Moon,
   MoreVertical,
+  Package,
   Paintbrush,
   Palette,
-  Package,
+  Pencil,
   PenTool,
   Plus,
-  Redo2,
   Receipt,
+  Redo2,
   Search,
   Send,
   Settings,
@@ -45,33 +46,25 @@ import {
   Trash,
   Undo2,
   User,
+  UserCircle,
   Wallet,
   Wand2,
-  X,
   WandSparkles,
-  UserCircle
+  X,
 } from "lucide-react";
+
 import { cn } from "@/lib/utils";
 
 export type Icon = LucideIcon;
 
 const BrandLogo = ({ className }: LucideProps) => (
-  <>
-    <Image
-      src="/_static/colorlineai-logo-trim.webp"
-      alt="Colorline AI"
-      width={900}
-      height={199}
-      className={cn(className, "h-auto w-auto object-contain dark:hidden")}
-    />
-    <Image
-      src="/_static/colorlineai-dark-logo-trim.webp"
-      alt="Colorline AI"
-      width={887}
-      height={199}
-      className={cn(className, "hidden h-auto w-auto object-contain dark:block")}
-    />
-  </>
+  <Image
+    src="/_static/colorgenie-inline-transparent.webp"
+    alt="Color Genie"
+    width={1536}
+    height={1024}
+    className={cn("object-contain", className)}
+  />
 );
 
 export const Icons = {
@@ -84,6 +77,7 @@ export const Icons = {
   chevronLeft: ChevronLeft,
   chevronRight: ChevronRight,
   check: Check,
+  cloud: Cloud,
   close: X,
   copy: Copy,
   calendar: Calendar,
@@ -156,6 +150,7 @@ export const Icons = {
   palette: Paintbrush,
   package: Package,
   page: PenTool,
+  pencil: Pencil,
   download: Download,
   redo: Redo2,
   post: Sparkles,

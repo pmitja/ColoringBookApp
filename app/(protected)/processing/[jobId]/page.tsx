@@ -1,9 +1,18 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Loader2, Wand2, Image as ImageIcon, Sparkles, AlertTriangle, ArrowRight, ArrowLeft } from "lucide-react";
+import {
+  Loader2,
+  Sparkles,
+  AlertTriangle,
+  ArrowRight,
+  ArrowLeft,
+  Clock,
+  RotateCw,
+} from "lucide-react";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -16,7 +25,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { DashboardHeader } from "@/components/dashboard/header";
 import { Icons } from "@/components/shared/icons";
 import { cn } from "@/lib/utils";
 
@@ -142,14 +150,19 @@ export default function ProcessingPage({ params }: ProcessingPageProps) {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-6">
-        <div className="relative flex size-24 items-center justify-center rounded-[2rem] bg-primary/10 shadow-sm border-2 border-primary/20">
-          <div className="absolute inset-0 rounded-[2rem] border-4 border-primary/30 border-t-primary animate-spin" />
-          <Wand2 className="size-10 text-primary animate-pulse" />
-        </div>
-        <div className="text-center space-y-2">
+      <div className="flex min-h-[60vh] flex-col items-center justify-center space-y-6">
+        <Image
+          src="/illustrations/lineart-sample.svg"
+          alt=""
+          width={140}
+          height={140}
+          className="animate-floaty opacity-85"
+        />
+        <div className="space-y-2 text-center">
           <h2 className="font-heading text-2xl">Locating Job...</h2>
-          <p className="text-muted-foreground font-medium">Checking the status of your generation.</p>
+          <p className="font-medium text-muted-foreground">
+            Checking the status of your generation.
+          </p>
         </div>
       </div>
     );
@@ -166,7 +179,7 @@ export default function ProcessingPage({ params }: ProcessingPageProps) {
           <p className="text-muted-foreground font-medium">{error || "Job not found or no longer exists."}</p>
         </div>
         <Link href="/dashboard" className="w-full sm:w-auto">
-          <Button className="w-full gap-2 rounded-xl py-6 px-8 text-base font-bold shadow-md">
+          <Button className="w-full gap-2 rounded-full px-8 py-6 text-base font-semibold shadow-sm">
             <ArrowLeft className="size-5" />
             Back to Dashboard
           </Button>
@@ -185,10 +198,10 @@ export default function ProcessingPage({ params }: ProcessingPageProps) {
       </div>
 
       <Card className={cn(
-        "playful-card overflow-hidden transition-all duration-500",
-        jobData.status === "DONE" ? "border-emerald-500/50 shadow-emerald-500/10 ring-4 ring-emerald-500/10" : 
-        jobData.status === "FAILED" ? "border-destructive/50 shadow-destructive/10 ring-4 ring-destructive/10" :
-        "border-primary/50 shadow-primary/10 ring-4 ring-primary/10"
+        "overflow-hidden border border-border shadow-sm transition-all duration-500",
+        jobData.status === "DONE" ? "border-l-4 border-l-emerald-500" :
+        jobData.status === "FAILED" ? "border-l-4 border-l-destructive" :
+        "border-l-4 border-l-primary",
       )}>
         <CardHeader className={cn(
           "relative z-10 space-y-4 border-b border-border/50 pb-6 transition-colors duration-500",
@@ -218,7 +231,7 @@ export default function ProcessingPage({ params }: ProcessingPageProps) {
             <Badge
               variant={jobData.status === "FAILED" ? "destructive" : "default"}
               className={cn(
-                "rounded-full px-4 py-1.5 text-sm font-bold shadow-sm",
+                "rounded-full px-4 py-1.5 text-sm font-semibold shadow-sm",
                 jobData.status === "PROCESSING" && "bg-primary/10 text-primary hover:bg-primary/20 ring-1 ring-primary/20 border-0",
                 jobData.status === "DONE" && "bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 ring-1 ring-emerald-500/20 border-0"
               )}
@@ -234,7 +247,7 @@ export default function ProcessingPage({ params }: ProcessingPageProps) {
         
         <CardContent className="relative z-10 p-6 sm:p-8 space-y-8">
           <div className="space-y-4">
-            <div className="flex items-center justify-between text-sm font-bold">
+            <div className="flex items-center justify-between text-sm font-semibold">
               <span className="text-foreground">Overall Progress</span>
               <span className={cn(
                 "text-lg",
@@ -256,7 +269,7 @@ export default function ProcessingPage({ params }: ProcessingPageProps) {
             
             <div className="flex items-center justify-between text-xs font-medium text-muted-foreground bg-muted/30 p-3 rounded-xl border border-border/50">
               <span className="flex items-center gap-1.5">
-                <Icons.clock className="size-3.5" />
+                <Clock className="size-3.5" />
                 Estimated: {estimatedTimeLabel}
               </span>
               {jobData.status !== "DONE" && jobData.status !== "FAILED" && (
@@ -292,7 +305,7 @@ export default function ProcessingPage({ params }: ProcessingPageProps) {
           {jobData.status === "FAILED" && jobData.errorMessage ? (
             <Alert className="border-destructive/20 bg-destructive/10 text-destructive rounded-2xl p-4 flex items-start gap-3">
               <AlertTriangle className="size-5 mt-0.5 shrink-0" />
-              <AlertDescription className="font-bold leading-tight">{jobData.errorMessage}</AlertDescription>
+              <AlertDescription className="font-semibold leading-tight">{jobData.errorMessage}</AlertDescription>
             </Alert>
           ) : null}
 
@@ -300,20 +313,20 @@ export default function ProcessingPage({ params }: ProcessingPageProps) {
             {jobData.status === "FAILED" ? (
               <>
                 <Link href="/upload" className="flex-1 sm:flex-none">
-                  <Button className="w-full gap-2 rounded-xl py-6 px-6 text-base font-bold shadow-md">
-                    <Icons.refresh className="size-5" />
+                  <Button className="w-full gap-2 rounded-full px-6 py-6 text-base font-semibold shadow-sm">
+                    <RotateCw className="size-5" />
                     Try Again
                   </Button>
                 </Link>
                 <Link href="/dashboard" className="flex-1 sm:flex-none">
-                  <Button variant="outline" className="w-full gap-2 rounded-xl py-6 px-6 text-base font-bold border-2">
+                  <Button variant="outline" className="w-full gap-2 rounded-full px-6 py-6 text-base font-semibold">
                     Back to Dashboard
                   </Button>
                 </Link>
               </>
             ) : jobData.status === "DONE" ? (
               <Link href={`/results/${params.jobId}`} className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <Button className="w-full gap-2 rounded-2xl py-7 text-xl font-bold shadow-xl shadow-emerald-500/20 bg-emerald-600 hover:bg-emerald-700 hover:scale-[1.01] active:scale-[0.99] transition-all">
+                <Button className="w-full gap-2 rounded-full py-7 text-xl font-semibold shadow-md transition-all hover:shadow-lg">
                   <Sparkles className="size-6" />
                   View Results
                   <ArrowRight className="size-6 ml-1" />
@@ -321,7 +334,7 @@ export default function ProcessingPage({ params }: ProcessingPageProps) {
               </Link>
             ) : (
               <Link href="/dashboard" className="w-full">
-                <Button variant="ghost" className="w-full gap-2 rounded-xl py-6 text-base font-bold text-muted-foreground hover:text-foreground">
+                <Button variant="ghost" className="w-full gap-2 rounded-full py-6 text-base font-semibold text-muted-foreground hover:text-foreground">
                   <ArrowLeft className="size-4" />
                   Return to Dashboard (Runs in background)
                 </Button>
@@ -349,7 +362,7 @@ function StageRow({
 }) {
   return (
     <div className={cn(
-      "flex items-center gap-4 rounded-2xl border-2 p-4 transition-all duration-300",
+      "flex items-center gap-4 rounded-2xl border border-border p-4 transition-all duration-300",
       active ? "border-primary/30 bg-primary/5 shadow-sm scale-[1.01]" : 
       done ? "border-emerald-500/20 bg-emerald-500/5" :
       failed ? "border-destructive/20 bg-destructive/5" :
@@ -374,7 +387,7 @@ function StageRow({
       </div>
       <div className="space-y-1">
         <p className={cn(
-          "text-base font-bold leading-none",
+          "text-base font-semibold leading-none",
           active ? "text-primary" :
           done ? "text-emerald-700 dark:text-emerald-400" :
           failed ? "text-destructive" :

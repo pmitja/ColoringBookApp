@@ -1891,26 +1891,26 @@ export default function BookEditorV2({
   );
 
   return (
-    <div className="min-h-screen space-y-6 bg-[#f8fbff] p-4 dark:bg-slate-950 sm:p-6">
+    <div className="min-h-screen space-y-6 bg-background p-4 sm:p-6">
       {/* Top Bar */}
-      <div className="rounded-[2rem] border-4 border-slate-900 bg-white p-6 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)]">
+      <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-6">
           <div className="flex min-w-[240px] flex-1 flex-col gap-3">
-            <div className="flex flex-wrap items-center gap-3 text-xs font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">
-              <span className="rounded-xl border-2 border-slate-900 bg-purple-100 px-3 py-1 text-xs font-black text-purple-700 dark:border-slate-600 dark:bg-purple-900/40 dark:text-purple-300">
+            <div className="flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <span className="rounded-full bg-accent/60 px-3 py-1 text-xs font-medium text-accent-foreground">
                 Studio
               </span>
-              <span className="dark:text-slate-400">Book editor</span>
+              <span>Book editor</span>
             </div>
             <div className="flex flex-wrap items-center gap-4">
               <Input
-                className="h-14 w-full max-w-md rounded-2xl border-4 border-slate-200 bg-slate-50 px-5 text-xl font-black text-slate-900 shadow-none transition-all placeholder:text-slate-300 focus-visible:border-slate-900 focus-visible:bg-white focus-visible:ring-0 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:placeholder:text-slate-500 dark:focus-visible:border-slate-500 dark:focus-visible:bg-slate-700"
+                className="h-14 w-full max-w-md rounded-2xl border border-border bg-background px-5 text-xl font-semibold text-foreground shadow-sm transition-all placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring"
                 value={book.title}
                 onChange={(e) => setBook({ ...book, title: e.target.value })}
                 placeholder="Book title"
                 aria-label="Book title"
               />
-              <div className="flex items-center gap-2 rounded-2xl border-2 border-slate-200 bg-slate-100 px-4 py-2 text-sm font-black text-slate-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-400">
+              <div className="flex items-center gap-2 rounded-2xl border border-border bg-muted px-4 py-2 text-sm font-medium text-muted-foreground">
                 <Icons.bookOpen className="size-5" />
                 <span>{book.pages.length} pages</span>
               </div>
@@ -1921,7 +1921,7 @@ export default function BookEditorV2({
              {/* Cover Wizard Button */}
             <Button
               variant={isPaidUser ? "secondary" : "outline"}
-              className="h-14 rounded-2xl border-2 border-slate-900 bg-white px-6 text-base font-black shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] transition-all hover:translate-y-[2px] hover:bg-slate-50 hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] dark:hover:bg-slate-700 dark:hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.5)]"
+              className="h-14 rounded-2xl px-6 text-base font-semibold"
               onClick={openCoverWizard}
               disabled={Boolean(savingCoverOptionId)}
             >
@@ -1934,18 +1934,18 @@ export default function BookEditorV2({
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="outline"
-                  className="h-14 rounded-2xl border-2 border-slate-900 bg-white px-4 text-base font-black shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] transition-all hover:translate-y-[2px] hover:bg-slate-50 hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] dark:hover:bg-slate-700 dark:hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.5)]"
+                  className="h-14 rounded-2xl px-4 text-base font-semibold"
                 >
                   <Icons.ellipsis className="mr-2 size-5" />
                   Actions
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="rounded-2xl border-4 border-slate-900 p-2 font-bold shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)]">
-                <DropdownMenuItem onClick={loadLatest} className="cursor-pointer rounded-xl py-3 text-base text-slate-900 focus:bg-slate-100 focus:font-black dark:text-slate-50 dark:focus:bg-slate-800">
+              <DropdownMenuContent align="end" className="rounded-2xl border border-border p-2 font-medium shadow-md">
+                <DropdownMenuItem onClick={loadLatest} className="cursor-pointer rounded-xl py-3 text-base focus:bg-accent focus:font-semibold">
                   <Icons.download className="mr-2 size-5" />
                   Load latest
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={exportToPdf} className="cursor-pointer rounded-xl py-3 text-base text-slate-900 focus:bg-slate-100 focus:font-black dark:text-slate-50 dark:focus:bg-slate-800">
+                <DropdownMenuItem onClick={exportToPdf} className="cursor-pointer rounded-xl py-3 text-base focus:bg-accent focus:font-semibold">
                   <Icons.download className="mr-2 size-5" />
                   Export PDF
                 </DropdownMenuItem>
@@ -1954,7 +1954,7 @@ export default function BookEditorV2({
 
             {/* Save Button */}
             <Button
-              className="h-14 rounded-2xl border-2 border-slate-900 bg-yellow-400 px-8 text-lg font-black text-slate-900 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] transition-all hover:translate-y-[2px] hover:bg-yellow-500 hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] active:translate-y-[4px] active:shadow-none dark:border-slate-600 dark:bg-yellow-500 dark:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] dark:hover:bg-yellow-600 dark:hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.5)]"
+              className="h-14 rounded-2xl px-8 text-lg font-semibold"
               onClick={saveBook}
             >
               <Icons.check className="mr-2 size-6" />
@@ -1964,7 +1964,7 @@ export default function BookEditorV2({
         </div>
 
         {/* Toolbar */}
-        <div className="mt-8 flex flex-wrap items-center gap-3 rounded-3xl border-4 border-slate-200 bg-slate-50 p-3 shadow-none dark:border-slate-700 dark:bg-slate-800/50">
+        <div className="mt-8 flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-muted/50 p-3">
           <TooltipProvider>
             <div className="flex flex-wrap items-center gap-3">
               {/* Undo/Redo */}
@@ -1980,7 +1980,7 @@ export default function BookEditorV2({
                     <span className="hidden sm:inline">Undo</span>
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent className="rounded-xl border-2 border-slate-900 font-bold">Undo (Cmd/Ctrl+Z)</TooltipContent>
+                <TooltipContent className="rounded-xl border border-border font-medium">Undo (Cmd/Ctrl+Z)</TooltipContent>
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -1994,7 +1994,7 @@ export default function BookEditorV2({
                     <span className="hidden sm:inline">Redo</span>
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent className="rounded-xl border-2 border-slate-900 font-bold">
+                <TooltipContent className="rounded-xl border border-border font-medium">
                   Redo (Cmd/Ctrl+Shift+Z or Cmd/Ctrl+Y)
                 </TooltipContent>
               </Tooltip>
@@ -2008,28 +2008,28 @@ export default function BookEditorV2({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
-                    variant="secondary"
+                    variant="outline"
                     onClick={addTextBox}
-                    className="h-12 rounded-xl border-2 border-slate-900 bg-white px-5 font-bold text-slate-900 shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] hover:translate-y-px hover:bg-blue-50 hover:shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-50 dark:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.5)] dark:hover:bg-blue-900/20"
+                    className="h-12 rounded-xl px-5 font-semibold"
                   >
                     <Icons.post className="mr-2 size-5 text-blue-600 dark:text-blue-400" />
                     <span className="hidden sm:inline">Add text</span>
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent className="rounded-xl border-2 border-slate-900 font-bold">Add a text box</TooltipContent>
+                <TooltipContent className="rounded-xl border border-border font-medium">Add a text box</TooltipContent>
               </Tooltip>
 
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
-                    className="h-12 rounded-xl border-2 border-slate-900 bg-white px-5 font-bold text-slate-900 shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] hover:translate-y-px hover:bg-pink-50 hover:shadow-sm dark:border-slate-700 dark:bg-slate-900 dark:text-slate-50 dark:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.5)] dark:hover:bg-pink-900/20"
+                    className="h-12 rounded-xl px-5 font-semibold"
                   >
                     <Icons.media className="mr-2 size-5 text-pink-600 dark:text-pink-400" />
                     <span className="hidden sm:inline">Add image</span>
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-[320px] max-w-[90vw] rounded-2xl border-4 border-slate-900 p-4 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)]">
+                <PopoverContent className="w-[320px] max-w-[90vw] rounded-2xl border border-border p-4 shadow-md">
                   <div className="space-y-4">
                     <Input
                       placeholder="Search assets..."
@@ -2075,7 +2075,7 @@ export default function BookEditorV2({
                 <Icons.chevronLeft className="mr-1 size-5" />
                 <span className="hidden sm:inline">Prev</span>
               </Button>
-              <div className="rounded-xl bg-slate-200 px-4 py-2 text-sm font-black text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+              <div className="rounded-xl bg-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-400">
                 Page {currentPageIndex + 1} / {book.pages.length}
               </div>
               <Button
@@ -2111,7 +2111,7 @@ export default function BookEditorV2({
 
               {/* Zoom */}
               <div className="flex flex-wrap items-center gap-3 rounded-xl border-2 border-slate-200 bg-white px-4 py-2 dark:border-slate-700 dark:bg-slate-900">
-                <Label className="text-xs font-black uppercase tracking-wider text-slate-400">Zoom</Label>
+                <Label className="text-xs font-semibold uppercase tracking-wider text-slate-400">Zoom</Label>
                 <div className="w-24 sm:w-32">
                   <Slider
                     value={[Math.round(renderZoom * 100)]}
@@ -2125,7 +2125,7 @@ export default function BookEditorV2({
                     className="cursor-pointer"
                   />
                 </div>
-                <span className="min-w-[3ch] text-sm font-black text-slate-600 dark:text-slate-400">
+                <span className="min-w-[3ch] text-sm font-semibold text-slate-600 dark:text-slate-400">
                   {Math.round(renderZoom * 100)}%
                 </span>
               </div>
@@ -2143,14 +2143,14 @@ export default function BookEditorV2({
         </div>
 
         <div className="mt-8 grid min-w-0 gap-6 lg:grid-cols-[300px_minmax(0,1fr)] 2xl:grid-cols-[300px_minmax(0,1fr)_360px]">
-          <Card className="order-2 min-w-0 overflow-hidden rounded-[2rem] border-4 border-slate-900 bg-white shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)] lg:order-1">
+          <Card className="order-2 min-w-0 overflow-hidden rounded-2xl border border-border bg-card shadow-sm lg:order-1">
             <CardContent className="space-y-5 p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                     Library
                   </p>
-                  <p className="font-heading text-2xl font-black text-slate-900 dark:text-slate-50">Assets</p>
+                  <p className="font-heading text-2xl font-semibold text-slate-900 dark:text-slate-50">Assets</p>
                 </div>
                 <Badge
                   variant="outline"
@@ -2194,11 +2194,11 @@ export default function BookEditorV2({
           </Card>
 
           <div className="order-1 flex min-w-0 flex-col gap-6 lg:order-2">
-            <Card className="min-w-0 overflow-hidden rounded-[2rem] border-4 border-slate-900 bg-white shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)]">
+            <Card className="min-w-0 overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
               <CardContent className="space-y-4 p-6">
                 <div className="flex flex-wrap items-center justify-between gap-3 text-sm font-bold text-slate-500 dark:text-slate-400">
                   <div className="flex items-center gap-3">
-                    <span className="text-lg font-black text-slate-900 dark:text-slate-50">
+                    <span className="text-lg font-semibold text-slate-900 dark:text-slate-50">
                       Canvas
                     </span>
                     <Badge
@@ -2214,7 +2214,7 @@ export default function BookEditorV2({
                 </div>
                 <div
                   ref={viewportRef}
-                  className="flex min-w-0 justify-center overflow-hidden rounded-2xl border-4 border-slate-200 bg-slate-50 p-6 shadow-inner dark:border-slate-700 dark:bg-slate-800"
+                  className="flex min-w-0 justify-center overflow-hidden rounded-2xl border border-border bg-muted/40 p-6 shadow-inner"
                 >
                   <div className="w-full min-w-0 max-w-full">
                     <SimpleFlipBook
@@ -2236,7 +2236,7 @@ export default function BookEditorV2({
                           else if (rightId) setSelectedPageId(rightId);
                         }
                       }}
-                      className="mx-auto border-4 border-slate-900 shadow-[12px_12px_0px_0px_rgba(15,23,42,0.1)]"
+                      className="mx-auto rounded-lg border border-border shadow-md"
                     >
                       {book.pages.map((page, pageIndex) => {
                         const pagePadding = getPagePaddingByIndex(pageIndex);

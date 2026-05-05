@@ -5,7 +5,7 @@ import { isUserOnPaidPlan } from "@/lib/subscription";
 import GeneratorStudio from "@/components/generator/generator-studio";
 
 export const metadata: Metadata = {
-  title: "AI Name Generator – Colorline AI",
+  title: "AI Name Generator – Color Genie",
   description:
     "Generate personalized printable name coloring pages with decorative doodles.",
 };

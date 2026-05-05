@@ -13,7 +13,7 @@ const BookEditor = dynamic(
 );
 
 export const metadata = constructMetadata({
-  title: "New Book – Colorline AI",
+  title: "New Book – Color Genie",
   description: "Create a new coloring book.",
 });
 

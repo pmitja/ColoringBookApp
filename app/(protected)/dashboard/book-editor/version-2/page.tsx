@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { Clock, Library, Plus } from "lucide-react";
 
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
@@ -12,7 +13,7 @@ import { EmptyPlaceholder } from "@/components/shared/empty-placeholder";
 import { Icons } from "@/components/shared/icons";
 
 export const metadata = constructMetadata({
-  title: "Books – Colorline AI",
+  title: "Books – Color Genie",
   description: "Create and manage books in the v2 editor.",
 });
 
@@ -162,37 +163,39 @@ export default async function BookChooserPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="space-y-1.5">
-          <h1 className="font-heading text-4xl font-black text-slate-900">Books (v2)</h1>
-          <p className="text-lg font-bold text-slate-500">
-            Create and manage books in the v2 editor.
-          </p>
-        </div>
+      <DashboardHeader
+        heading="Books (v2)"
+        text="Create and manage books in the v2 editor."
+      >
         <Link href="/dashboard/book-editor/version-2/new">
-          <Button className="gap-3 rounded-full border-2 border-slate-900 bg-yellow-400 px-8 py-7 text-xl font-black text-slate-900 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] transition-all hover:translate-y-[2px] hover:bg-yellow-500 hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] active:translate-y-[4px] active:shadow-none">
-            <Icons.add className="size-6" />
+          <Button className="gap-3 rounded-full px-8 py-7 text-xl font-semibold">
+            <Plus className="size-6" />
             New Book
           </Button>
         </Link>
-      </div>
+      </DashboardHeader>
 
       <div className="space-y-8 pb-10">
-        <Card className="overflow-hidden rounded-[2rem] border-4 border-slate-900 bg-white shadow-[8px_8px_0px_0px_rgba(15,23,42,1)]">
-          <CardContent className="flex flex-wrap items-center justify-between gap-6 p-8">
-            <div className="space-y-1">
-              <p className="text-2xl font-black text-slate-900">
-                {books.length === 1
-                  ? "1 book available"
-                  : `${books.length} books available`}
-              </p>
-              <p className="text-base font-bold text-slate-500">
-                Continue editing any draft or start a fresh book.
-              </p>
+        <Card className="overflow-hidden shadow-sm">
+          <CardContent className="relative z-10 flex flex-wrap items-center justify-between gap-6 p-8">
+            <div className="flex items-center gap-5">
+              <div className="rounded-2xl bg-accent/60 p-4 text-primary shadow-sm ring-1 ring-border">
+                <Library className="size-8" />
+              </div>
+              <div>
+                <p className="font-heading text-3xl font-bold text-foreground">
+                  {books.length === 1
+                    ? "1 book available"
+                    : `${books.length} books available`}
+                </p>
+                <p className="mt-1 text-base font-medium text-muted-foreground">
+                  Continue editing any draft or start a fresh book.
+                </p>
+              </div>
             </div>
             <Link href="/dashboard/book-editor/version-2/new">
-              <Button variant="outline" className="h-14 gap-2 rounded-2xl border-2 border-slate-900 bg-white px-6 text-lg font-bold text-slate-900 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] transition-all hover:translate-y-[2px] hover:bg-slate-50 hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)]">
-                <Icons.add className="size-5 text-yellow-500" />
+              <Button variant="outline" className="h-14 gap-2 rounded-2xl px-6 text-lg font-semibold">
+                <Icons.add className="size-5 text-primary" />
                 Start New Draft
               </Button>
             </Link>
@@ -201,16 +204,24 @@ export default async function BookChooserPage() {
 
         {books.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
-             <div className="mb-8 flex size-32 rotate-6 items-center justify-center rounded-[2.5rem] border-4 border-slate-200 bg-white shadow-sm">
-              <Icons.media className="size-16 -rotate-6 text-slate-300" />
+            <div className="relative mb-8 flex size-44 items-center justify-center">
+              <Image
+                src="/illustrations/landing-book.svg"
+                alt=""
+                width={176}
+                height={176}
+                className="animate-floaty-slow opacity-90"
+              />
             </div>
-            <h3 className="mb-3 font-heading text-3xl font-black text-slate-400">No books yet</h3>
-            <p className="mb-10 max-w-sm text-lg font-bold leading-relaxed text-slate-300">
+            <h3 className="mb-3 font-heading text-3xl font-bold text-muted-foreground">
+              No books yet
+            </h3>
+            <p className="mb-10 max-w-sm text-lg font-medium leading-relaxed text-muted-foreground">
               Create your first coloring book from your generated pages.
             </p>
             <Link href="/dashboard/book-editor/version-2/new">
-              <Button className="gap-3 rounded-full border-2 border-slate-900 bg-emerald-400 px-10 py-8 text-xl font-black text-slate-900 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] transition-all hover:translate-y-[2px] hover:bg-emerald-500 hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)]">
-                <Icons.add className="size-6" />
+              <Button className="gap-3 rounded-full px-10 py-8 text-xl font-semibold">
+                <Plus className="size-6" />
                 Create First Book
               </Button>
             </Link>
@@ -223,10 +234,10 @@ export default async function BookChooserPage() {
               return (
                 <Card
                   key={book.id}
-                  className="group relative flex flex-col overflow-hidden rounded-[2.5rem] border-4 border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-2 hover:border-slate-900 hover:shadow-[8px_8px_0px_0px_rgba(15,23,42,1)]"
+                  className="group relative flex flex-col overflow-hidden shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md"
                 >
-                  <CardHeader className="border-b-4 border-slate-100 p-0 transition-colors duration-300 group-hover:border-slate-900">
-                    <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-50">
+                  <CardHeader className="border-b border-border p-0">
+                    <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
                       {book.thumbUrl ? (
                         <Image
                           src={book.thumbUrl}
@@ -236,30 +247,31 @@ export default async function BookChooserPage() {
                           className="object-cover transition-transform duration-500 group-hover:scale-110"
                         />
                       ) : (
-                        <div className="flex size-full flex-col items-center justify-center gap-4 bg-slate-50 text-slate-300">
+                        <div className="flex size-full flex-col items-center justify-center gap-4 bg-muted text-muted-foreground">
                           <Icons.media className="size-12" />
-                          <p className="text-base font-black">No preview yet</p>
+                          <p className="text-base font-semibold">No preview yet</p>
                         </div>
                       )}
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4 p-6">
                     <div className="space-y-2">
-                      <p className="truncate text-2xl font-black text-slate-900">
+                      <p className="truncate font-heading text-2xl font-bold text-foreground">
                         {title}
                       </p>
-                      <p className="text-sm font-bold text-slate-400">
+                      <p className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                        <Clock className="size-4" />
                         Updated {formatDate(book.updatedAt)}
                       </p>
                     </div>
 
-                    <div className="flex items-center justify-between gap-3 border-t-2 border-dashed border-slate-100 pt-4 group-hover:border-slate-200">
+                    <div className="flex items-center justify-between gap-3 border-t border-border pt-4">
                       <DeleteBookButton bookId={book.id} bookTitle={title} />
                       <Link
                         href={`/dashboard/book-editor/version-2/${book.id}`}
                         className="flex-1"
                       >
-                        <Button size="sm" className="h-12 w-full gap-2 rounded-xl border-2 border-slate-900 bg-slate-900 font-bold text-white shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] transition-all hover:translate-y-px hover:bg-slate-800 hover:shadow-none">
+                        <Button size="sm" className="h-12 w-full gap-2 rounded-xl font-semibold">
                           Open
                           <Icons.arrowRight className="size-4" />
                         </Button>

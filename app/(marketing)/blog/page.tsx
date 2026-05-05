@@ -4,8 +4,8 @@ import { constructMetadata, getBlurDataURL } from "@/lib/utils";
 import { BlogPosts } from "@/components/content/blog-posts";
 
 export const metadata = constructMetadata({
-  title: "Blog – Colorline AI",
-  description: "Latest news and updates from Colorline AI.",
+  title: "Blog – Color Genie",
+  description: "Latest news and updates from Color Genie.",
 });
 
 export default async function BlogPage() {

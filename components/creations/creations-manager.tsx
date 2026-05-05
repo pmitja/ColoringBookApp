@@ -64,15 +64,15 @@ interface CreationsManagerProps {
 function getStatusColor(status: CreationStatus) {
   switch (status) {
     case "DONE":
-      return "border-emerald-200 bg-emerald-100 text-emerald-800 dark:border-emerald-900/40 dark:bg-emerald-900/25 dark:text-emerald-300";
+      return "border-transparent bg-muted font-medium text-foreground";
     case "PROCESSING":
-      return "border-sky-200 bg-sky-100 text-sky-800 dark:border-sky-900/40 dark:bg-sky-900/25 dark:text-sky-300";
+      return "border-transparent bg-muted font-medium text-foreground";
     case "QUEUED":
-      return "border-amber-200 bg-amber-100 text-amber-800 dark:border-amber-900/40 dark:bg-amber-900/25 dark:text-amber-300";
+      return "border-transparent bg-muted font-medium text-foreground";
     case "FAILED":
-      return "border-rose-200 bg-rose-100 text-rose-800 dark:border-rose-900/40 dark:bg-rose-900/25 dark:text-rose-300";
+      return "border-transparent bg-destructive/10 font-medium text-destructive";
     default:
-      return "border-border bg-background/60 text-muted-foreground";
+      return "border-transparent bg-muted text-muted-foreground";
   }
 }
 
@@ -272,7 +272,15 @@ export default function CreationsManager({
   if (items.length === 0) {
     return (
       <EmptyPlaceholder>
-        <EmptyPlaceholder.Icon name="media" />
+        <div className="relative mx-auto mb-4 flex size-44 items-center justify-center">
+          <Image
+            src="/illustrations/preview-coloring.svg"
+            alt=""
+            width={176}
+            height={176}
+            className="animate-floaty-slow opacity-90"
+          />
+        </div>
         <EmptyPlaceholder.Title>No creations yet</EmptyPlaceholder.Title>
         <EmptyPlaceholder.Description>
           Create your first coloring page to start building your library.
@@ -289,7 +297,7 @@ export default function CreationsManager({
 
   return (
     <div className="space-y-4">
-      <div className="border-border/80 bg-card/95 flex flex-wrap items-center justify-between gap-3 rounded-3xl border p-4 dark:border-slate-700 dark:bg-slate-900">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card p-4 shadow-sm">
         <div className="flex items-center gap-2">
           <Checkbox
             checked={
@@ -298,7 +306,7 @@ export default function CreationsManager({
             onCheckedChange={handleSelectAll}
             aria-label="Select all creations"
           />
-          <span className="text-sm text-muted-foreground dark:text-slate-400">
+          <span className="text-sm text-muted-foreground">
             {selectedCountLabel}
           </span>
         </div>
@@ -399,12 +407,12 @@ function CreationCard({
   return (
     <Card
       className={cn(
-        "border-border/80 bg-card/95 group overflow-hidden rounded-3xl border transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-700 dark:bg-slate-900",
-        selected && "ring-primary/35 ring-2",
+        "group overflow-hidden shadow-sm transition hover:-translate-y-0.5 hover:shadow-md",
+        selected && "ring-2 ring-primary/35",
       )}
     >
-      <div className="bg-background/60 relative aspect-[3/4] dark:bg-slate-800/60 sm:aspect-[4/5]">
-        <div className="bg-background/95 absolute left-2 top-2 z-10 rounded-md p-1 shadow-sm dark:bg-slate-900/95">
+      <div className="relative aspect-[4/3] bg-muted">
+        <div className="absolute left-2 top-2 z-10 rounded-md bg-card/95 p-1 shadow-sm backdrop-blur-sm">
           <Checkbox
             checked={selected}
             onCheckedChange={onSelect}
@@ -507,7 +515,7 @@ function CreationsTable({
   const someSelected = selectedIds.size > 0 && !allSelected;
 
   return (
-    <Card className="border-border/80 bg-card/95 rounded-3xl dark:border-slate-700 dark:bg-slate-900">
+    <Card className="shadow-sm">
       <CardContent className="pt-6">
         <Table className="min-w-[420px] sm:min-w-[640px]">
           <TableHeader>

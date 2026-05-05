@@ -189,9 +189,9 @@ export function PricingCards({ userId, subscriptionPlan }: PricingCardsProps) {
           Email{" "}
           <a
             className="font-medium text-primary hover:underline"
-            href="mailto:support@colorline.ai"
+            href="mailto:support@colorgenie.ai"
           >
-            support@colorline.ai
+            support@colorgenie.ai
           </a>{" "}
           for to contact our support team.
           <br />

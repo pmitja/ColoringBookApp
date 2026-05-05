@@ -17,13 +17,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { DashboardHeader } from "@/components/dashboard/header";
-import { EmptyPlaceholder } from "@/components/shared/empty-placeholder";
 import { Icons } from "@/components/shared/icons";
 
 export const metadata = constructMetadata({
-  title: "Dashboard – Colorline AI",
+  title: "Dashboard – Color Genie",
   description: "Create magical coloring books from your family photos.",
 });
 
@@ -42,14 +40,11 @@ const creationDateFormatter = new Intl.DateTimeFormat("en-US", {
   minute: "2-digit",
 });
 
-const statusStyles: Record<ImageJob["status"], string> = {
-  DONE: "border-emerald-200 bg-emerald-100 text-emerald-800 dark:border-emerald-900/40 dark:bg-emerald-900/25 dark:text-emerald-300",
-  PROCESSING:
-    "border-sky-200 bg-sky-100 text-sky-800 dark:border-sky-900/40 dark:bg-sky-900/25 dark:text-sky-300",
-  QUEUED:
-    "border-amber-200 bg-amber-100 text-amber-800 dark:border-amber-900/40 dark:bg-amber-900/25 dark:text-amber-300",
-  FAILED:
-    "border-orange-200 bg-orange-100 text-orange-800 dark:border-orange-900/40 dark:bg-orange-900/25 dark:text-orange-300",
+const statusDot: Record<ImageJob["status"], string> = {
+  DONE: "bg-emerald-500",
+  PROCESSING: "bg-primary",
+  QUEUED: "bg-chart-3",
+  FAILED: "bg-destructive",
 };
 
 const statusLabels: Record<ImageJob["status"], string> = {
@@ -137,66 +132,63 @@ export default async function DashboardPage() {
 
   return (
     <>
-      <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-        <div className="space-y-1.5">
-          <h1 className="font-heading text-4xl font-black text-slate-900 dark:text-slate-50">Dashboard</h1>
-          <p className="text-lg font-bold text-slate-500 dark:text-slate-400">
-            A clean overview of usage, generation status, and recent pages.
-          </p>
-        </div>
+      <DashboardHeader
+        heading="Dashboard"
+        text="A calm overview of usage, generation status, and recent pages."
+      >
         <div className="flex flex-wrap items-center gap-3">
           <Link href="/upload">
-            <Button className="gap-2 rounded-full border-2 border-slate-900 bg-emerald-400 px-6 py-5 font-bold text-slate-900 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] transition-all hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)]">
+            <Button className="gap-2 rounded-full">
               <Icons.media className="size-5" />
               New from Photo
             </Button>
           </Link>
           <Link href="/ai-generator">
-            <Button className="rounded-full border-2 border-slate-900 bg-white px-6 py-5 font-bold text-slate-900 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] transition-all hover:translate-y-[2px] hover:bg-slate-50 hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] dark:hover:bg-slate-700">
+            <Button variant="outline" className="rounded-full">
               New from Prompt
             </Button>
           </Link>
         </div>
-      </div>
+      </DashboardHeader>
 
       <div className="grid gap-6 xl:grid-cols-[1.4fr_0.6fr]">
-        <Card className="overflow-hidden rounded-[2rem] border-4 border-slate-900 bg-white shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)]">
-          <CardHeader className="border-b-4 border-slate-900 bg-yellow-50 p-6 dark:border-slate-700 dark:bg-yellow-900/20">
-            <CardTitle className="font-heading text-2xl font-extrabold text-slate-900 dark:text-slate-50">
+        <Card className="shadow-sm transition-shadow hover:shadow-md">
+          <CardHeader>
+            <CardTitle className="font-heading text-xl">
               Monthly Generations
             </CardTitle>
-            <CardDescription className="font-medium text-slate-600 dark:text-slate-400">
+            <CardDescription>
               Current plan: {planLimits.planTitle}. Usage resets each month.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6 p-6">
+          <CardContent className="space-y-6">
             <div className="flex items-center justify-between gap-3">
-              <p className="text-lg font-bold text-slate-700 dark:text-slate-300">
+              <p className="text-lg font-semibold text-foreground">
                 {displayGenerationsUsed} of {generationsAllocated} used
               </p>
-              <div className={cn(
-                "rounded-full border-2 border-slate-900 px-4 py-1 text-sm font-black shadow-sm",
-                generationsRemaining > 0 ? "border-slate-900 bg-emerald-100 text-emerald-700 dark:border-slate-600 dark:bg-emerald-900/30 dark:text-emerald-300" : "border-slate-900 bg-red-100 text-red-700 dark:border-slate-600 dark:bg-red-900/30 dark:text-red-300"
-              )}>
+              <Badge
+                variant={generationsRemaining > 0 ? "secondary" : "destructive"}
+                className="rounded-full px-3 py-1 font-medium"
+              >
                 {generationsRemaining} left
-              </div>
+              </Badge>
             </div>
 
-            <div className="relative h-6 w-full overflow-hidden rounded-full border-2 border-slate-900 bg-slate-100 dark:border-slate-700 dark:bg-slate-800">
-               <div 
-                  className="h-full border-r-2 border-slate-900 bg-amber-500 transition-all duration-500 ease-out dark:border-slate-950"
-                  style={{ width: `${progressPercentage}%` }}
-               />
+            <div className="relative h-3 w-full overflow-hidden rounded-full bg-muted">
+              <div
+                className="bg-primary h-full transition-all duration-500 ease-out"
+                style={{ width: `${progressPercentage}%` }}
+              />
             </div>
 
-            <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
+            <p className="text-sm text-muted-foreground">
               {generationsRemaining > 0
                 ? `You can generate ${generationsRemaining} more page${generationsRemaining === 1 ? "" : "s"} this month.`
                 : "You reached your current limit. Upgrade to continue generating."}
             </p>
 
             {overLimitCount > 0 ? (
-              <p className="rounded-lg border border-orange-200 bg-orange-50 p-2 text-xs font-bold text-orange-600 dark:border-orange-800 dark:bg-orange-900/30 dark:text-orange-400">
+              <p className="rounded-lg border border-orange-200 bg-orange-50/80 p-2 text-xs font-medium text-orange-700 dark:border-orange-900/40 dark:bg-orange-950/30 dark:text-orange-300">
                 {overLimitCount} additional generation
                 {overLimitCount === 1 ? "" : "s"} were created earlier this
                 month.
@@ -205,7 +197,7 @@ export default async function DashboardPage() {
 
             {generationsRemaining <= 1 ? (
               <Link href="/dashboard/billing" className="inline-flex">
-                <Button className="rounded-full border-2 border-slate-900 bg-white font-bold text-slate-900 shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] hover:translate-y-px hover:bg-slate-50 hover:shadow-sm dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.5)] dark:hover:bg-slate-700">
+                <Button variant="outline" className="rounded-full">
                   Manage Plan
                 </Button>
               </Link>
@@ -213,36 +205,29 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="overflow-hidden rounded-[2rem] border-4 border-slate-900 bg-white shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)]">
-          <CardHeader className="border-b-4 border-slate-900 bg-blue-50 p-6 dark:border-slate-700 dark:bg-blue-900/20">
-            <CardTitle className="font-heading text-2xl font-extrabold text-slate-900 dark:text-slate-50">
-              Quick Actions
-            </CardTitle>
-            <CardDescription className="font-medium text-slate-600 dark:text-slate-400">
-              Start your next page in one click.
-            </CardDescription>
+        <Card className="shadow-sm transition-shadow hover:shadow-md">
+          <CardHeader>
+            <CardTitle className="font-heading text-xl">Quick Actions</CardTitle>
+            <CardDescription>Start your next page in one click.</CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-4 p-6">
+          <CardContent className="grid gap-3">
             <QuickActionLink
               href="/upload"
               icon={<Icons.media className="size-5" />}
               title="Upload a Photo"
               description="Generate line art from an image"
-              color="bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 border-slate-900 dark:border-slate-600"
             />
             <QuickActionLink
               href="/ai-generator"
               icon={<Icons.add className="size-5" />}
               title="Create from Prompt"
               description="Generate directly from text"
-              color="bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 border-slate-900 dark:border-slate-600"
             />
             <QuickActionLink
               href="/creations"
               icon={<Icons.bookOpen className="size-5" />}
               title="Open Creations"
               description="Review and manage saved pages"
-              color="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border-slate-900 dark:border-slate-600"
             />
           </CardContent>
         </Card>
@@ -252,40 +237,38 @@ export default async function DashboardPage() {
         <MetricCard
           label="Total Pages"
           value={totalCreations}
-          color="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-slate-700"
-          icon={<Icons.bookOpen className="size-6 text-indigo-700 dark:text-indigo-400" />}
+          icon={<Icons.bookOpen className="size-5 text-primary" />}
         />
         <MetricCard
           label="Ready"
           value={statusCount["DONE"] ?? 0}
-          color="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-slate-700"
-          icon={<Icons.download className="size-6 text-emerald-700 dark:text-emerald-400" />}
+          icon={<Icons.download className="size-5 text-primary" />}
         />
         <MetricCard
           label="In Progress"
           value={processingCount}
-          color="bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 border-sky-200 dark:border-slate-700"
-          icon={<Icons.spinner className="size-6 animate-spin text-sky-700 dark:text-sky-400" />}
+          icon={<Icons.spinner className="size-5 animate-spin text-primary" />}
         />
         <MetricCard
           label="Failed"
           value={statusCount["FAILED"] ?? 0}
-          color="bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 border-orange-200 dark:border-slate-700"
-          icon={<Icons.warning className="size-6 text-orange-700 dark:text-orange-400" />}
+          icon={<Icons.warning className="size-5 text-destructive" />}
         />
       </section>
 
       <section className="mt-10 space-y-6">
-          <div className="flex flex-wrap items-end justify-between gap-4">
+        <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h2 className="font-heading text-3xl font-extrabold text-slate-900 dark:text-slate-50">Recent Creations</h2>
-            <p className="mt-2 text-base font-medium text-slate-600 dark:text-slate-400">
+            <h2 className="font-heading text-2xl font-bold text-foreground">
+              Recent Creations
+            </h2>
+            <p className="mt-2 text-base text-muted-foreground">
               Latest generated pages and current status.
             </p>
           </div>
           {recentCreations.length > 0 ? (
             <Link href="/creations">
-              <Button className="rounded-full font-bold text-slate-700 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800" variant="ghost">
+              <Button variant="ghost" className="rounded-full font-medium">
                 View all
                 <Icons.arrowRight className="ml-2 size-4" />
               </Button>
@@ -294,26 +277,37 @@ export default async function DashboardPage() {
         </div>
 
         {recentCreations.length === 0 ? (
-          <div className="rounded-[2rem] border-4 border-dashed border-slate-300 bg-slate-50 p-12 text-center dark:border-slate-700 dark:bg-slate-900">
-            <div className="mx-auto mb-6 flex size-20 items-center justify-center rounded-full border-4 border-slate-200 bg-white dark:border-slate-600 dark:bg-slate-800">
-               <Icons.media className="size-10 text-slate-400 dark:text-slate-500" />
+          <div className="rounded-2xl border border-dashed border-border bg-muted/30 p-12 text-center">
+            <div className="relative mx-auto mb-6 flex size-40 items-center justify-center">
+              <Image
+                src="/_static/illustrations/call-waiting.svg"
+                alt=""
+                width={160}
+                height={160}
+                className="animate-floaty-slow opacity-90"
+              />
             </div>
-            <h3 className="mb-2 text-xl font-bold text-slate-900 dark:text-slate-50">No pages yet</h3>
-            <p className="mx-auto mb-8 max-w-sm font-medium text-slate-500 dark:text-slate-400">
+            <h3 className="mb-2 font-heading text-xl font-bold text-foreground">
+              No pages yet
+            </h3>
+            <p className="mx-auto mb-8 max-w-sm text-muted-foreground">
               Upload your first photo to generate a clean printable page.
             </p>
             <Link href="/upload">
-              <Button className="rounded-full border-2 border-slate-900 bg-yellow-400 px-8 py-6 text-lg font-bold text-slate-900 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] transition-all hover:translate-y-[2px] hover:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)]">
-                 Upload first photo
+              <Button className="rounded-full px-8 py-6 text-base">
+                Upload first photo
               </Button>
             </Link>
           </div>
         ) : (
-          <Card className="overflow-hidden rounded-[2rem] border-4 border-slate-900 bg-white shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)]">
+          <Card className="shadow-sm">
             <CardContent className="p-0">
-              <ul className="divide-y-2 divide-slate-100 dark:divide-slate-700">
+              <ul className="divide-y divide-border">
                 {recentCreations.map((creation) => (
-                  <li key={creation.id} className="p-4 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800 sm:px-6">
+                  <li
+                    key={creation.id}
+                    className="p-4 transition-colors hover:bg-muted/40 sm:px-6"
+                  >
                     <CreationRow creation={creation} />
                   </li>
                 ))}
@@ -330,25 +324,27 @@ function MetricCard({
   label,
   value,
   icon,
-  color,
 }: {
   label: string;
   value: number;
   icon: React.ReactNode;
-  color: string;
 }) {
   return (
-    <div className="relative overflow-hidden rounded-[2rem] border-4 border-slate-900 bg-white p-6 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] transition-transform hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(15,23,42,1)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)] dark:hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.5)]">
-      <div className={cn("absolute right-0 top-0 rounded-bl-[2rem] border-b-4 border-l-4 border-slate-900 p-4 dark:border-slate-700", color)}>
-         {icon}
-      </div>
-      <div className="relative z-10">
-        <p className="mb-2 text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
-          {label}
-        </p>
-        <p className="font-heading text-5xl font-extrabold text-slate-900 dark:text-slate-50">{value}</p>
-      </div>
-    </div>
+    <Card className="transition-shadow hover:shadow-md">
+      <CardContent className="flex items-start gap-4 p-6">
+        <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-accent/60 p-2.5">
+          {icon}
+        </span>
+        <div className="min-w-0">
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            {label}
+          </p>
+          <p className="font-heading text-4xl font-bold text-foreground">
+            {value}
+          </p>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -357,31 +353,27 @@ function QuickActionLink({
   icon,
   title,
   description,
-  color,
 }: {
   href: string;
   icon: React.ReactNode;
   title: string;
   description: string;
-  color: string;
 }) {
   return (
     <Link
       href={href}
-      className="group flex items-center gap-4 rounded-2xl border-2 border-slate-900 bg-white p-4 transition-all hover:bg-slate-50 hover:shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_rgba(15,23,42,1)] dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.5)]"
+      className="group flex items-center gap-4 rounded-2xl border border-border bg-card p-4 transition-all hover:-translate-y-0.5 hover:shadow-md"
     >
-      <span className={cn("flex size-12 shrink-0 items-center justify-center rounded-xl border-2 border-slate-900 shadow-sm transition-transform group-hover:rotate-3 group-hover:scale-110 dark:border-slate-600", color)}>
+      <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-accent/60 text-primary transition-transform group-hover:scale-105">
         {icon}
       </span>
       <span className="min-w-0">
-        <span className="block text-base font-extrabold text-slate-900 transition-colors group-hover:text-blue-600 dark:text-slate-50 dark:group-hover:text-blue-400">
+        <span className="block font-semibold text-foreground transition-colors group-hover:text-primary">
           {title}
         </span>
-        <span className="block text-xs font-bold text-slate-500 dark:text-slate-400">
-          {description}
-        </span>
+        <span className="block text-sm text-muted-foreground">{description}</span>
       </span>
-      <Icons.arrowRight className="ml-auto size-5 text-slate-300 transition-transform group-hover:translate-x-1 group-hover:text-slate-900 dark:text-slate-500 dark:group-hover:text-slate-50" />
+      <Icons.arrowRight className="ml-auto size-5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" />
     </Link>
   );
 }
@@ -396,16 +388,9 @@ function CreationRow({ creation }: { creation: ImageJob }) {
         ? "/creations"
         : `/processing/${creation.id}`;
 
-  const statusColors = {
-     DONE: "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800",
-     PROCESSING: "bg-sky-100 dark:bg-sky-900/30 text-sky-800 dark:text-sky-300 border-sky-200 dark:border-sky-800",
-     QUEUED: "bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 border-amber-200 dark:border-amber-800",
-     FAILED: "bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300 border-orange-200 dark:border-orange-800",
-  };
-
   return (
     <div className="flex flex-wrap items-center gap-4 sm:flex-nowrap">
-      <div className="relative size-16 shrink-0 overflow-hidden rounded-xl border-2 border-slate-900 bg-slate-100 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+      <div className="relative size-16 shrink-0 overflow-hidden rounded-xl border border-border bg-muted">
         {creation.status === "DONE" && creation.lineartUrl ? (
           <Image
             src={creation.lineartUrl}
@@ -414,13 +399,13 @@ function CreationRow({ creation }: { creation: ImageJob }) {
             className="object-cover"
           />
         ) : (
-          <div className="flex size-full items-center justify-center text-slate-400">
+          <div className="flex size-full items-center justify-center text-muted-foreground">
             {creation.status === "PROCESSING" ? (
-              <Icons.spinner className="size-6 animate-spin text-blue-500" />
+              <Icons.spinner className="size-6 animate-spin text-primary" />
             ) : creation.status === "QUEUED" ? (
-              <Icons.help className="size-6 text-amber-500" />
+              <Icons.help className="size-6 text-chart-3" />
             ) : creation.status === "FAILED" ? (
-              <Icons.warning className="size-6 text-rose-500" />
+              <Icons.warning className="size-6 text-destructive" />
             ) : (
               <Icons.media className="size-6" />
             )}
@@ -429,24 +414,22 @@ function CreationRow({ creation }: { creation: ImageJob }) {
       </div>
 
       <div className="min-w-0 flex-1">
-        <p className="truncate text-base font-bold text-slate-900 dark:text-slate-50">
-          {previewLabel}
-        </p>
-        <p className="text-xs font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+        <p className="truncate font-semibold text-foreground">{previewLabel}</p>
+        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
           {creationDateFormatter.format(creation.createdAt)}
         </p>
       </div>
 
-      <div className={cn(
-          "rounded-full border-2 px-3 py-1 text-xs font-black uppercase tracking-wider",
-          statusColors[creation.status] || "border-slate-200 bg-slate-100 text-slate-800 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300"
-        )}
-      >
+      <div className="flex items-center gap-2 rounded-full border border-border bg-muted px-3 py-1 text-xs font-medium text-foreground">
+        <span
+          className={cn("size-2 shrink-0 rounded-full", statusDot[creation.status])}
+          aria-hidden
+        />
         {statusLabels[creation.status]}
       </div>
 
       <Link href={creationHref} className="sm:ml-2">
-        <Button className="h-10 rounded-full border-2 border-slate-900 bg-white px-5 font-bold text-slate-900 shadow-sm transition-all hover:bg-slate-100 hover:shadow-md dark:border-slate-600 dark:bg-slate-800 dark:text-slate-50 dark:hover:bg-slate-700">
+        <Button variant="outline" size="sm" className="h-10 rounded-full">
           {creation.status === "DONE" ? "Open" : "Track"}
         </Button>
       </Link>

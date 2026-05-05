@@ -42,21 +42,19 @@ function PlanCard({
   isYearly: boolean;
 }) {
   const displayPrice = isYearly ? plan.prices.yearly : plan.prices.monthly;
-  const monthlyEquivalent =
-    plan.prices.monthly > 0 ? Number((plan.prices.yearly / 12).toFixed(2)) : 0;
 
   return (
     <div
       className={cn(
-        "relative flex h-full flex-col justify-between space-y-6 overflow-hidden rounded-[2rem] border-4 p-6 transition-all duration-300",
+        "relative flex h-full flex-col justify-between space-y-6 overflow-hidden rounded-2xl border bg-card p-6 shadow-sm transition-all duration-300",
         isCurrent
-          ? "border-purple-500 bg-purple-50/50 shadow-[8px_8px_0px_0px_rgba(168,85,247,0.4)] dark:border-purple-400 dark:bg-purple-900/10"
-          : "border-slate-900 bg-white shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] hover:translate-y-[-2px] hover:shadow-[10px_10px_0px_0px_rgba(15,23,42,1)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)]",
+          ? "border-primary ring-2 ring-primary/20"
+          : "border-border hover:-translate-y-0.5 hover:shadow-md",
       )}
     >
       {isCurrent && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-          <Badge className="border-2 border-white bg-purple-600 px-4 py-1 text-xs font-black uppercase tracking-wider text-white shadow-sm dark:border-slate-900">
+          <Badge className="rounded-full bg-primary px-4 py-1 text-xs font-semibold text-primary-foreground">
             Current Plan
           </Badge>
         </div>
@@ -64,24 +62,26 @@ function PlanCard({
 
       <div className="space-y-5">
         <div className="space-y-2">
-          <h3 className="text-2xl font-black tracking-tight text-slate-900 dark:text-slate-50">{plan.title}</h3>
-          <p className="text-sm font-bold leading-relaxed text-slate-500 dark:text-slate-400">
+          <h3 className="font-heading text-2xl font-bold tracking-tight text-foreground">
+            {plan.title}
+          </h3>
+          <p className="text-sm leading-relaxed text-muted-foreground">
             {plan.description}
           </p>
         </div>
 
-        <div className="flex items-baseline gap-2 border-b-2 border-slate-100 pb-4 dark:border-slate-800">
-          <span className="text-5xl font-black tracking-tight text-slate-900 dark:text-slate-50">
+        <div className="flex items-baseline gap-2 border-b border-border pb-4">
+          <span className="font-heading text-4xl font-bold tracking-tight text-foreground">
             {formatPrice(displayPrice)}
           </span>
-          <span className="text-base font-bold text-slate-500 dark:text-slate-400">
+          <span className="text-base font-medium text-muted-foreground">
             {isYearly ? "/year" : "/month"}
           </span>
         </div>
 
         {plan.prices.monthly > 0 && (
-          <div className="flex w-fit items-center gap-2 rounded-lg bg-emerald-50 px-3 py-1.5 text-sm font-bold text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400">
-            <Icons.check className="size-4" />
+          <div className="flex w-fit items-center gap-2 rounded-lg bg-accent/60 px-3 py-1.5 text-sm font-medium text-accent-foreground">
+            <Icons.check className="size-4 text-primary" />
             {isYearly
               ? `Save ${formatPrice(plan.prices.monthly * 12 - plan.prices.yearly)} yearly`
               : `${formatPrice(plan.prices.yearly)}/year if billed annually`}
@@ -89,19 +89,19 @@ function PlanCard({
         )}
 
         <div className="pt-2">
-          <p className="mb-4 flex items-center gap-2 text-sm font-black text-slate-900 dark:text-slate-50">
-            <div className="rounded-lg bg-blue-100 p-1.5 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
-               <Icons.laptop className="size-4" />
-            </div>
+          <p className="mb-4 flex items-center gap-2 text-sm font-semibold text-foreground">
+            <span className="rounded-lg bg-accent/60 p-1.5 text-primary">
+              <Icons.laptop className="size-4" />
+            </span>
             {plan.monthlyGenerationLimit} generations/month
           </p>
           <ul className="space-y-3">
             {plan.benefits.map((feature, i) => (
               <li
                 key={i}
-                className="flex items-start gap-3 text-sm font-medium text-slate-600 dark:text-slate-300"
+                className="flex items-start gap-3 text-sm text-muted-foreground"
               >
-                <Icons.check className="mt-0.5 size-4 shrink-0 stroke-[3px] text-slate-900 dark:text-slate-50" />
+                <Icons.check className="mt-0.5 size-4 shrink-0 text-primary" />
                 <span className="leading-snug">{feature}</span>
               </li>
             ))}
@@ -118,7 +118,7 @@ function PlanCard({
               year={isYearly}
             />
           ) : (
-            <Button className="w-full rounded-xl border-2 border-slate-200 bg-slate-100 font-bold text-slate-500" disabled>
+            <Button className="w-full rounded-xl font-medium" disabled variant="secondary">
               Active Plan
             </Button>
           )
@@ -129,7 +129,7 @@ function PlanCard({
             year={isYearly}
           />
         ) : (
-          <Button className="w-full rounded-xl border-2 border-slate-200" variant="outline" disabled>
+          <Button className="w-full rounded-xl" variant="outline" disabled>
             Unavailable
           </Button>
         )}
@@ -165,15 +165,15 @@ export function BillingPlansCard({
       <CardHeader className="px-0 pb-8">
         <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
           <div className="max-w-xl space-y-2">
-            <CardTitle className="font-heading text-3xl font-extrabold text-slate-900 dark:text-slate-50">
+            <CardTitle className="font-heading text-3xl font-bold text-foreground">
               Available Plans
             </CardTitle>
-            <CardDescription className="text-base font-bold text-slate-500 dark:text-slate-400">
+            <CardDescription className="text-base text-muted-foreground">
               Choose the perfect plan for your needs. Upgrade anytime to unlock
               more generations and advanced features.
             </CardDescription>
           </div>
-          <div className="flex w-fit items-center rounded-full border-2 border-slate-200 bg-white p-1.5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
+          <div className="flex w-fit items-center rounded-full bg-muted p-1">
             <ToggleGroup
               type="single"
               value={billingInterval}
@@ -182,20 +182,20 @@ export function BillingPlansCard({
                   setBillingInterval(value);
                 }
               }}
-              className="gap-1"
+              className="gap-0"
             >
               <ToggleGroupItem
                 value="monthly"
-                className="h-auto rounded-full px-6 py-2.5 text-sm font-bold transition-all data-[state=on]:bg-slate-900 data-[state=on]:text-white dark:data-[state=on]:bg-slate-50 dark:data-[state=on]:text-slate-900"
+                className="h-auto rounded-full px-6 py-2.5 text-sm font-medium transition-all data-[state=on]:bg-card data-[state=on]:text-foreground data-[state=on]:shadow-sm"
               >
                 Monthly
               </ToggleGroupItem>
               <ToggleGroupItem
                 value="yearly"
-                className="h-auto rounded-full px-6 py-2.5 text-sm font-bold transition-all data-[state=on]:bg-slate-900 data-[state=on]:text-white dark:data-[state=on]:bg-slate-50 dark:data-[state=on]:text-slate-900"
+                className="h-auto rounded-full px-6 py-2.5 text-sm font-medium transition-all data-[state=on]:bg-card data-[state=on]:text-foreground data-[state=on]:shadow-sm"
               >
                 Yearly{" "}
-                <span className="ml-2 hidden rounded-full border border-emerald-200 bg-emerald-100 px-2 py-0.5 text-xs font-black text-emerald-700 sm:inline-block">
+                <span className="ml-2 hidden rounded-full bg-accent/80 px-2 py-0.5 text-xs font-semibold text-accent-foreground sm:inline-block">
                   Save 20%
                 </span>
               </ToggleGroupItem>

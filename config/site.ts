@@ -4,16 +4,16 @@ import { env } from "@/env.mjs";
 const site_url = env.NEXT_PUBLIC_APP_URL;
 
 export const siteConfig: SiteConfig = {
-  name: "Colorline AI",
+  name: "Color Genie",
   description:
     "Turn family photos into printable coloring pages and books in minutes. Built for kids, classrooms, and creative family time.",
   url: site_url,
-  ogImage: `${site_url}/_static/og.jpg`,
+  ogImage: `${site_url}/_static/colorgenie-1024.webp`,
   links: {
     twitter: "https://twitter.com/miickasmt",
-    github: "https://github.com/pmitja/ColoringBookApp",
+    github: "https://github.com/pmitja/ColorGenie",
   },
-  mailSupport: "support@colorline.ai",
+  mailSupport: "support@colorgenie.ai",
 };
 
 export const footerLinks: SidebarNavItem[] = [

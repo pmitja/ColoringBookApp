@@ -6,7 +6,7 @@ export const BLOG_CATEGORIES: {
   {
     title: "News",
     slug: "news",
-    description: "Updates and announcements from Colorline AI.",
+    description: "Updates and announcements from Color Genie.",
   },
   {
     title: "Education",

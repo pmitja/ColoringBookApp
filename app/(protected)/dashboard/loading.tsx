@@ -7,8 +7,8 @@ export default function DashboardLoading() {
       <DashboardHeader heading="Dashboard" text="Loading your workspace..." />
 
       <div className="grid gap-4 xl:grid-cols-[1.4fr_0.6fr]">
-        <Skeleton className="h-[210px] rounded-3xl" />
-        <Skeleton className="h-[210px] rounded-3xl" />
+        <Skeleton className="h-[210px] rounded-2xl" />
+        <Skeleton className="h-[210px] rounded-2xl" />
       </div>
 
       <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -23,7 +23,7 @@ export default function DashboardLoading() {
           <Skeleton className="h-6 w-44" />
           <Skeleton className="h-8 w-24 rounded-full" />
         </div>
-        <Skeleton className="h-[340px] rounded-3xl" />
+        <Skeleton className="h-[340px] rounded-2xl" />
       </div>
     </>
   );

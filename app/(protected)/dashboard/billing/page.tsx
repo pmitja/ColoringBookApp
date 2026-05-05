@@ -21,7 +21,7 @@ import { DashboardHeader } from "@/components/dashboard/header";
 import { Icons } from "@/components/shared/icons";
 
 export const metadata = constructMetadata({
-  title: "Billing – Colorline AI",
+  title: "Billing – Color Genie",
   description: "Manage your plan, generations, and billing information.",
 });
 
@@ -62,28 +62,23 @@ export default async function BillingPage() {
 
   return (
     <>
-      <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-        <div className="space-y-1.5">
-          <h1 className="font-heading text-4xl font-black text-slate-900 dark:text-slate-50">Plan & Billing</h1>
-          <p className="text-lg font-bold text-slate-500 dark:text-slate-400">
-            Manage your subscription, track usage, and view billing history.
-          </p>
-        </div>
-      </div>
+      <DashboardHeader
+        heading="Plan & Billing"
+        text="Manage your subscription, track usage, and view billing history."
+      />
 
       <div className="space-y-8 pb-10">
         <section className="grid gap-6 md:grid-cols-3">
-          <Card className="relative overflow-hidden rounded-[2rem] border-4 border-slate-900 bg-white shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)] md:col-span-2">
-            <div className="absolute right-0 top-0 size-64 -translate-y-1/2 translate-x-1/2 rounded-full bg-yellow-100 opacity-50 blur-3xl dark:bg-yellow-900/20" />
-            <CardHeader className="relative z-10 p-8 pb-4">
+          <Card className="shadow-sm transition-shadow hover:shadow-md md:col-span-2">
+            <CardHeader className="pb-4">
               <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                 <div className="space-y-1">
-                  <CardTitle className="font-heading text-3xl font-extrabold text-slate-900 dark:text-slate-50">
+                  <CardTitle className="font-heading text-2xl">
                     Usage Overview
                   </CardTitle>
-                  <CardDescription className="text-base font-medium text-slate-500 dark:text-slate-400">
+                  <CardDescription className="text-base">
                     Current plan:{" "}
-                    <strong className="font-bold text-slate-900 dark:text-slate-50">
+                    <strong className="font-semibold text-foreground">
                       {subscriptionPlan.title}
                     </strong>
                   </CardDescription>
@@ -92,37 +87,30 @@ export default async function BillingPage() {
                   variant={
                     generationsRemaining > 0 ? "secondary" : "destructive"
                   }
-                  className={cn(
-                    "rounded-full border-2 px-4 py-1.5 text-sm font-black shadow-sm",
-                    generationsRemaining > 0
-                      ? "border-emerald-200 bg-emerald-100 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300"
-                      : "border-red-200 bg-red-100 text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-300",
-                  )}
+                  className="rounded-full px-4 py-1.5 font-medium"
                 >
                   {generationsRemaining} generations left
                 </Badge>
               </div>
             </CardHeader>
-            <CardContent className="relative z-10 space-y-8 p-8 pt-4">
+            <CardContent className="space-y-8 pt-0">
               <div className="space-y-3">
                 <div className="flex items-end justify-between text-sm">
-                  <span className="font-bold text-slate-500 dark:text-slate-400">
+                  <span className="font-medium text-muted-foreground">
                     Monthly Generation Limit
                   </span>
-                  <span className="text-lg font-black text-slate-900 dark:text-slate-50">
+                  <span className="font-heading text-lg font-bold text-foreground">
                     {displayGenerationsUsed}{" "}
-                    <span className="text-sm font-bold text-slate-400 dark:text-slate-500">
+                    <span className="text-sm font-medium text-muted-foreground">
                       / {monthlyGenerationLimit}
                     </span>
                   </span>
                 </div>
-                <div className="relative h-4 w-full overflow-hidden rounded-full border-2 border-slate-200 bg-slate-100 dark:border-slate-700 dark:bg-slate-800">
+                <div className="relative h-3 w-full overflow-hidden rounded-full bg-muted">
                   <div
                     className={cn(
-                      "h-full border-r-2 border-slate-900 transition-all duration-500 ease-out dark:border-slate-950",
-                      progressPercentage >= 100
-                        ? "bg-red-500"
-                        : "bg-emerald-500",
+                      "h-full transition-all duration-500 ease-out",
+                      progressPercentage >= 100 ? "bg-destructive" : "bg-primary",
                     )}
                     style={{ width: `${progressPercentage}%` }}
                   />
@@ -130,38 +118,32 @@ export default async function BillingPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-slate-200 bg-slate-50 p-6 shadow-sm transition-all hover:border-slate-400 hover:bg-white hover:shadow-md dark:border-slate-700 dark:bg-slate-800/50 dark:hover:border-slate-600 dark:hover:bg-slate-800">
-                  <div className="mb-3 rounded-full border-2 border-blue-200 bg-blue-100 p-3 text-blue-600 dark:border-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
-                    <Icons.laptop className="size-6" />
-                  </div>
-                  <p className="text-4xl font-black tracking-tight text-slate-900 dark:text-slate-50">
+                <div className="flex flex-col items-center justify-center rounded-2xl border border-border bg-accent/40 p-6">
+                  <p className="font-heading text-4xl font-bold tracking-tight text-foreground">
                     {displayGenerationsUsed}
                   </p>
-                  <p className="mt-1 text-sm font-bold text-slate-500 dark:text-slate-400">
+                  <p className="mt-1 text-sm font-medium text-muted-foreground">
                     Used This Month
                   </p>
                 </div>
-                <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-slate-200 bg-slate-50 p-6 shadow-sm transition-all hover:border-slate-400 hover:bg-white hover:shadow-md dark:border-slate-700 dark:bg-slate-800/50 dark:hover:border-slate-600 dark:hover:bg-slate-800">
-                  <div className="mb-3 rounded-full border-2 border-emerald-200 bg-emerald-100 p-3 text-emerald-600 dark:border-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400">
-                    <Icons.check className="size-6" />
-                  </div>
-                  <p className="text-4xl font-black tracking-tight text-slate-900 dark:text-slate-50">
+                <div className="flex flex-col items-center justify-center rounded-2xl border border-border bg-muted/50 p-6">
+                  <p className="font-heading text-4xl font-bold tracking-tight text-foreground">
                     {generationsRemaining}
                   </p>
-                  <p className="mt-1 text-sm font-bold text-slate-500 dark:text-slate-400">
+                  <p className="mt-1 text-sm font-medium text-muted-foreground">
                     Remaining
                   </p>
                 </div>
               </div>
 
               <div className="flex flex-col gap-1.5">
-                <p className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                <p className="text-sm text-muted-foreground">
                   {generationsRemaining > 0
                     ? `You can generate ${generationsRemaining} more page${generationsRemaining === 1 ? "" : "s"} this month before reaching your limit.`
                     : "You have no generations left this month. Upgrade your plan to keep generating."}
                 </p>
                 {overLimitCount > 0 ? (
-                  <p className="flex w-fit items-center gap-1.5 rounded-lg border border-orange-200 bg-orange-50 p-2 text-xs font-bold text-orange-600 dark:border-orange-800 dark:bg-orange-900/30 dark:text-orange-400">
+                  <p className="flex w-fit items-center gap-1.5 rounded-lg border border-orange-200 bg-orange-50/80 p-2 text-xs font-medium text-orange-700 dark:border-orange-900/40 dark:bg-orange-950/30 dark:text-orange-300">
                     <Icons.warning className="size-3" />
                     {overLimitCount} additional generation
                     {overLimitCount === 1 ? "" : "s"} were created earlier this
@@ -172,44 +154,40 @@ export default async function BillingPage() {
             </CardContent>
           </Card>
 
-          <Card className="group relative flex flex-col justify-between overflow-hidden rounded-[2rem] border-4 border-slate-900 bg-white p-6 shadow-[8px_8px_0px_0px_rgba(15,23,42,1)] transition-all hover:translate-y-[2px] hover:shadow-[6px_6px_0px_0px_rgba(15,23,42,1)] dark:border-slate-700 dark:bg-slate-900 dark:shadow-[8px_8px_0px_0px_rgba(0,0,0,0.5)] dark:hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.5)]">
-            <div className="absolute right-0 top-0 size-32 rounded-full bg-purple-100 opacity-50 blur-3xl dark:bg-purple-900/20" />
-            <CardHeader className="relative z-10 mb-6 p-0">
-              <div className="mb-4 flex size-14 items-center justify-center rounded-2xl border-2 border-slate-900 bg-purple-100 text-purple-600 shadow-sm dark:border-slate-700 dark:bg-purple-900/30 dark:text-purple-400">
-                <Icons.billing className="size-7" />
+          <Card className="flex flex-col justify-between shadow-sm transition-shadow hover:shadow-md">
+            <CardHeader className="pb-2">
+              <div className="mb-3 flex size-12 items-center justify-center rounded-xl bg-accent/60 text-primary">
+                <Icons.billing className="size-6" />
               </div>
-              <CardTitle className="text-2xl font-extrabold text-slate-900 dark:text-slate-50">
+              <CardTitle className="font-heading text-xl">
                 Current Subscription
               </CardTitle>
-              <CardDescription className="pt-2 font-medium text-slate-600 dark:text-slate-400">
+              <CardDescription className="pt-1">
                 You are currently on the{" "}
-                <strong className="font-bold text-slate-900 dark:text-slate-50">
+                <strong className="font-semibold text-foreground">
                   {subscriptionPlan.title}
                 </strong>{" "}
                 plan.
               </CardDescription>
             </CardHeader>
-            <CardContent className="relative z-10 space-y-4 p-0">
+            <CardContent className="space-y-4 pt-0">
               <div className="space-y-3">
-                <p className="flex items-center justify-between text-sm font-bold text-slate-500 dark:text-slate-400">
+                <p className="flex items-center justify-between text-sm font-medium text-muted-foreground">
                   Status
-                  <Badge
-                    variant="outline"
-                    className="rounded-full border-2 border-emerald-200 bg-emerald-50 px-3 py-1 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400"
-                  >
+                  <Badge variant="outline" className="rounded-full font-medium">
                     Active
                   </Badge>
                 </p>
-                <p className="flex items-center justify-between text-sm font-bold text-slate-500 dark:text-slate-400">
+                <p className="flex items-center justify-between text-sm font-medium text-muted-foreground">
                   Billing Cycle
-                  <span className="font-extrabold capitalize text-slate-900 dark:text-slate-50">
+                  <span className="font-semibold capitalize text-foreground">
                     {subscriptionPlan.interval || "Monthly"}
                   </span>
                 </p>
               </div>
               {!subscriptionPlan.isPaid && (
-                <div className="border-t-2 border-slate-100 pt-4 dark:border-slate-800">
-                  <p className="mb-4 text-sm font-medium text-slate-500 dark:text-slate-400">
+                <div className="border-t border-border pt-4">
+                  <p className="text-sm text-muted-foreground">
                     Upgrade to unlock more generations and premium features.
                   </p>
                 </div>
@@ -222,18 +200,18 @@ export default async function BillingPage() {
           <BillingPlansCard subscriptionPlan={subscriptionPlan} />
         </section>
 
-        <Alert className="rounded-2xl border-2 border-amber-200 bg-amber-50 text-amber-800 shadow-sm dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-300">
+        <Alert className="rounded-2xl border border-amber-200 bg-amber-50/60 text-amber-900 shadow-sm dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-200">
           <Icons.warning className="size-5 text-amber-600 dark:text-amber-400" />
-          <AlertTitle className="ml-2 font-extrabold text-amber-900 dark:text-amber-200">
+          <AlertTitle className="ml-2 font-heading font-semibold">
             Demo Mode Active
           </AlertTitle>
-          <AlertDescription className="ml-2 mt-1 font-medium text-amber-700 dark:text-amber-400">
+          <AlertDescription className="ml-2 mt-1 text-amber-800 dark:text-amber-300/90">
             Stripe runs in test mode here. Use test card numbers from{" "}
             <a
               href="https://stripe.com/docs/testing#cards"
               target="_blank"
               rel="noreferrer"
-              className="font-bold underline underline-offset-4 transition-colors hover:text-amber-900 dark:hover:text-amber-200"
+              className="font-semibold underline underline-offset-4 transition-colors hover:text-amber-950 dark:hover:text-amber-100"
             >
               Stripe testing docs
             </a>

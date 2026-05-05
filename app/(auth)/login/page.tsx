@@ -25,17 +25,17 @@ export default function LoginPage() {
         href="/"
         className={cn(
           buttonVariants({ variant: "outline" }),
-          "absolute left-4 top-4 md:left-8 md:top-8 gap-2 rounded-2xl font-bold shadow-sm",
+          "absolute left-4 top-4 gap-2 rounded-2xl font-bold shadow-sm md:left-8 md:top-8",
         )}
       >
         <ChevronLeft className="size-4" />
         Back
       </Link>
 
-      <div className="playful-card mx-auto w-full max-w-md rounded-[2.5rem] border-2 shadow-xl shadow-primary/5 p-6 sm:p-10">
+      <div className="playful-card shadow-primary/5 mx-auto w-full max-w-md rounded-[2.5rem] border-2 p-6 shadow-xl sm:p-10">
         <div className="flex flex-col space-y-3 text-center">
-          <div className="mx-auto flex size-16 items-center justify-center rounded-[1.5rem] bg-primary/10 shadow-sm border-2 border-primary/20 rotate-3 mb-2 overflow-hidden">
-            <Icons.logo className="h-8 w-auto max-w-[120px] object-contain -rotate-3" />
+          <div className="bg-primary/10 border-primary/20 mx-auto mb-2 flex size-16 rotate-3 items-center justify-center overflow-hidden rounded-3xl border-2 shadow-sm">
+            <Icons.logo className="h-9 w-auto max-w-[140px] -rotate-3 object-contain" />
           </div>
           <h1 className="font-heading text-4xl tracking-tight">Welcome Back</h1>
           <p className="text-base font-medium text-muted-foreground">
@@ -52,7 +52,7 @@ export default function LoginPage() {
         <p className="mt-8 text-center text-sm font-medium text-muted-foreground">
           <Link
             href="/register"
-            className="underline underline-offset-4 transition-colors hover:text-primary font-bold"
+            className="font-bold underline underline-offset-4 transition-colors hover:text-primary"
           >
             Don&apos;t have an account? Sign Up
           </Link>

@@ -27,7 +27,7 @@ export async function generateMetadata({
   const { title, description } = category;
 
   return constructMetadata({
-    title: `${title} Posts – Colorline AI`,
+    title: `${title} Posts – Color Genie`,
     description,
   });
 }

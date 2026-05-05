@@ -10,8 +10,6 @@ import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/utils";
 import { Icons } from "@/components/shared/icons";
 
-import { ModeToggle } from "./mode-toggle";
-
 export function NavMobile() {
   const { data: session } = useSession();
   const [open, setOpen] = useState(false);
@@ -54,17 +52,16 @@ export function NavMobile() {
           open && "animate-rise block",
         )}
       >
-        <div className="surface-glass rounded-3xl p-4">
-          <div className="mb-3 flex items-center justify-between">
+        <div className="surface-glass rounded-2xl p-4">
+          <div className="mb-3 flex items-center">
             <Link
               href="/"
               onClick={() => setOpen(false)}
               className="rounded-lg"
             >
-              <Icons.logo className="h-8 w-auto" />
-              <span className="sr-only">Colorline AI</span>
+              <Icons.logo className="h-9 w-auto" />
+              <span className="sr-only">Color Genie</span>
             </Link>
-            <ModeToggle />
           </div>
 
           <ul className="divide-border/60 grid divide-y" role="list">

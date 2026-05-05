@@ -6,7 +6,7 @@ import { DashboardHeader } from "@/components/dashboard/header";
 import { EmptyPlaceholder } from "@/components/shared/empty-placeholder";
 
 export const metadata = constructMetadata({
-  title: "Color Online – Colorline AI",
+  title: "Color Online – Color Genie",
   description: "Paint generated coloring pages directly in your browser.",
 });
 
@@ -75,14 +75,10 @@ export default async function DashboardColoringPage({
 
   return (
     <>
-      <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
-        <div className="space-y-1.5">
-          <h1 className="font-heading text-4xl font-black text-slate-900">Color Online</h1>
-          <p className="text-lg font-bold text-slate-500">
-            Select a generated page, fill regions with color, then export or save your painted version.
-          </p>
-        </div>
-      </div>
+      <DashboardHeader
+        heading="Color Online"
+        text="Select a generated page, fill regions with color, then export or save your painted version."
+      />
 
       <ColoringStudio pages={pages} initialPageId={initialPageId} />
     </>

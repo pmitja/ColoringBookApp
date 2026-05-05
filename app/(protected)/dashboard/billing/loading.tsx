@@ -10,7 +10,7 @@ export default function DashboardBillingLoading() {
         text="Loading your plan and usage details."
       />
       <div className="grid gap-8">
-        <Skeleton className="h-28 w-full rounded-3xl md:h-24" />
+        <Skeleton className="h-28 w-full rounded-2xl md:h-24" />
         <CardSkeleton />
       </div>
     </>

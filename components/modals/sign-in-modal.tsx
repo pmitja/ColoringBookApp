@@ -26,7 +26,7 @@ function SignInModal({
       <div className="playful-theme w-full overflow-hidden rounded-[2rem] bg-background">
         <div className="border-border/50 bg-muted/30 flex flex-col items-center justify-center space-y-4 border-b px-4 pb-8 pt-10 text-center md:px-10">
           <a href={siteConfig.url} className="flex items-center justify-center">
-            <Icons.logo className="h-10 w-auto max-w-[200px] object-contain" />
+            <Icons.logo className="h-12 w-auto max-w-[200px] object-contain" />
           </a>
           <h3 className="font-heading text-2xl font-bold text-foreground">Welcome Back</h3>
           <p className="max-w-sm text-sm font-medium text-muted-foreground">
